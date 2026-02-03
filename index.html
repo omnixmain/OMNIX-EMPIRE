@@ -4,15 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omnix Empire - Official Downloads</title>
+    <title>OMNIX EMPIRE | Premium Web & App Hub</title>
+    <meta name="description"
+        content="OMNIX EMPIRE - The ultimate hub for Premium Apps, Live Sports, and Digital Services. Download OMNIX OTT, OMNIX TV, and more.">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
 
-    <!-- FontAwesome for Icons -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Custom CSS -->
@@ -20,244 +23,211 @@
 </head>
 
 <body>
-    <canvas id="dust-canvas"></canvas>
+    <!-- Background Elements -->
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
+    <div class="grid-overlay"></div>
 
-    <!-- Header -->
-    <header>
-        <div class="nav-container">
-            <div class="nav-logo">
-                <a href="#"><img src="OMNIX EMPIRE LOGO.jpg" alt="Omnix Empire"></a>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <img src="OMNIX EMPIRE LOGO.jpg" alt="OMNIX EMPIRE">
+                <span>OMNIX EMPIRE</span>
+            </a>
+            <div class="nav-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
             </div>
-            <ul class="nav-links">
-                <li><a href="#ott">OMNIX OTT</a></li>
-                <li><a href="#sports-network">Sports Network</a></li>
-                <li><a href="#infox">OMNIX INFOX</a></li>
-                <li><a href="#tv">OMNIX TV+</a></li>
-                <li><a href="#network">Network</a></li>
-                <li><a href="#contact">Contact</a></li>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#home" class="nav-link">Home</a></li>
+                <li class="nav-item"><a href="#apps" class="nav-link">Apps</a></li>
+                <li class="nav-item"><a href="#web" class="nav-link">Web</a></li>
+                <li class="nav-item"><a href="#community" class="nav-link">Community</a></li>
             </ul>
         </div>
-    </header>
+    </nav>
 
     <!-- Hero Section -->
-    <section class="hero">
-        <img src="OMNIX EMPIRE LOGO.jpg" alt="Omnix Empire Logo" class="hero-logo-large">
-        <h1>Omnix Empire</h1>
-        <p>The Future of Entertainment. Experience the next level of streaming, tools, and digital services.</p>
-        <a href="#ott" class="btn">Explore Apps</a>
-    </section>
-
-    <!-- Official Applications Header -->
-    <div class="category-header">
-        <h2>Official Applications</h2>
-    </div>
-
-    <!-- OMNIX OTT Section -->
-    <section id="ott" class="app-section">
-        <div class="app-container">
-            <div class="app-image">
-                <img src="OMNIX OTT LOGO.jpg" alt="Omnix OTT">
-            </div>
-            <div class="app-content">
-                <h2>OMNIX OTT <span class="version-badge">v1.1 Stable</span></h2>
-                <ul class="app-details">
-                    <li><strong>Release Date:</strong> 22-JAN-2026</li>
-                    <li><strong>Milestone:</strong> 1000+ Downloads achieved! Join our 400+ Daily Active Users.</li>
-                    <li><strong>Description:</strong> Your all-in-one entertainment app for Live Sports, Live TV, Movies
-                        & TV Shows — unlimited fun in one place!</li>
-                    <li><strong>What's New:</strong>
-                        <ul style="margin-top:5px; margin-bottom: 5px; color: #a0a0a0; padding-left: 20px;">
-                            <li>Fixed all crash issues for a stable experience.</li>
-                            <li>Buffer-less streaming optimization.</li>
-                            <li>"Made in India" app with International standards.</li>
-                        </ul>
-                    </li>
-                    <li><strong>Downloads:</strong> Download your favorite movies and shows to watch offline.</li>
-                    <li><strong>Live TV:</strong> 2500+ Free Channels with Ads.</li>
-                    <li><strong>Premium TV:</strong> 130+ Premium Servers, 8+ Active Channels.</li>
-                    <li><strong>Features:</strong> Same Day Theatre Release, Smooth 5G/WiFi Streaming.</li>
-                    <li><strong>Login:</strong> Easy Google Login Support.</li>
-                    <li><strong>Bonus:</strong> First 3 Days Premium Membership Free.</li>
-                    <li><strong>More:</strong> IPTV Playlist Support, Direct Stream URL, Modern Ad-Less Experience.</li>
-                </ul>
-                <div class="download-area">
-                    <p style="color: #888; margin-bottom: 10px; font-size: 0.9rem;">Download Source: MediaFire</p>
-                    <a href="https://www.mediafire.com/file/ts4vkca3ugz63wm/OMNIXOTT-V1.1.apk/file" class="btn"><i
-                            class="fas fa-download"></i> Download OMNIX OTT v1.1</a>
-                </div>
+    <header id="home" class="hero-section">
+        <div class="container hero-content">
+            <h1 class="hero-title">OMNIX <span class="text-gold">EMPIRE</span></h1>
+            <p class="hero-tagline">Premium Apps, Live Sports & Digital Services Hub</p>
+            <p class="hero-desc">Experience the future of streaming with ultra-premium apps and exclusive content
+                servers.</p>
+            <div class="hero-buttons">
+                <a href="#apps" class="btn btn-gold">
+                    <i class="fas fa-download"></i> Download Apps
+                </a>
+                <a href="#web" class="btn btn-outline">
+                    <i class="fas fa-play"></i> Watch Live Sports
+                </a>
             </div>
         </div>
-    </section>
+        <!-- Hero Particles/Canvas can be added here via JS if needed -->
+    </header>
 
-    <!-- OMNIX TV+ Section -->
-    <section id="tv" class="app-section">
-        <div class="app-container">
-            <div class="app-image">
-                <img src="OMNIX TV LOGO.png" alt="Omnix TV+">
-            </div>
-            <div class="app-content">
-                <h2>OMNIX TV <span class="version-badge">v0.1</span></h2>
-                <ul class="app-details">
-                    <li><strong>Release Date:</strong> 14-JAN-2026</li>
-                    <li><strong>Content:</strong> Latest Movies, Web Series, K-Drama, Anime, Hollywood & Bollywood
-                        netflix zee atl balaji</li>
-                    <li><strong>Live Sports:</strong> Watch Cricket, Football, and upcoming live events.</li>
-                    <li><strong>Live Access:</strong> Direct Ad-Free Live Matches (FanCode, Sony LIV, Hotstar).
-                    </li>
-                    <li><strong>Downloads:</strong> Download your favorite movies and shows to watch offline.</li>
-                    <li><strong>Live TV:</strong> 2500+ Free Channels with Ads.</li>
-                    <li><strong>Premium TV:</strong> 75+ Premium Servers, 80000+ Active Channels.</li>
-                    <li><strong>Features:</strong> Same Day Theatre Release, Smooth 5G/WiFi Streaming.</li>
-                    <li><strong>Login:</strong> Easy Google Login Support.</li>
-                    <li><strong>Bonus:</strong> First 3 Days Premium Membership Free.</li>
-                    <li><strong>More:</strong> IPTV Playlist Support, Direct Stream URL, Modern Ad-Less Experience.</li>
-                </ul>
-                <div class="download-area">
-                    <p style="color: #888; margin-bottom: 10px; font-size: 0.9rem;">Download Source: MediaFire</p>
-                    <a href="https://www.mediafire.com/file/1dcnlugqxqihjc9/OMNIX-TV_V0.1.apk/file" class="btn"><i
-                            class="fas fa-download"></i> Download OMNIX TV</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- OMNIX INFOX Section -->
-    <section id="infox" class="app-section">
-        <div class="app-container">
-            <div class="app-content"> <!-- Swap order for variety -->
-                <h2>OMNIX INFOX <span class="version-badge">(Discontinue)</span></h2>
-                <ul class="app-details">
-                    <li><strong>Function:</strong> Extract Info from 10-Digit Phone Numbers (India).</li>
-                    <li><strong>Data:</strong> User Name, Address, Service Provider (Jio/Vi/Etc), and more.</li>
-                    <li><strong>Usage:</strong> 100% Free, No Ads, No Login Required.</li>
-                    <li><strong>Privacy:</strong> No Payment Methods, Simply Install & Use.</li>
-                    <li><strong>Size:</strong> Ultra-lightweight ~12MB.</li>
-                </ul>
-
-            </div>
-            <div class="app-image">
-                <img src="OMNIX INFOX LOGO.png" alt="Omnix INFOX">
-            </div>
-        </div>
-    </section>
-
-    <!-- Official Web Header -->
-    <div class="category-header">
-        <h2>Official Web</h2>
-    </div>
-
-    <!-- OMNIX SPORTS NETWORK Section -->
-    <section id="sports-network" class="app-section centered-text-section">
-        <div class="app-container text-center-layout">
-            <div class="sports-card">
-                <div class="app-content full-width">
-                    <h2 class="massive-title">OMNIX SPORTS NETWORK</h2>
-                    <p class="subtitle">Your ultimate destination for Premium Live Sports Streaming!</p>
-                    <ul class="app-details centered-list">
-                        <li><strong>Live Coverage:</strong> Watch Cricket, Football & Global Sports in real-time.</li>
-                        <li><strong>Premium Access:</strong> Sony LIV, FanCode & Hotstar streams.</li>
-                        <li><strong>HD Streaming:</strong> Smooth, fast & buffer-free experience.</li>
-                        <li><strong>Ad-Free Playback:</strong> Enjoy uninterrupted action.</li>
-                        <li><strong>Powered by:</strong> OMNIX Empire – The Future of Digital Entertainment.</li>
+    <!-- Featured App Banner -->
+    <section class="featured-section">
+        <div class="container">
+            <div class="glass-card featured-card">
+                <div class="featured-content">
+                    <span class="badge">Featured</span>
+                    <h2>OMNIX OTT <span class="text-gold">V1.1</span></h2>
+                    <p>The stable release of our flagship entertainment app. Buffer-less streaming, crash-free
+                        experience, and 2500+ Live TV channels.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check-circle"></i> 2500+ Free Channels</li>
+                        <li><i class="fas fa-check-circle"></i> 130+ Premium Servers</li>
+                        <li><i class="fas fa-check-circle"></i> No Buffer Optimization</li>
                     </ul>
-                    <div class="download-area">
-                        <a href="https://omnixmain.github.io/OMNIX-Sports-Network" target="_blank"
-                            class="btn large-btn pulse-btn"><i class="fas fa-play-circle"></i> Watch Now</a>
+                    <a href="https://www.mediafire.com/file/ts4vkca3ugz63wm/OMNIXOTT-V1.1.apk/file" target="_blank"
+                        class="btn btn-gold btn-wide">
+                        <i class="fas fa-rocket"></i> Download Now
+                    </a>
+                </div>
+                <div class="featured-image">
+                    <!-- Using logo as placeholder for app screenshot/mockup -->
+                    <img src="OMNIX OTT LOGO.jpg" alt="OMNIX OTT Showcase">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Applications Grid -->
+    <section id="apps" class="section-padding">
+        <div class="container">
+            <div class="section-header">
+                <h2>Premium <span class="text-gold">Applications</span></h2>
+                <div class="divider"></div>
+            </div>
+            <div class="grid-layout">
+                <!-- OMNIX TV+ -->
+                <div class="glass-card app-card">
+                    <div class="app-icon">
+                        <img src="OMNIX TV LOGO.png" alt="OMNIX TV+">
+                    </div>
+                    <div class="app-info">
+                        <h3>OMNIX TV+</h3>
+                        <span class="version">V1.1 — Stable Fixed Release</span>
+                        <p>Live matches, fan-favorite movies, and exclusive web series content.</p>
+                        <a href="https://www.mediafire.com/file/e1gijq1v2ksetsx/OMNIX_TV%252B_V1.1_%25E2%2580%2594_Stable_Fixed_Release.apk/file"
+                            target="_blank" class="btn btn-sm btn-gold-subtle">Download</a>
+                    </div>
+                </div>
+
+                <!-- OMNIX INFOX -->
+                <div class="glass-card app-card">
+                    <div class="app-icon">
+                        <img src="OMNIX INFOX LOGO.png" alt="OMNIX INFOX">
+                    </div>
+                    <div class="app-info">
+                        <h3>OMNIX INFOX</h3>
+                        <span class="version discontinued">Discontinued</span>
+                        <p>Legacy tool for number information extraction. (No longer supported)</p>
+                        <button class="btn btn-sm btn-disabled" disabled>Unavailable</button>
+                    </div>
+                </div>
+
+                <!-- Placeholder for future apps -->
+                <div class="glass-card app-card coming-soon">
+                    <div class="app-icon">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="app-info">
+                        <h3>OMNIX MUSIC</h3>
+                        <span class="version">Coming Soon</span>
+                        <p>High fidelity music streaming platform.</p>
+                        <button class="btn btn-sm btn-disabled" disabled>Waitlist</button>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Official Telegram Channels Header -->
-    <div class="category-header">
-        <h2>Official Telegram Channels</h2>
-    </div>
-
-    <section id="network" class="app-section">
-        <div class="app-container" style="display: block;">
-            <div class="network-grid">
-                <!-- OMNIX EMPIRE (HQ) -->
-                <div class="network-card">
-                    <i class="fas fa-crown network-icon"></i>
-                    <h3>OMNIX EMPIRE (HQ)</h3>
-                    <p>Updates & Announcements • Your hub for everything OMNIX</p>
-                    <a href="https://t.me/omnix_Empire" target="_blank" class="btn">Join Channel</a>
-                </div>
-
-                <!-- OMNIX OTT -->
-                <div class="network-card">
-                    <i class="fas fa-film network-icon"></i>
-                    <h3>OMNIX OTT</h3>
-                    <p>Direct Files • Latest Movies • Fast Updates</p>
-                    <a href="https://t.me/omnix_ott" target="_blank" class="btn">Join OTT</a>
-                </div>
-
-                <!-- Omnix CineWorld -->
-                <div class="network-card">
-                    <i class="fas fa-video network-icon"></i>
-                    <h3>Omnix CineWorld</h3>
-                    <p>Latest Movies • Downloads • Reviews</p>
-                    <a href="https://t.me/+ATsbVIXsATczNDk1" target="_blank" class="btn">Join CineWorld</a>
-                </div>
-
-                <!-- OMNIX ADULTS -->
-                <div class="network-card">
-                    <i class="fas fa-user-secret network-icon"></i>
-                    <h3>OMNIX ADULTS</h3>
-                    <p>Private • Direct Drive Files (18+)</p>
-                    <a href="https://t.me/+vAocHIblVIBhZDc9" target="_blank" class="btn">Join Private</a>
-                </div>
-
-                <!-- OMNIX MATURITY ZONE -->
-                <div class="network-card">
-                    <i class="fas fa-exclamation-circle network-icon"></i>
-                    <h3>OMNIX MATURITY ZONE</h3>
-                    <p>Aha Web Series • 18+ Only</p>
-                    <a href="https://t.me/+ip-E1so88EFiYTY1" target="_blank" class="btn">Join 18+</a>
+    <!-- Web Services -->
+    <section id="web" class="section-padding">
+        <div class="container">
+            <div class="section-header">
+                <h2>Official <span class="text-gold">Websites</span></h2>
+                <div class="divider"></div>
+            </div>
+            <div class="glass-card wide-card">
+                <div class="wide-content">
+                    <h3>OMNIX SPORTS NETWORK</h3>
+                    <p class="highlight-text">Your ultimate destination for Premium Live Sports Streaming!</p>
+                    <p>Watch Cricket, Football, & Global Sports in real-time. Powered by Sony LIV, FanCode & Hotstar
+                        streams.</p>
+                    <a href="https://omnix-sports-network.pages.dev/" target="_blank" class="btn btn-gold">
+                        <i class="fas fa-globe"></i> Visit Website
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer / Contact Section -->
-    <footer id="contact">
-        <h2 class="section-title">Join Our Community</h2>
-
-        <div class="socials">
-            <a href="https://t.me/omnix_Empire" target="_blank" class="social-btn" title="Telegram">
-                <i class="fab fa-telegram-plane"></i>
-            </a>
-            <a href="https://wa.me/918200767900?text=Hello%2C%20I%20am%20from%20Omnix%20Empire%20Website."
-                target="_blank" class="social-btn" title="WhatsApp">
-                <i class="fab fa-whatsapp"></i>
-            </a>
-            <a href="https://www.instagram.com/omnix_empire?igsh=M3lvMjNyemR6ZDcz" target="_blank" class="social-btn"
-                title="Instagram">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <a href="#" class="social-btn" title="Twitter: Coming Soon"
-                onclick="alert('Twitter page coming soon!'); return false;">
-                <i class="fab fa-twitter"></i>
-            </a>
+    <!-- Community Section -->
+    <section id="community" class="section-padding">
+        <div class="container">
+            <div class="section-header">
+                <h2>Join <span class="text-gold">The Empire</span></h2>
+                <div class="divider"></div>
+            </div>
+            <div class="community-grid">
+                <a href="https://t.me/omnix_Empire" target="_blank" class="glass-card community-card">
+                    <div class="icon-glow"><i class="fab fa-telegram-plane"></i></div>
+                    <h3>OMNIX HQ</h3>
+                    <p>Official Updates</p>
+                </a>
+                <a href="https://t.me/omnix_ott" target="_blank" class="glass-card community-card">
+                    <div class="icon-glow"><i class="fas fa-film"></i></div>
+                    <h3>OMNIX OTT</h3>
+                    <p>Direct Files</p>
+                </a>
+                <a href="https://t.me/+ATsbVIXsATczNDk1" target="_blank" class="glass-card community-card">
+                    <div class="icon-glow"><i class="fas fa-video"></i></div>
+                    <h3>CineWorld</h3>
+                    <p>Movie Reviews</p>
+                </a>
+                <a href="https://t.me/+vAocHIblVIBhZDc9" target="_blank" class="glass-card community-card restricted">
+                    <div class="icon-glow"><i class="fas fa-user-secret"></i></div>
+                    <h3>Adults</h3>
+                    <p>18+ Zone</p>
+                </a>
+            </div>
         </div>
+    </section>
 
-        <div style="margin-top: 30px;">
-            <a href="https://t.me/omnix_Empire" class="btn"
-                style="background: #0088cc; color: white; display: inline-flex; align-items: center; gap: 10px;">
-                <i class="fab fa-telegram-plane"></i> Join Telegram Channel
-            </a>
-        </div>
-
-        <div class="copyright">
-            POWERED BY <span>OMNIX EMPIRE</span> &copy; 2025
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="social-links">
+                <a href="https://t.me/omnix_Empire" target="_blank"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://wa.me/918200767900?text=Hello%2C%20I%20am%20from%20Omnix%20Empire%20Website."
+                    target="_blank"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://www.instagram.com/omnix_empire?igsh=M3lvMjNyemR6ZDcz" target="_blank"><i
+                        class="fab fa-instagram"></i></a>
+            </div>
+            <div class="copyright">
+                <p>POWERED BY <span class="text-gold">OMNIX EMPIRE</span> &copy; 2026</p>
+            </div>
         </div>
     </footer>
 
-    <!-- Optional Script -->
     <script src="script.js"></script>
+    <script>
+        // Simple Mobile Menu Toggle
+        const menuToggle = document.getElementById('mobile-menu');
+        const navMenu = document.querySelector('.nav-menu');
 
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                menuToggle.classList.toggle('is-active');
+            });
+        }
+    </script>
 </body>
-
 
 </html>
