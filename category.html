@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Movies | OMNIX HUB</title>
+    <link rel="stylesheet" href="hub.css">
+    <link rel="stylesheet" href="category.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="hub.html">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>OMNIX HUB</span>
+                </a>
+            </div>
+            <div id="category-title-nav" class="category-nav-title">Category Name</div>
+        </div>
+    </nav>
+
+    <main class="container category-page-container">
+        <div class="category-info-hero">
+            <h1 id="page-title">Category</h1>
+            <p id="movie-count">0 Movies</p>
+        </div>
+
+        <div id="category-grid" class="full-movie-grid">
+            <!-- All movies for this category injected here -->
+            <div class="loader-container">
+                <div class="loader"></div>
+                <p>Loading Category...</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="category.js"></script>
+    <script src="ads.js"></script>
+</body>
+
+</html>

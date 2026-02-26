@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Details | OMNIX HUB</title>
+    <link rel="stylesheet" href="hub.css">
+    <link rel="stylesheet" href="movie.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body class="movie-page">
+    <nav class="navbar details-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="hub.html">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Back to Hub</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="movie-details" class="details-container">
+        <!-- Details will be injected here -->
+        <div class="loader-container">
+            <div class="loader"></div>
+            <p>Loading cinematic experience...</p>
+        </div>
+    </div>
+
+    <section class="recommendations container">
+        <h2 class="category-title">Recommended for You</h2>
+        <div id="recommended-movies" class="movie-grid">
+            <!-- Recommended movies injected here -->
+        </div>
+    </section>
+
+    <script src="movie.js"></script>
+    <script src="ads.js"></script>
+</body>
+
+</html>

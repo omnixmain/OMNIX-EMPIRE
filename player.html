@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playing Movie | OMNIX HUB</title>
+    <link rel="stylesheet" href="player.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="player-container" class="player-wrapper">
+        <div class="top-nav">
+            <button onclick="window.history.back()" class="back-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Details
+            </button>
+            <div id="movie-title-header" class="header-title">Loading...</div>
+        </div>
+
+        <div id="loading-overlay" class="overlay">
+            <div class="loader"></div>
+            <p>Buffering OMNIX Prime Stream...</p>
+        </div>
+
+        <video id="omnix-video" controls autoplay>
+            <source src="" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <script src="player.js"></script>
+    <script src="ads.js"></script>
+</body>
+
+</html>
