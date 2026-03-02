@@ -12,6 +12,45 @@
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Status Navbar */
+.status-navbar {
+    background: rgba(10, 10, 12, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.brand-left {
+    display: flex;
+    align-items: center;
+}
+
+.brand-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-white);
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.nav-right {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
 .top-status-bar {
     background: rgba(194, 24, 91, 0.1);
     backdrop-filter: blur(15px);
@@ -123,17 +162,16 @@ body {
     border-radius: 1.5rem;
 }
 
-/* Hero Section */
+/* Header & Main Options */
 header {
     min-height: 100vh;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    padding-top: 100px;
     text-align: center;
     position: relative;
-    padding: 4rem 1rem;
-    background: radial-gradient(circle at 50% 50%, rgba(194, 24, 91, 0.15) 0%, transparent 50%);
+    z-index: 1;
 }
 
 .logo-main {
@@ -343,6 +381,16 @@ footer {
 @media (max-width: 768px) {
     .container {
         padding: 0 1.5rem;
+    }
+
+    .nav-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .nav-right {
+        flex-wrap: wrap;
+        justify-content: center;
     }
 
     h1 {

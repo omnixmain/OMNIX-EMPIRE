@@ -1,112 +1,227 @@
-const API_URL = 'https://omnix-empire-database.pages.dev/playlist/RoarZone_EMBY.json';
+const _0x1a2b = 'aHR0cHM6Ly9vbW5peC1lbXBpcmUtZGF0YWJhc2UucGFnZXMuZGV2L3BsYXlsaXN0L29tbml4LWtpbmctZmluYWwtZGF0YS5qc29u';
+const API_URL = atob(_0x1a2b);
 const moviesContainer = document.getElementById('movies-container');
 const searchInput = document.getElementById('movieSearch');
-let allMovies = [];
+const categoryBar = document.querySelector('.category__bar');
+const paginationControls = document.getElementById('pagination-controls');
 
-// Initialize
+let allMovies = [];
+let categoriesList = new Set();
+let filteredMovies = [];
+let currentCategory = 'All';
+let currentPage = 1;
+const itemsPerPage = 20;
+
 async function init() {
     try {
         const response = await fetch(API_URL);
-        allMovies = await response.json();
+        const rawData = await response.json();
 
-        // Hide loader
+        allMovies = [];
+        categoriesList.add('All');
+
+        if (Array.isArray(rawData)) {
+            allMovies = rawData;
+        } else {
+            for (const category in rawData) {
+                categoriesList.add(category);
+                rawData[category].forEach(m => {
+                    m.category = category;
+                    m.image = m.poster || m.image;
+                    if (m.metadata && typeof m.metadata === 'string') {
+                        const parts = m.metadata.split('•').map(p => p.trim());
+                        m.duration = parts[0]?.trim() || '';
+                        m.genres = parts[1]?.trim() || '';
+                    }
+                    allMovies.push(m);
+                });
+            }
+        }
+
+        // Sort movies: Newest to Oldest based on releasedate or year
+        allMovies.sort((a, b) => {
+            const dateA = a.releasedate ? new Date(a.releasedate) : new Date(`${a.year || 2000}-01-01`);
+            const dateB = b.releasedate ? new Date(b.releasedate) : new Date(`${b.year || 2000}-01-01`);
+            return dateB - dateA;
+        });
+
+        filteredMovies = [...allMovies];
+
         document.getElementById('loader').style.display = 'none';
 
-        renderMovies(allMovies);
+        renderCategoryBar();
+        renderGrid();
+
     } catch (error) {
         console.error('Error fetching movies:', error);
-        moviesContainer.innerHTML = `<div class="error">Failed to load movies. Please try again later.</div>`;
+        moviesContainer.innerHTML = '<p style="text-align:center; padding: 40px;">Error loading OMNIX movies.</p>';
     }
 }
 
-async function renderMovies(movies) {
-    // Clear container except loader
-    const existingCategories = moviesContainer.querySelectorAll('.category-section');
-    existingCategories.forEach(cat => cat.remove());
+function renderCategoryBar() {
+    categoryBar.innerHTML = '';
 
-    if (movies.length === 0) {
-        moviesContainer.innerHTML += `<div class="no-results" style="padding: 3rem; text-align: center; color: var(--text-gray);">No movies found match your search.</div>`;
+    // Add standard categories
+    categoriesList.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = `category-btn ${currentCategory === cat ? 'active' : ''}`;
+        btn.textContent = cat;
+        btn.onclick = () => filterByCategory(cat);
+        categoryBar.appendChild(btn);
+    });
+
+    // Add optional telegram button
+    const tgBtn = document.createElement('a');
+    tgBtn.href = "https://t.me/+vAocHIblVIBhZDc9"; // Replacing with custom link if needed, or leave generic
+    tgBtn.target = "_blank";
+    tgBtn.className = "telegram-btn";
+    tgBtn.textContent = "Telegram";
+    tgBtn.style.textDecoration = "none";
+    categoryBar.appendChild(tgBtn);
+}
+
+function filterByCategory(cat) {
+    currentCategory = cat;
+    currentPage = 1; // reset page array
+
+    // Update active button
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent === cat);
+    });
+
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    applyFilters(searchTerm, cat);
+}
+
+function applyFilters(searchTerm, category) {
+    filteredMovies = allMovies.filter(m => {
+        const matchesSearch = m.title.toLowerCase().includes(searchTerm) ||
+            (m.genres && m.genres.toLowerCase().includes(searchTerm));
+        const matchesCategory = category === 'All' || m.category === category;
+        return matchesSearch && matchesCategory;
+    });
+
+    currentPage = 1;
+    renderGrid();
+}
+
+function renderGrid() {
+    // Clear movie nodes, keep loader if needed but hidden
+    moviesContainer.innerHTML = '';
+
+    if (filteredMovies.length === 0) {
+        moviesContainer.innerHTML = '<p style="text-align:center; padding: 40px; width: 100%;">No movies found.</p>';
+        paginationControls.innerHTML = '';
         return;
     }
 
-    // Group by category
-    const categories = {};
-    movies.forEach(movie => {
-        const cat = movie.category || 'Other';
-        if (!categories[cat]) categories[cat] = [];
-        categories[cat].push(movie);
-    });
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    const endIdx = startIdx + itemsPerPage;
+    const paginatedItems = filteredMovies.slice(startIdx, endIdx);
 
-    // Sort categories alphabetically
-    const categoryNames = Object.keys(categories).sort();
+    paginatedItems.forEach(movie => {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        card.onclick = () => window.location.href = `movie.html?id=${movie.id}`;
 
-    // RENDER CATEGORIES ONE BY ONE (Non-blocking)
-    for (const catName of categoryNames) {
-        // Essential for performance: let the browser paint the first categories immediately
-        await new Promise(resolve => setTimeout(resolve, 10));
+        let qualities = "";
+        if (movie.watchNowUrls) {
+            qualities = Object.keys(movie.watchNowUrls).join(' ');
+        }
 
-        // SORT BY ID DESCENDING (Latest first)
-        const sortedMovies = categories[catName].sort((a, b) => parseInt(b.id) - parseInt(a.id));
-
-        const section = document.createElement('section');
-        section.className = 'category-section';
-
-        // LIMIT TO 15 FOR HUB - others via See All
-        const displayLimit = 15;
-        const moviesToDisplay = sortedMovies.slice(0, displayLimit);
-        const hasMore = sortedMovies.length > displayLimit;
-
-        section.innerHTML = `
-            <div class="category-header">
-                <h2 class="category-title">${catName}</h2>
-                <a href="category.html?name=${encodeURIComponent(catName)}" class="see-all-link">See All →</a>
-            </div>
-            <div class="movie-grid">
-                ${moviesToDisplay.map(movie => createMovieCard(movie)).join('')}
-                ${hasMore ? `
-                    <div class="movie-card see-more-card" onclick="window.location.href='category.html?name=${encodeURIComponent(catName)}'">
-                        <div class="see-more-content">
-                            <div class="icon-circle">
-                                <span>+${sortedMovies.length - displayLimit}</span>
-                            </div>
-                            <span>View All</span>
-                        </div>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-
-        moviesContainer.appendChild(section);
-    }
-}
-
-function createMovieCard(movie) {
-    const rating = movie.rating && movie.rating !== "" ? `<div class="rating-tag">⭐ ${movie.rating}</div>` : "";
-
-    return `
-        <div class="movie-card" onclick="openMovieDetails('${movie.id}')">
+        card.innerHTML = `
             <div class="card-image">
-                <img src="${movie.image}" 
-                     alt="${movie.title}" 
-                     loading="lazy"
-                     onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
-                ${rating}
+                <img src="${movie.image}" alt="${movie.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450?text=OMNIX'">
+                ${movie.rating ? `<div class="rating-tag">⭐ ${movie.rating}</div>` : ''}
             </div>
             <div class="card-info">
                 <h3>${movie.title}</h3>
-                <p>${movie.year} • ${movie.duration || 'N/A'}</p>
+                <p>Download ${qualities}</p>
             </div>
-        </div>
-    `;
+        `;
+        moviesContainer.appendChild(card);
+    });
+
+    renderPagination();
 }
 
-// Function to open details page
-window.openMovieDetails = (id) => {
-    // We'll pass the movie ID to the details page
-    window.location.href = `movie.html?id=${id}`;
-};
+function renderPagination() {
+    paginationControls.innerHTML = '';
+    const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
 
-// Search handling
+    if (totalPages <= 1) return;
+
+    // Prev Button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'page-btn';
+    prevBtn.textContent = 'Prev';
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.onclick = () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderGrid();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+    paginationControls.appendChild(prevBtn);
+
+    // Page Numbers (Truncated logic for clean UI)
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+    }
+
+    if (startPage > 1) {
+        paginationControls.appendChild(createPageBtn(1));
+        if (startPage > 2) paginationControls.appendChild(createEllipsis());
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        paginationControls.appendChild(createPageBtn(i));
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) paginationControls.appendChild(createEllipsis());
+        paginationControls.appendChild(createPageBtn(totalPages));
+    }
+
+    // Next Button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'page-btn';
+    nextBtn.textContent = 'Next';
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.onclick = () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderGrid();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+    paginationControls.appendChild(nextBtn);
+}
+
+function createPageBtn(pageNum) {
+    const btn = document.createElement('button');
+    btn.className = `page-btn ${currentPage === pageNum ? 'active' : ''}`;
+    btn.textContent = pageNum;
+    btn.onclick = () => {
+        currentPage = pageNum;
+        renderGrid();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    return btn;
+}
+
+function createEllipsis() {
+    const span = document.createElement('span');
+    span.textContent = '...';
+    span.style.color = 'var(--text-gray)';
+    return span;
+}
+
+// Search listener
 searchInput.addEventListener('input', (e) => {
     const term = e.target.value.toLowerCase();
     const filtered = allMovies.filter(movie =>

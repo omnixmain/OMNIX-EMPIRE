@@ -15,22 +15,40 @@
 </head>
 
 <body>
-    <div class="top-status-bar">
-        <div class="container">
-            <a href="hub.html" class="hub-link-btn">
-                <span class="active-dot"></span>
-                OMNIX HUB - Watch Free Movies & Series
-                <span class="btn-arrow">→</span>
-            </a>
+    <!-- New Status Bar -->
+    <nav class="status-navbar">
+        <div class="container nav-content">
+            <div class="brand-left">
+                <span class="brand-name">OMNIX EMPIRE</span>
+            </div>
+            <div class="nav-right" style="display: flex; gap: 15px; align-items: center;">
+                <a href="hub.html" class="nav-btn"
+                    style="background: rgba(42, 171, 238, 0.1); color: #2AABEE; border: 1px solid rgba(42, 171, 238, 0.3); padding: 8px 16px; border-radius: 20px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all 0.3s ease;">
+                    🎬 OMNIX HUB
+                </a>
+                <button onclick="verifyAgeAndEnter()" class="nav-btn adult-nav-btn"
+                    style="background: rgba(230, 57, 70, 0.1); color: #e63946; border: 1px solid rgba(230, 57, 70, 0.3); padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.3s ease;">
+                    🔞 Adult 18+
+                </button>
+                <a href="https://t.me/omnix_Empire" target="_blank" class="tg-join-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Join Telegram
+                </a>
+            </div>
         </div>
-    </div>
+    </nav>
 
     <header>
         <div class="container reveal">
             <img src="omnix-empire-logo.jpg" alt="OMNIX Logo" class="logo-main">
-            <h1>OMNIX EMPIRE</h1>
-            <p class="subtitle">Experience the ultimate entertainment hub with OMNIX-TV+ and OMNIX-OTT. Live sports,
-                thousands of movies, and premium TV channels at your fingertips.</p>
+            <h1 style="margin-top: 2rem;">OMNIX EMPIRE</h1>
+            <p class="subtitle">Experience the ultimate entertainment hub with Web Browsing, OMNIX-TV+ and OMNIX-OTT.
+                Live sports,
+                thousands of movies, and premium channels at your fingertips.</p>
 
             <div class="app-grid">
                 <!-- OMNIX TV+ -->
@@ -129,6 +147,13 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        function verifyAgeAndEnter() {
+            if (confirm("WARNING: This section contains Adult (18+) content.\n\nAre you 18 years or older? Click OK if yes.")) {
+                window.location.href = 'Adult18.html';
+            }
+        }
+    </script>
     <script src="ads.js"></script>
 </body>
 

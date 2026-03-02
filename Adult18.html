@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 </head>
 
@@ -67,10 +68,30 @@
             <div class="player-body">
                 <div class="video-main-section">
                     <div class="video-wrapper">
-                        <video id="mainVideo" controls autoplay>
+                        <video id="mainVideo" controls crossorigin playsinline>
                             <source src="" type="video/mp4">
                             Your browser does not support HTML5 video.
                         </video>
+                    </div>
+
+                    <!-- Telegram Join Promo -->
+                    <div class="telegram-promo">
+                        <div class="tg-info">
+                            <h4>Without ADS direct files 🔗 Access</h4>
+                            <ul>
+                                <li>📁 Official File Access</li>
+                                <li>✔️ Free • No Payment • Direct Files</li>
+                                <li>⚡️ Instant access</li>
+                            </ul>
+                        </div>
+                        <a href="https://t.me/+vAocHIblVIBhZDc9" target="_blank" class="tg-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                            Join Telegram Now
+                        </a>
                     </div>
                 </div>
 
@@ -92,6 +113,8 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <script src="adult18.js"></script>
     <script src="ads.js"></script>
 </body>

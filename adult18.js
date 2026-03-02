@@ -14,6 +14,9 @@ const playerTitle = document.getElementById('playerTitle');
 let allItems = [];
 let currentCategory = 'all';
 
+let plyrPlayer = null;
+let hlsInstance = null;
+
 const CORS_PROXIES = [
     '', // Try direct first
     'https://cors-anywhere.herokuapp.com/',
@@ -235,14 +238,98 @@ function renderGrid() {
 }
 
 function openPlayer(item) {
-    mainVideo.pause();
+    if (plyrPlayer) {
+        plyrPlayer.destroy();
+        plyrPlayer = null;
+    }
+    if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+    }
+
     playerTitle.textContent = item.title;
-    mainVideo.src = item.url;
+    const url = item.url;
+
+    // Clear old source
+    mainVideo.src = '';
+    mainVideo.removeAttribute('src');
+
+    const defaultOptions = {
+        autoplay: true,
+        controls: [
+            'play-large', 'restart', 'rewind', 'play', 'fast-forward',
+            'progress', 'current-time', 'duration', 'mute', 'volume',
+            'captions', 'settings', 'pip', 'airplay', 'fullscreen'
+        ],
+        settings: ['quality', 'speed', 'loop'],
+    };
+
+    if (Hls.isSupported() && (url.includes('.m3u8') || url.includes('.ts') || url.includes('.m3u'))) {
+        hlsInstance = new Hls({
+            maxMaxBufferLength: 60,
+            maxBufferSize: 30 * 1000 * 1000,
+            manifestLoadingMaxRetry: 5,
+        });
+
+        hlsInstance.loadSource(url);
+        hlsInstance.attachMedia(mainVideo);
+        window.hlsInstance = hlsInstance;
+
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+            const availableQualities = hlsInstance.levels.map((l) => l.height);
+            availableQualities.unshift(0); // Auto mode
+
+            defaultOptions.quality = {
+                default: 0,
+                options: availableQualities,
+                forced: true,
+                onChange: (e) => updateQuality(e),
+            };
+
+            plyrPlayer = new Plyr(mainVideo, defaultOptions);
+            plyrPlayer.play().catch(e => console.log('Autoplay prevented', e));
+        });
+
+        hlsInstance.on(Hls.Events.ERROR, function (event, data) {
+            if (data.fatal) {
+                switch (data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                        console.log("fatal network error encountered, try to recover");
+                        hlsInstance.startLoad();
+                        break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                        console.log("fatal media error encountered, try to recover");
+                        hlsInstance.recoverMediaError();
+                        break;
+                    default:
+                        hlsInstance.destroy();
+                        break;
+                }
+            }
+        });
+    } else {
+        // Native fallback or MP4
+        mainVideo.src = url;
+        plyrPlayer = new Plyr(mainVideo, defaultOptions);
+        plyrPlayer.play().catch(e => console.log('Autoplay prevented', e));
+    }
 
     populateRecommended(item);
 
     playerModal.style.display = 'flex';
-    mainVideo.play().catch(e => console.log('Autoplay prevented', e));
+}
+
+function updateQuality(newQuality) {
+    if (!window.hlsInstance) return;
+    window.hlsInstance.levels.forEach((level, levelIndex) => {
+        if (level.height === newQuality) {
+            console.log("Found quality match with " + newQuality);
+            window.hlsInstance.currentLevel = levelIndex;
+        }
+    });
+    if (newQuality === 0) {
+        window.hlsInstance.currentLevel = -1; //Enable AUTO quality if option.value = 0
+    }
 }
 
 function populateRecommended(currentItem) {
@@ -300,7 +387,15 @@ function populateRecommended(currentItem) {
 
 function closePlayer() {
     playerModal.style.display = 'none';
-    mainVideo.pause();
+    if (plyrPlayer) {
+        plyrPlayer.pause();
+        plyrPlayer.destroy();
+        plyrPlayer = null;
+    }
+    if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+    }
     mainVideo.src = '';
 }
 
