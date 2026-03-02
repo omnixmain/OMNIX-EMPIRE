@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adult18 | OMNIX EMPIRE</title>
+    <meta name="description" content="Adult18 Platform - Live & VOD Content">
+    <link rel="stylesheet" href="adult18.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="index.html" class="logo-link">
+                    <img src="https://adult-tv-channels.com/wp-content/uploads/2021/11/cropped-adult-tv-channels.png"
+                        alt="Adult TV Channels">
+                    <span class="logo-text">BEST ADULT TV CHANNELS ONLINE!</span>
+                </a>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search videos...">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Category Line -->
+        <div class="category-line container">
+            <ul id="categoryList">
+                <li class="cat-item active" data-cat="all">All Categories</li>
+                <!-- Categories will be injected here -->
+            </ul>
+        </div>
+    </nav>
+
+    <main id="content-container" class="container">
+        <!-- Videos grid -->
+        <div id="loader" class="loader-container">
+            <div class="loader"></div>
+            <p>Fetching channels...</p>
+        </div>
+        <div id="videoGrid" class="video-grid"></div>
+    </main>
+
+    <!-- Video Player Modal -->
+    <div id="playerModal" class="player-modal">
+        <div class="player-content">
+            <div class="player-header">
+                <h3 id="playerTitle">Playing Video</h3>
+                <button class="close-player" onclick="closePlayer()" title="Close Player">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="player-body">
+                <div class="video-main-section">
+                    <div class="video-wrapper">
+                        <video id="mainVideo" controls autoplay>
+                            <source src="" type="video/mp4">
+                            Your browser does not support HTML5 video.
+                        </video>
+                    </div>
+                </div>
+
+                <div class="recommended-section">
+                    <div class="recommended-header">
+                        <h4>Recommended For You</h4>
+                    </div>
+                    <div id="recommendedGrid" class="video-grid compact-grid">
+                        <!-- Recommended videos will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Adult18 | OMNIX EMPIRE.</p>
+        </div>
+    </footer>
+
+    <script src="adult18.js"></script>
+    <script src="ads.js"></script>
+</body>
+
+</html>
