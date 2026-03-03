@@ -199,6 +199,13 @@ function prsM3u(txt, src) {
                 });
             } else {
                 cur.u = l.trim();
+                const isAlreadyProxied = cur.u.startsWith('https://allinonereborn.online') || cur.u.includes('corsproxy.io');
+                if (!isAlreadyProxied && !cur.u.startsWith(window.location.origin)) {
+                    // Specific proxy for Hotstar or general
+                    if (cur.u.includes('hotstar.com') || cur.u.includes('jcevents')) {
+                        cur.u = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(cur.u) + '|Origin=https://www.hotstar.com|Referer=https://www.hotstar.com/';
+                    }
+                }
             }
             if (!cur.d && l.includes('hotstar')) cur.d = { t: 'com.widevine.alpha', l: 'https://pallycon.allinonereborn.workers.dev/api/license/widevine' };
             out.push({ ...cur }); cur = null;
@@ -264,7 +271,10 @@ function prsSp(d, src) {
 
             if (url) {
                 s = statusOverride || 'LIVE';
-                if (!url.startsWith('https://allinonereborn.online')) {
+                const isSameOrigin = url.startsWith(window.location.origin);
+                const isAlreadyProxied = url.startsWith('https://allinonereborn.online') || url.includes('corsproxy.io');
+
+                if (!isSameOrigin && !isAlreadyProxied && !url.startsWith('blob:') && !url.startsWith('session:')) {
                     finalUrl = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(url) + '|Origin=https://www.sonyliv.com|Referer=https://www.sonyliv.com/|User-Agent=' + encodeURIComponent(ua);
                 }
             }
@@ -354,7 +364,10 @@ function prsFC(d, src) {
             if (!url || url === "Unavailable" || url === "NA") return;
 
             let finalUrl = url;
-            if (url.startsWith('https://in-mc-flive.fancode.com') || (url.includes('fancode.com') && !url.includes('hdntl='))) {
+            const isSameOrigin = url.startsWith(window.location.origin);
+            const isAlreadyProxied = url.startsWith('https://allinonereborn.online') || url.includes('corsproxy.io');
+
+            if (!isSameOrigin && !isAlreadyProxied && !url.startsWith('blob:') && !url.startsWith('session:')) {
                 finalUrl = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(url) + '|Origin=https://allinonereborn.online';
             }
 

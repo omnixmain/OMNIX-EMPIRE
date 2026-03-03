@@ -122,7 +122,9 @@
     if (streamUrl.includes('dai.google.com')) {
         console.log('[OMNIX PLAYER] Resolving DAI URL...');
         try {
-            const resolveUrl = isProxyUrl ? streamUrl : (CORS_PROXY + encodeURIComponent(streamUrl));
+            const isAlreadyProxied = streamUrl.startsWith('https://allinonereborn.online') || streamUrl.includes('corsproxy.io');
+            const resolveUrl = isAlreadyProxied ? streamUrl : (CORS_PROXY + encodeURIComponent(streamUrl));
+
             const resp = await fetch(resolveUrl, { method: 'GET', redirect: 'follow' });
             if (resp.ok && resp.url && !resp.url.includes('dai.google.com')) {
                 finalStreamUrl = resp.url;
@@ -154,9 +156,11 @@
             return;
         }
     } else {
-        // Only apply CORS proxy if not already applied during DAI resolution or session handling
-        if (finalStreamUrl === streamUrl) {
-            finalStreamUrl = CORS_PROXY ? (CORS_PROXY + encodeURIComponent(streamUrl)) : streamUrl;
+        // Only apply CORS proxy if not already absolute/proxied and is cross-origin
+        const isAlreadyProxied = finalStreamUrl.startsWith('https://allinonereborn.online') || finalStreamUrl.includes('corsproxy.io');
+        const isSameOrigin = finalStreamUrl.startsWith(window.location.origin) || finalStreamUrl.startsWith('/');
+        if (!isAlreadyProxied && !isSameOrigin && !finalStreamUrl.startsWith('blob:')) {
+            finalStreamUrl = CORS_PROXY ? (CORS_PROXY + encodeURIComponent(finalStreamUrl)) : finalStreamUrl;
         }
     }
 
@@ -179,10 +183,12 @@
                     // Inject custom request headers for HLS.js
                     if (requestHeaders && Object.keys(requestHeaders).length > 0) {
                         Object.entries(requestHeaders).forEach(([k, v]) => {
+                            // SKIP forbidden headers that browsers block
+                            if (['origin', 'referer', 'user-agent'].includes(k.toLowerCase())) return;
                             try {
                                 xhr.setRequestHeader(k, v);
                             } catch (e) {
-                                console.warn('[OMNIX PLAYER] Header set failed (expected for Origin/Referer in browser):', k);
+                                console.warn('[OMNIX PLAYER] Header set failed:', k);
                             }
                         });
                     }
@@ -276,6 +282,7 @@
     shakaPlayer.getNetworkingEngine().registerRequestFilter((type, request) => {
         // Apply headers to ALL requests (Manifest, Segment, License)
         Object.entries(requestHeaders).forEach(([k, v]) => {
+            if (['origin', 'referer', 'user-agent'].includes(k.toLowerCase())) return;
             request.headers[k] = v;
         });
 
