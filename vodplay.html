@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIX VOD PLAY</title>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Plyr & HLS for maximum compatibility with VODs/MP4s/M3U8s -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <style>
+        :root {
+            --neon-cyan: #66FCF1;
+            --live-red: #ff3333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .player-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
+            z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 1.5rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .back-btn:hover {
+            background: var(--neon-cyan);
+            color: #000;
+        }
+
+        .event-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .event-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Player Container */
+        .video-container {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            --plyr-color-main: var(--neon-cyan);
+            --plyr-video-background: #000;
+        }
+
+        .plyr--full-ui,
+        .plyr {
+            height: 100%;
+            width: 100%;
+        }
+
+        .plyr__video-wrapper,
+        .video-js-plyr {
+            width: 100%;
+            height: 100%;
+        }
+
+        .plyr__video-wrapper video {
+            object-fit: cover !important;
+            height: 100% !important;
+            width: 100% !important;
+        }
+
+        .player-error {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            z-index: 5;
+        }
+
+        .player-error i {
+            font-size: 3.5rem;
+            color: var(--live-red);
+            margin-bottom: 1rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="player-header" id="playerHeader">
+        <button class="back-btn" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></button>
+        <div class="event-info">
+            <div class="event-title" id="playerTitle">OMNIX PLAY</div>
+        </div>
+    </div>
+
+    <div class="video-container" id="videoContainer">
+        <video id="videoElement" class="video-js-plyr" playsinline crossorigin autoplay></video>
+
+        <div id="playerError" class="player-error hidden">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <p id="errorText">Loading Stream...</p>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL Parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        let streamUrl = urlParams.get('streamUrl');
+        const movieId = urlParams.get('id');
+        const quality = urlParams.get('q') || 'default';
+        const backTarget = urlParams.get('back');
+
+        function goBack() {
+            if (backTarget) {
+                if (backTarget === 'movie.html' && movieId) {
+                    window.location.href = `movie.html?id=${movieId}`;
+                } else {
+                    window.location.href = backTarget;
+                }
+            } else if (window.history.length > 1 && document.referrer !== "") {
+                window.history.back();
+            } else {
+                if (movieId) {
+                    window.location.href = `movie.html?id=${movieId}`;
+                } else {
+                    window.location.href = 'hub.html';
+                }
+            }
+        }
+
+        // Initialize Player Variables
+        let plyrPlayer = null;
+        let hlsInstance = null;
+        const videoElement = document.getElementById('videoElement');
+        const videoContainer = document.getElementById('videoContainer');
+        const playerError = document.getElementById('playerError');
+        const errorText = document.getElementById('errorText');
+
+        const plyrOptions = {
+            autoplay: true,
+            controls: [
+                'play-large', 'restart', 'rewind', 'play', 'fast-forward',
+                'progress', 'current-time', 'duration', 'mute', 'volume',
+                'captions', 'settings', 'pip', 'airplay', 'fullscreen'
+            ],
+            settings: ['quality', 'speed', 'loop']
+        };
+
+        async function initPlayer() {
+            if (!streamUrl && movieId) {
+                await fetchMovieStream();
+            } else if (streamUrl) {
+                loadStream(streamUrl);
+            } else {
+                showError('No stream URL or Movie ID provided. Please go back.');
+            }
+        }
+
+        async function fetchMovieStream() {
+            try {
+                const _0x1a2b = 'aHR0cHM6Ly9vbW5peC1lbXBpcmUtZGF0YWJhc2UucGFnZXMuZGV2L3BsYXlsaXN0L29tbml4LWtpbmctZmluYWwtZGF0YS5qc29u';
+                const API_URL = atob(_0x1a2b);
+                const response = await fetch(API_URL);
+                const rawData = await response.json();
+
+                let allMovies = [];
+                if (Array.isArray(rawData)) {
+                    allMovies = rawData;
+                } else {
+                    for (const category in rawData) {
+                        rawData[category].forEach(m => {
+                            allMovies.push(m);
+                        });
+                    }
+                }
+
+                const movie = allMovies.find(m => String(m.id) === String(movieId) || m.id === movieId);
+
+                if (movie && movie.watchNowUrls) {
+                    // Match quality or default
+                    let foundUrl = movie.watchNowUrls[quality] || movie.watchNowUrls['default'] || Object.values(movie.watchNowUrls)[0];
+                    if (foundUrl) {
+                        if (movie.title) {
+                            const displayTitle = quality !== 'default' ? `${movie.title} - ${quality}` : movie.title;
+                            document.getElementById('playerTitle').textContent = displayTitle;
+                            document.title = displayTitle + ' - OMNIX PLAY';
+                        }
+                        console.log("Found Movie Stream URL:", foundUrl);
+                        loadStream(foundUrl, movie);
+                        return;
+                    }
+                }
+
+                showError('Movie stream not found in the database. Video might have been removed.');
+            } catch (err) {
+                console.error('Failed to fetch movie data:', err);
+                showError('Failed to parse movie directory to find the stream url.');
+            }
+        }
+
+        function loadStream(url, movieObj = null) {
+            try {
+                // If the URL is known to be an embedded HTML player rather than a raw media file
+                if (url.includes('omnix-database.onrender.com') || url.includes('player') || url.includes('embed')) {
+                    console.log("Loading as iFrame Embed Stream");
+                    loadAsIframe(url);
+                    return;
+                }
+
+                // Determine format
+                if (Hls.isSupported() && (url.includes('.m3u8') || url.includes('.m3u'))) {
+                    console.log("Loading as HLS Stream");
+                    hlsInstance = new Hls({
+                        maxMaxBufferLength: 60,
+                        manifestLoadingMaxRetry: 3
+                    });
+
+                    hlsInstance.loadSource(url);
+                    hlsInstance.attachMedia(videoElement);
+
+                    hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
+                        // Setup Plyr Quality options
+                        const availableQualities = hlsInstance.levels.map((l) => l.height);
+                        availableQualities.unshift(0); // Auto mode
+
+                        plyrOptions.quality = {
+                            default: 0,
+                            options: availableQualities,
+                            forced: true,
+                            onChange: (e) => {
+                                hlsInstance.levels.forEach((level, levelIndex) => {
+                                    if (level.height === e) hlsInstance.currentLevel = levelIndex;
+                                });
+                                if (e === 0) hlsInstance.currentLevel = -1; // Auto
+                            }
+                        };
+
+                        plyrPlayer = new Plyr(videoElement, plyrOptions);
+                        plyrPlayer.on('ready', () => {
+                            plyrPlayer.play().catch(e => console.warn('HLS Autoplay prevented:', e));
+                        });
+                    });
+
+                    hlsInstance.on(Hls.Events.ERROR, function (event, data) {
+                        if (data.fatal) {
+                            console.error('HLS Fatal Error:', data);
+                            showError("Video Loading Error: " + data.type);
+                            hlsInstance.destroy();
+                        }
+                    });
+
+                } else {
+                    console.log("Loading as Native MP4/Video Stream with Custom UI");
+
+                    // Setup Plyr right away
+                    plyrPlayer = new Plyr(videoElement, plyrOptions);
+
+                    let sources = [];
+                    // If we have multiple qualities in the JSON, let's inject them as sources so Plyr's UI picks them up
+                    if (movieObj && movieObj.watchNowUrls) {
+                        for (const [key, val] of Object.entries(movieObj.watchNowUrls)) {
+                            // Only include direct media urls, not iframe embeds
+                            if (!val.includes('omnix-database.onrender.com') && !val.includes('embed')) {
+                                // Try to extract integer resolution like 1080 or 720 from key
+                                const resMatch = key.match(/(\d+)/);
+                                const sizeInteger = resMatch ? parseInt(resMatch[1]) : null;
+                                sources.push({
+                                    src: val,
+                                    type: 'video/mp4',
+                                    size: sizeInteger || (sources.length > 0 ? 480 : 1080)
+                                });
+                            }
+                        }
+                    }
+
+                    if (sources.length > 0) {
+                        plyrPlayer.source = {
+                            type: 'video',
+                            title: movieObj ? movieObj.title : 'OMNIX Video',
+                            sources: sources
+                        };
+                    } else {
+                        // Fallback Single URL
+                        plyrPlayer.source = {
+                            type: 'video',
+                            title: movieObj ? movieObj.title : 'OMNIX Video',
+                            sources: [{
+                                src: url,
+                                type: 'video/mp4'
+                            }]
+                        };
+                    }
+
+                    plyrPlayer.on('ready', () => {
+                        plyrPlayer.play().catch(e => console.warn('Autoplay prevented:', e));
+                    });
+
+                    plyrPlayer.on('error', () => {
+                        console.error("Plyr Video Error");
+                        // Attempt fallback to iframe if native video totally fails (might be unhandled CORS HTML)
+                        loadAsIframe(url);
+                    });
+                }
+            } catch (err) {
+                console.error('Playback setup failed:', err);
+                showError('Video player encountered a critical error while setting up.');
+            }
+        }
+
+        function loadAsIframe(url) {
+            console.log("Switching to iFrame playback...");
+
+            // Hide Plyr/Video element
+            if (plyrPlayer) plyrPlayer.destroy();
+            videoElement.style.display = 'none';
+            playerError.classList.add('hidden'); // Ensure error is hidden
+
+            // Create an iframe to cover the container
+            let iframe = document.getElementById('omnixIframe');
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'omnixIframe';
+                // Force maximum expansion
+                iframe.style.width = '100vw';
+                iframe.style.height = '100vh';
+                iframe.style.border = 'none';
+                iframe.style.position = 'fixed'; // Fixed to bypass flexbox gaps
+                iframe.style.top = '0';
+                iframe.style.left = '0';
+                iframe.style.zIndex = '1';
+
+                // Keep header above iframe
+                document.getElementById('playerHeader').style.zIndex = '10';
+
+                iframe.setAttribute('allowfullscreen', 'true');
+                iframe.setAttribute('webkitallowfullscreen', 'true');
+                iframe.setAttribute('mozallowfullscreen', 'true');
+                iframe.setAttribute('scrolling', 'no');
+                iframe.setAttribute('frameborder', '0');
+                // Crucial for nested autoplay 
+                iframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
+
+                videoContainer.appendChild(iframe);
+            }
+
+            // Append auto-play arguments to URL
+            let autoUrl = url;
+            if (!autoUrl.includes('autoplay=1')) {
+                autoUrl += autoUrl.includes('?') ? '&autoplay=1&muted=0' : '?autoplay=1&muted=0';
+            }
+
+            iframe.src = autoUrl;
+        }
+
+        function showError(msg) {
+            errorText.textContent = msg;
+            playerError.classList.remove('hidden');
+        }
+
+        // Auto hide header on inactivity
+        let headerTimeout;
+        videoContainer.addEventListener('mousemove', () => {
+            const header = document.getElementById('playerHeader');
+            header.style.opacity = '1';
+            clearTimeout(headerTimeout);
+            headerTimeout = setTimeout(() => {
+                header.style.opacity = '0';
+            }, 3000);
+        });
+
+        document.addEventListener('DOMContentLoaded', initPlayer);
+    </script>
+</body>
+
+</html>

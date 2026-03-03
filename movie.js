@@ -147,7 +147,7 @@ window.openMovieDetails = (id) => {
 };
 
 window.goToPlayer = (id, quality) => {
-    window.location.href = `player.html?id=${id}&q=${quality}`;
+    window.location.href = `vodplay.html?id=${id}&q=${quality}&back=movie.html`;
 };
 
 window.downloadVideo = (url) => {

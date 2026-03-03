@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIX SPORTS HUB</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Shaka Player -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.7/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.7/controls.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-trophy"></i>
+            <span>OMNIX SPORTS HUB</span>
+        </div>
+        <ul class="nav-links">
+            <li class="active" data-filter="fancode1">
+                <img src="https://images.fancode.com/skillup-uploads/fc-web-logo/fc_logo_white_bg.svg?hash=eyJrZXkiOiJza2lsbHVwLXVwbG9hZHMvZmMtd2ViLWxvZ28vZmNfbG9nb193aGl0ZV9iZy5zdmciLCJlZGl0cyI6eyJyZXNpemUiOnsiZml0IjoiY29udGFpbiIsIndpZHRoIjoxODIsImhlaWdodCI6NTZ9LCJ3ZWJwIjp7InF1YWxpdHkiOjYwLCJsb3NzbGVzcyI6ZmFsc2V9fSwib3V0cHV0Rm9ybWF0Ijoid2VicCJ9"
+                    alt="Fancode Main" class="nav-logo">
+                <span>Fancode Main</span>
+            </li>
+            <li data-filter="fancode2">
+                <img src="https://images.fancode.com/skillup-uploads/fc-web-logo/fc_logo_white_bg.svg?hash=eyJrZXkiOiJza2lsbHVwLXVwbG9hZHMvZmMtd2ViLWxvZ28vZmNfbG9nb193aGl0ZV9iZy5zdmciLCJlZGl0cyI6eyJyZXNpemUiOnsiZml0IjoiY29udGFpbiIsIndpZHRoIjoxODIsImhlaWdodCI6NTZ9LCJ3ZWJwIjp7InF1YWxpdHkiOjYwLCJsb3NzbGVzcyI6ZmFsc2V9fSwib3V0cHV0Rm9ybWF0Ijoid2VicCJ9"
+                    alt="Fancode Back-up" class="nav-logo">
+                <span>Fancode Back-up</span>
+            </li>
+            <li data-filter="sonyliv1">
+                <img src="https://images.slivcdn.com/UI_icons/sonyliv_new_revised_header_logo.png?h=100&w=100&q=high"
+                    alt="Sony Liv Event Main" class="nav-logo">
+                <span>Sony Liv Event Main</span>
+            </li>
+            <li data-filter="sonyliv2">
+                <img src="https://images.slivcdn.com/UI_icons/sonyliv_new_revised_header_logo.png?h=100&w=100&q=high"
+                    alt="Sony Liv Event Back-up" class="nav-logo">
+                <span>Sony Liv Event Back-up</span>
+            </li>
+            <li data-filter="jiohot">
+                <img src="https://img.hotstar.com/image/upload/v1737554969/web-assets/prod/images/rebrand/logo.png"
+                    alt="JIO-HOT" class="nav-logo">
+                <span>JIO-HOT</span>
+            </li>
+            <li data-filter="m3u">
+                <img src="https://github.com/omnixmain/OMNIX-LOGO/blob/main/omnixott_notbg.png?raw=true"
+                    alt="Live TV Sports" class="nav-logo">
+                <span>Live TV Sports</span>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Navigation (Status Filters) -->
+        <nav class="top-nav">
+            <ul class="status-links" id="statusFilters">
+                <li class="active" data-status="all">All</li>
+                <li data-status="LIVE">Live</li>
+                <li data-status="UPCOMING">Upcoming</li>
+                <li data-status="COMPLETED">Completed</li>
+            </ul>
+        </nav>
+
+        <!-- Sub Navigation (Category Filters) -->
+        <div class="category-nav">
+            <ul class="cat-links" id="categoryFilters">
+                <li class="active pill-btn" data-filter="all">All Sports</li>
+                <li class="pill-btn" data-filter="football"><i class="fa-regular fa-futbol"></i> Football</li>
+                <li class="pill-btn" data-filter="cricket"><i class="fa-solid fa-baseball-bat-ball"></i> Cricket</li>
+            </ul>
+            <div class="search-bar">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search events...">
+            </div>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" class="loader-container">
+            <div class="spinner"></div>
+            <p>Fetching the latest sports action...</p>
+        </div>
+
+        <!-- Grid Container -->
+        <div id="eventsGrid" class="events-grid">
+            <!-- Events will be dynamically injected here -->
+        </div>
+    </main>
+
+    <!-- Custom JS -->
+    <script src="app.js"></script>
+</body>
+
+</html>
