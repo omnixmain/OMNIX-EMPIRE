@@ -88,15 +88,19 @@
     const isBlobUrl = lcUrl.startsWith('blob:') || streamUrl.startsWith('session:');
 
     // If it's a blob url generated from session for Fancode, we know it's M3U8.
-    const isM3u8 = isBlobUrl || (!lcUrlBase.endsWith('.mpd') && (
+    // Ensure we check both the base URL and the full URL for HLS indicators
+    const isM3u8 = isBlobUrl || (
         lcUrlBase.endsWith('.m3u8') || lcUrlBase.endsWith('.m3u') ||
-        lcUrl.includes('playlist') || lcUrl.includes('/hls/')
-    ));
-    const isMpd = !isM3u8 && (lcUrlBase.endsWith('.mpd') || lcUrl.includes('/dash/') || lcUrl.includes('format=mpd'));
+        lcUrl.includes('.m3u8') || lcUrl.includes('.m3u') ||
+        lcUrl.includes('playlist') || lcUrl.includes('/hls/') ||
+        lcUrl.includes('dai.google.com') // SSAI HLS
+    );
+    const isMpd = !isM3u8 && (lcUrlBase.endsWith('.mpd') || lcUrl.includes('.mpd') || lcUrl.includes('/dash/') || lcUrl.includes('format=mpd'));
 
     const isHotstar = streamUrl.toLowerCase().includes('hotstar.com') || streamUrl.toLowerCase().includes('jcevents') || (source && source.toLowerCase().includes('jio-hot'));
 
     // Use Shaka ONLY when DRM is required (MPD or has a licenseUrl or is Hotstar)
+    // For Sony, only use Shaka if DRM is explicitly present to avoid Error 4036 (Restriction block)
     let finalDrmLicense = drmLicense;
     if (!finalDrmLicense && isHotstar) {
         finalDrmLicense = 'https://pallycon.allinonereborn.workers.dev/api/license/widevine';
@@ -108,14 +112,30 @@
     // 6. Proxy and Session (Blob) Support
     // -------------------------------------------------------------------
     const isFileOrigin = window.location.protocol === 'file:';
-    const needsProxy = Object.keys(requestHeaders).length > 0 && isFileOrigin && !streamUrl.startsWith('blob:') && !streamUrl.startsWith('data:') && !streamUrl.startsWith('session:');
+    const isProxyUrl = streamUrl.includes('allinonereborn.online') || streamUrl.includes('corsproxy.io');
+    const needsProxy = Object.keys(requestHeaders).length > 0 && isFileOrigin && !streamUrl.startsWith('blob:') && !streamUrl.startsWith('data:') && !streamUrl.startsWith('session:') && !isProxyUrl;
     const CORS_PROXY = needsProxy ? 'https://corsproxy.io/?' : '';
 
     let finalStreamUrl = streamUrl;
 
+    // Resolve DAI URLs to final Akamai destination to prevent relative path issues
+    if (streamUrl.includes('dai.google.com')) {
+        console.log('[OMNIX PLAYER] Resolving DAI URL...');
+        try {
+            const resolveUrl = isProxyUrl ? streamUrl : (CORS_PROXY + encodeURIComponent(streamUrl));
+            const resp = await fetch(resolveUrl, { method: 'GET', redirect: 'follow' });
+            if (resp.ok && resp.url && !resp.url.includes('dai.google.com')) {
+                finalStreamUrl = resp.url;
+                console.log('[OMNIX PLAYER] Resolved DAI to:', finalStreamUrl);
+            }
+        } catch (e) {
+            console.warn('[OMNIX PLAYER] DAI Resolution failed, using original:', e);
+        }
+    }
+
     // Resolve session stored M3U8 strings (mainly for Fancode auto_streams)
-    if (streamUrl.startsWith('session:')) {
-        const sid = streamUrl.replace('session:', '');
+    if (finalStreamUrl.startsWith('session:')) {
+        const sid = finalStreamUrl.replace('session:', '');
         const autoStr = sessionStorage.getItem(sid);
         if (autoStr) {
             try {
@@ -134,7 +154,10 @@
             return;
         }
     } else {
-        finalStreamUrl = CORS_PROXY ? (CORS_PROXY + encodeURIComponent(streamUrl)) : streamUrl;
+        // Only apply CORS proxy if not already applied during DAI resolution or session handling
+        if (finalStreamUrl === streamUrl) {
+            finalStreamUrl = CORS_PROXY ? (CORS_PROXY + encodeURIComponent(streamUrl)) : streamUrl;
+        }
     }
 
 
@@ -156,7 +179,11 @@
                     // Inject custom request headers for HLS.js
                     if (requestHeaders && Object.keys(requestHeaders).length > 0) {
                         Object.entries(requestHeaders).forEach(([k, v]) => {
-                            xhr.setRequestHeader(k, v);
+                            try {
+                                xhr.setRequestHeader(k, v);
+                            } catch (e) {
+                                console.warn('[OMNIX PLAYER] Header set failed (expected for Origin/Referer in browser):', k);
+                            }
                         });
                     }
                     // Blob URLs might fail XHR if originating from file:// - avoid setting credentials

@@ -237,124 +237,111 @@ function prsSl(d, src) {
 }
 
 function prsSp(d, src) {
-    // Combine live data and upcoming arrays
     let arr = [...(d.data || []), ...(d.upcoming || [])];
     if (arr.length === 0 && Array.isArray(d)) arr = d;
     if (arr.length === 0) return [];
 
     const out = [];
     const now = new Date();
+    const ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    const headers = {
+        'Origin': 'https://www.sonyliv.com',
+        'Referer': 'https://www.sonyliv.com/',
+        'User-Agent': ua
+    };
 
     arr.forEach(i => {
-        let u = null, drm = null;
+        const baseTitle = i.video_info?.episodeTitle || i.title || i.video_info?.title || "Sony Liv PRO";
+        const image = i.image_cdn?.landscape_thumb || i.image_cdn?.thumbnail || "";
+        const contentId = i.contentId;
+        const genres = i.video_info?.genres?.[0] || "";
+        const broadcastChannel = i.stream_info?.broadcast_channel || "";
 
-        // Sony PRO logic: multiple_audio_links -> DATA -> [Any Provider Key] -> Playback_videoURL / WIDEVINE
-        const mal = i.MULTIPLE_AUDIO_LINKS || i.multiple_audio_links;
-        if (mal && mal.length > 0) {
-            const dataObj = mal[0].DATA || mal[0].data;
-            if (dataObj) {
-                for (const key in dataObj) {
-                    const entry = dataObj[key];
-                    if (entry?.Playback_videoURL && entry.Playback_videoURL !== "NA") {
-                        u = entry.Playback_videoURL;
-                        const lic = entry.WIDEVINE || entry.widevine;
-                        if (lic && lic !== "NA") {
-                            drm = { t: 'com.widevine.alpha', l: lic };
-                        }
-                        break;
-                    }
+        // Function to create an event object
+        const createEvent = (url, drm, suffix, statusOverride = null) => {
+            let s = statusOverride || 'UPCOMING';
+            let finalUrl = url;
+
+            if (url) {
+                s = statusOverride || 'LIVE';
+                if (!url.startsWith('https://allinonereborn.online')) {
+                    finalUrl = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(url) + '|Origin=https://www.sonyliv.com|Referer=https://www.sonyliv.com/|User-Agent=' + encodeURIComponent(ua);
                 }
             }
-        }
 
-        // Fallback for stream URL or Trailer
-        if (!u && i.stream_info?.platformVariants?.videoUrl && i.stream_info.platformVariants.videoUrl !== "NA") {
-            u = i.stream_info.platformVariants.videoUrl;
-        }
-        if (!u && i.stream_info?.platformVariants?.trailerUrl && i.stream_info.platformVariants.trailerUrl !== "NA") {
-            u = i.stream_info.platformVariants.trailerUrl;
-        }
-
-        // Determine Status based on air_dates and URL availability
-        let s = 'UPCOMING';
-        let headers = {};
-
-        if (u || i.stream_info?.dai_asset_key) {
-            // If no primary URL but we have DAI, use it as fallback
-            if (!u && i.stream_info?.dai_asset_key) {
-                u = i.stream_info.dai_asset_key;
-            }
-
-            s = 'LIVE'; // Default to LIVE if we have a URL
-
-            // Set required headers for Sony Akamai/SSAI streams
-            headers = {
-                'Origin': 'https://www.sonyliv.com',
-                'Referer': 'https://www.sonyliv.com/',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            };
-
-            if (i.air_dates) {
+            if (i.air_dates && !statusOverride) {
                 try {
-                    // Safe date parsing: "04 Mar 2026, 12:35 AM" -> "04 Mar 2026 12:35 AM"
                     const startStr = i.air_dates.contractStartDate ? i.air_dates.contractStartDate.replace(/,/g, '') : null;
                     const endStr = i.air_dates.contractEndDate ? i.air_dates.contractEndDate.replace(/,/g, '') : null;
-
                     const start = startStr ? new Date(startStr) : null;
                     const end = endStr ? new Date(endStr) : null;
-
                     if (start && now < start) s = 'UPCOMING';
                     else if (end && now > end) s = 'COMPLETED';
                 } catch (e) { }
             }
+
+            return {
+                id: contentId + (suffix ? '_' + suffix : ''),
+                t: baseTitle + (suffix ? ` (${suffix})` : ''),
+                i: image,
+                s,
+                u: finalUrl,
+                d: drm,
+                h: headers,
+                src: src.name,
+                src_id: src.id,
+                cat: genres,
+                ch: broadcastChannel
+            };
+        };
+
+        // 1. Process MULTIPLE_AUDIO_LINKS
+        const mal = i.MULTIPLE_AUDIO_LINKS || i.multiple_audio_links;
+        if (mal && mal.length > 0) {
+            mal.forEach(linkEntry => {
+                const lang = linkEntry.LANGUAGE || linkEntry.language || "Unknown";
+                const dataObj = linkEntry.DATA || linkEntry.data;
+                if (dataObj) {
+                    for (const providerKey in dataObj) {
+                        const entry = dataObj[providerKey];
+                        if (entry?.Playback_videoURL && entry.Playback_videoURL !== "NA") {
+                            let drm = null;
+                            const lic = entry.WIDEVINE || entry.widevine;
+                            if (lic && lic !== "NA") {
+                                drm = { t: 'com.widevine.alpha', l: lic };
+                            }
+                            out.push(createEvent(entry.Playback_videoURL, drm, `${providerKey} - ${lang}`));
+                        }
+                    }
+                }
+            });
         }
 
-        out.push({
-            id: i.contentId,
-            t: i.video_info?.episodeTitle || i.title || i.video_info?.title || "Sony Liv PRO",
-            i: i.image_cdn?.landscape_thumb || i.image_cdn?.thumbnail || "",
-            s,
-            u,
-            d: drm,
-            h: headers,
-            src: src.name,
-            src_id: src.id,
-            cat: i.video_info?.genres?.[0] || "",
-            ch: i.stream_info?.broadcast_channel || ""
-        });
+        // 2. Process DAI Asset Key
+        if (i.stream_info?.dai_asset_key && i.stream_info.dai_asset_key !== "NA") {
+            out.push(createEvent(i.stream_info.dai_asset_key, null, "Google SSAI"));
+        }
+
+        // 3. Fallback to platformVariants if nothing else found
+        if (out.filter(e => e.id.toString().startsWith(contentId.toString())).length === 0) {
+            let u = i.stream_info?.platformVariants?.videoUrl;
+            if (!u || u === "NA") u = i.stream_info?.platformVariants?.trailerUrl;
+            if (u && u !== "NA") {
+                out.push(createEvent(u, null, "Main"));
+            }
+        }
     });
     return out;
 }
+
 function prsFC(d, src) {
-    // Root-level headers (User-Agent, Referer) apply to all match streams
     const headers = d.headers || {};
     const arr = d.matches || [];
-    return arr.map(m => {
-        let streamUrl = m.STREAMING_CDN?.Primary_Playback_URL || m.STREAMING_CDN?.fancode_cdn || null;
+    const out = [];
 
-        // Try to use auto_streams which contains the full signed master playlist M3U8 string
-        if (m.auto_streams && m.auto_streams.length > 0 && m.auto_streams[0].auto) {
-            try {
-                // Instead of a Blob URL (which is revoked on navigation), store the raw M3U8 string in sessionStorage
-                const autoStr = m.auto_streams[0].auto;
-                const sid = 'fc_auto_' + (m.match_id || Math.random().toString(36).substr(2, 9));
-                sessionStorage.setItem(sid, autoStr);
-                streamUrl = "session:" + sid; // player.js will intercept this
-            } catch (e) {
-                console.error('Failed to store auto_streams into Session', e);
-            }
-        }
-
-        // Android App Fallback Logic: Proxy unsigned Fancode links if raw streamUrl (not session) is found
-        if (streamUrl && !streamUrl.startsWith('session:')) {
-            if (streamUrl.includes('fancode.com') && !streamUrl.includes('hdntl=')) {
-                // Proxy unsigned requests via live222.php backend logic
-                streamUrl = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(streamUrl) + '|Origin=https://allinonereborn.online';
-                // Add default User-Agent and Referer headers for proxy
-                headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-                headers['Referer'] = 'https://allinonereborn.online/fcww/player_world.html';
-            }
-        }
+    arr.forEach(m => {
+        const baseTitle = m.title;
+        const img = m.image || m.image_cdn?.APP || m.image_cdn?.PLAYBACK || m.image_cdn?.TATAPLAY || '';
 
         // Normalise status: LIVE, UPCOMING, COMPLETED
         const rawStatus = (m.status || m.streamingStatus || '').toUpperCase();
@@ -362,21 +349,55 @@ function prsFC(d, src) {
         if (rawStatus === 'LIVE' || rawStatus === 'STARTED') s = 'LIVE';
         else if (rawStatus === 'COMPLETED' || rawStatus === 'FINISHED') s = 'COMPLETED';
 
-        const img = m.image ||
-            m.image_cdn?.APP ||
-            m.image_cdn?.PLAYBACK ||
-            m.image_cdn?.TATAPLAY || '';
+        // Function to process each stream
+        const addStream = (url, suffix) => {
+            if (!url || url === "Unavailable" || url === "NA") return;
 
-        return {
-            id: m.match_id,
-            t: m.title,
-            c: m.category || '',
-            i: img,
-            s,
-            u: streamUrl,
-            h: headers,
-            src: src.name,
-            src_id: src.id
+            let finalUrl = url;
+            if (url.startsWith('https://in-mc-flive.fancode.com') || (url.includes('fancode.com') && !url.includes('hdntl='))) {
+                finalUrl = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(url) + '|Origin=https://allinonereborn.online';
+            }
+
+            out.push({
+                id: m.match_id + (suffix ? '_' + suffix : ''),
+                t: baseTitle + (suffix ? ` (${suffix})` : ''),
+                c: m.category || '',
+                i: img,
+                s,
+                u: finalUrl,
+                h: {
+                    ...headers,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Referer': 'https://allinonereborn.online/fcww/player_world.html'
+                },
+                src: src.name,
+                src_id: src.id
+            });
         };
+
+        // 1. Process and store auto_streams if present
+        let autoSessionUrl = null;
+        if (m.auto_streams && m.auto_streams.length > 0 && m.auto_streams[0].auto) {
+            try {
+                const autoStr = m.auto_streams[0].auto;
+                const sid = 'fc_auto_' + (m.match_id || Math.random().toString(36).substr(2, 9));
+                sessionStorage.setItem(sid, autoStr);
+                autoSessionUrl = "session:" + sid;
+                addStream(autoSessionUrl, "Auto");
+            } catch (e) { console.error(e); }
+        }
+
+        // 2. Process STREAMING_CDN entries
+        if (m.STREAMING_CDN) {
+            const scdn = m.STREAMING_CDN;
+            // Avoid duplication if Auto session is same as Primary
+            addStream(scdn.Primary_Playback_URL, "Main");
+            addStream(scdn.fancode_cdn, "CDN 1");
+            addStream(scdn.fancode_bd_cdn, "CDN BD");
+            addStream(scdn.dai_google_cdn, "Google DAI");
+            addStream(scdn.cloudfront_cdn, "Cloudfront");
+        }
     });
+    return out;
 }
+
