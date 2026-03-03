@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMNIX SPORTS HUB</title>
+    <title>OMNIX LIVE HUB</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,89 +13,172 @@
         rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Shaka Player -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.7/shaka-player.ui.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.7/controls.min.css">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* ── Footer ─────────────────────────────── */
+        .app-footer {
+            background: rgba(11, 12, 16, 0.92);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(102, 252, 241, 0.1);
+            padding: 1.6rem 1.5rem 1.2rem;
+            text-align: center;
+        }
+
+        .social-btns {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.55rem 1.4rem;
+            border-radius: 30px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border: 1.5px solid transparent;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        /* Instagram */
+        .social-btn.instagram {
+            background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 0 14px rgba(220, 39, 67, 0.35);
+        }
+
+        .social-btn.instagram:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 22px rgba(220, 39, 67, 0.6);
+            filter: brightness(1.1);
+        }
+
+        /* Telegram */
+        .social-btn.telegram {
+            background: #0088cc;
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 0 14px rgba(0, 136, 204, 0.35);
+        }
+
+        .social-btn.telegram:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 22px rgba(0, 136, 204, 0.6);
+            filter: brightness(1.15);
+        }
+
+        .social-btn i {
+            font-size: 1rem;
+        }
+
+        .footer-copy {
+            color: rgba(197, 198, 199, 0.6);
+            font-size: 0.78rem;
+            letter-spacing: 0.3px;
+        }
+
+        /* ── Header center fix ───────────────────── */
+        .app-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 1.5rem;
+        }
+
+        .search-bar {
+            position: absolute;
+            right: 1.5rem;
+            justify-self: unset;
+        }
+
+        /* ── Responsive ──────────────────────────── */
+        @media (max-width: 600px) {
+            .social-btns {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .social-btn {
+                width: 200px;
+                justify-content: center;
+            }
+
+            .back-btn {
+                left: 1rem;
+            }
+
+            .search-bar {
+                right: 1rem;
+                width: 130px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-
-    <!-- Sidebar Navigation -->
-    <nav class="sidebar">
-        <div class="logo">
-            <i class="fa-solid fa-trophy"></i>
-            <span>OMNIX SPORTS HUB</span>
+    <!-- Navbar / Header -->
+    <header class="app-header">
+        <!-- ✦ Centered Brand Name ✦ -->
+        <div class="logo-container" onclick="goHome()">
+            <span>OMNIX LIVE HUB</span>
         </div>
-        <ul class="nav-links">
-            <li class="active" data-filter="fancodemain">
-                <img src="https://images.fancode.com/skillup-uploads/fc-web-logo/fc_logo_white_bg.svg?hash=eyJrZXkiOiJza2lsbHVwLXVwbG9hZHMvZmMtd2ViLWxvZ28vZmNfbG9nb193aGl0ZV9iZy5zdmciLCJlZGl0cyI6eyJyZXNpemUiOnsiZml0IjoiY29udGFpbiIsIndpZHRoIjoxODIsImhlaWdodCI6NTZ9LCJ3ZWJwIjp7InF1YWxpdHkiOjYwLCJsb3NzbGVzcyI6ZmFsc2V9fSwib3V0cHV0Rm9ybWF0Ijoid2VicCJ9"
-                    alt="Fancode Main" class="nav-logo">
-                <span>Fancode Main</span>
-            </li>
-
-            <li data-filter="sonyliv1">
-                <img src="https://images.slivcdn.com/UI_icons/sonyliv_new_revised_header_logo.png?h=100&w=100&q=high"
-                    alt="Sony Liv Event Main" class="nav-logo">
-                <span>Sony Liv Event Main</span>
-            </li>
-
-            <li data-filter="jiohot">
-                <img src="https://img.hotstar.com/image/upload/v1737554969/web-assets/prod/images/rebrand/logo.png"
-                    alt="JIO-HOT" class="nav-logo">
-                <span>JIO-HOT</span>
-            </li>
-            <li data-filter="liveTv">
-                <img src="https://github.com/omnixmain/OMNIX-LOGO/blob/main/omnixott_notbg.png?raw=true" alt="Live TV"
-                    class="nav-logo">
-                <span>Live TV</span>
-            </li>
-            <li data-filter="liveSports">
-                <img src="https://github.com/omnixmain/OMNIX-LOGO/blob/main/omnixott_notbg.png?raw=true"
-                    alt="Live Sports" class="nav-logo">
-                <span>Live Sports</span>
-            </li>
-        </ul>
-    </nav>
+    </header>
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Top Navigation (Status Filters) -->
-        <nav class="top-nav">
-            <ul class="status-links" id="statusFilters">
-                <li class="active" data-status="all">All</li>
-                <li data-status="LIVE">Live</li>
-                <li data-status="UPCOMING">Upcoming</li>
-                <li data-status="COMPLETED">Completed</li>
-            </ul>
-        </nav>
-
-        <!-- Sub Navigation (Category Filters) -->
-        <div class="category-nav">
-            <ul class="cat-links" id="categoryFilters">
-                <li class="active pill-btn" data-filter="all">All Sports</li>
-                <li class="pill-btn" data-filter="football"><i class="fa-regular fa-futbol"></i> Football</li>
-                <li class="pill-btn" data-filter="cricket"><i class="fa-solid fa-baseball-bat-ball"></i> Cricket</li>
-            </ul>
-            <div class="search-bar">
-                <i class="fa-solid fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Search events...">
+        <!-- Dashboard (Providers List) -->
+        <div id="dashboardView" class="view-section">
+            <div class="provider-grid" id="providerGrid">
+                <!-- Provider cards dynamically injected over here -->
             </div>
         </div>
 
-        <!-- Loader -->
-        <div id="loader" class="loader-container">
-            <div class="spinner"></div>
-            <p>Fetching the latest sports action...</p>
-        </div>
+        <!-- Events List -->
+        <div id="eventsView" class="view-section hidden">
+            <!-- Filter Options for non-TV events -->
+            <div class="filters-container">
+                <ul class="status-links" id="statusFilters">
+                    <li class="active" data-status="all">All</li>
+                    <li data-status="LIVE">Live</li>
+                    <li data-status="UPCOMING">Upcoming</li>
+                    <li data-status="COMPLETED">Completed</li>
+                </ul>
+            </div>
 
-        <!-- Grid Container -->
-        <div id="eventsGrid" class="events-grid">
-            <!-- Events will be dynamically injected here -->
+            <div id="eventsGrid" class="events-grid">
+                <!-- Events or Channels list -->
+            </div>
         </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="social-btns">
+            <a href="https://www.instagram.com/omnix_empire/" target="_blank" rel="noopener"
+                class="social-btn instagram">
+                <i class="fa-brands fa-instagram"></i> Instagram
+            </a>
+            <a href="https://t.me/omnix_Empire" target="_blank" rel="noopener" class="social-btn telegram">
+                <i class="fa-brands fa-telegram"></i> Telegram
+            </a>
+        </div>
+        <p class="footer-copy">© 2026 OMNIX LIVE HUB. All rights reserved.</p>
+    </footer>
 
     <!-- Custom JS -->
     <script src="app.js"></script>

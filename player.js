@@ -85,11 +85,14 @@
     // -------------------------------------------------------------------
     const lcUrl = streamUrl.toLowerCase();
     const lcUrlBase = lcUrl.split('?')[0];
-    const isMpd = lcUrlBase.endsWith('.mpd') || lcUrl.includes('/dash/') || lcUrl.includes('format=mpd');
-    const isM3u8 = !isMpd && (
+    const isBlobUrl = lcUrl.startsWith('blob:') || streamUrl.startsWith('session:');
+
+    // If it's a blob url generated from session for Fancode, we know it's M3U8.
+    const isM3u8 = isBlobUrl || (!lcUrlBase.endsWith('.mpd') && (
         lcUrlBase.endsWith('.m3u8') || lcUrlBase.endsWith('.m3u') ||
         lcUrl.includes('playlist') || lcUrl.includes('/hls/')
-    );
+    ));
+    const isMpd = !isM3u8 && (lcUrlBase.endsWith('.mpd') || lcUrl.includes('/dash/') || lcUrl.includes('format=mpd'));
 
     const isHotstar = streamUrl.toLowerCase().includes('hotstar.com') || streamUrl.toLowerCase().includes('jcevents') || (source && source.toLowerCase().includes('jio-hot'));
 
@@ -101,11 +104,43 @@
 
     const useShakaForDRM = !!finalDrmLicense || isMpd;
 
-    console.log(`[OMNIX PLAYER] Stream: ${streamUrl}`);
-    console.log(`[OMNIX PLAYER] Engine: ${useShakaForDRM ? 'Shaka (DRM/DASH)' : 'HLS.js (plain HLS)'}`);
+    // -------------------------------------------------------------------
+    // 6. Proxy and Session (Blob) Support
+    // -------------------------------------------------------------------
+    const isFileOrigin = window.location.protocol === 'file:';
+    const needsProxy = Object.keys(requestHeaders).length > 0 && isFileOrigin && !streamUrl.startsWith('blob:') && !streamUrl.startsWith('data:') && !streamUrl.startsWith('session:');
+    const CORS_PROXY = needsProxy ? 'https://corsproxy.io/?' : '';
 
-    // CORS Proxy Support (Optional - if needed for local file testing)
-    const CORS_PROXY = ""; // e.g. "https://cors-anywhere.herokuapp.com/" - User can add if needed
+    let finalStreamUrl = streamUrl;
+
+    // Resolve session stored M3U8 strings (mainly for Fancode auto_streams)
+    if (streamUrl.startsWith('session:')) {
+        const sid = streamUrl.replace('session:', '');
+        const autoStr = sessionStorage.getItem(sid);
+        if (autoStr) {
+            try {
+                // Fancode's "auto" contains the M3U8 string. We encode it as a Local Blob URI inside the player!
+                const blob = new Blob([autoStr], { type: 'application/vnd.apple.mpegurl' });
+                finalStreamUrl = URL.createObjectURL(blob);
+                console.log(`[OMNIX PLAYER] Loaded Virtual M3U8 from Session Storage (${sid})`);
+            } catch (e) {
+                console.error('[OMNIX PLAYER] Failed to convert session text to blob:', e);
+                showError('Stream Initialization Failed', 'Could not parse virtual playlist.');
+                return;
+            }
+        } else {
+            console.error(`[OMNIX PLAYER] Session key ${sid} not found.`);
+            showError('Stream Expired', 'The stream context has expired. Please go back and open the match again.');
+            return;
+        }
+    } else {
+        finalStreamUrl = CORS_PROXY ? (CORS_PROXY + encodeURIComponent(streamUrl)) : streamUrl;
+    }
+
+
+    console.log(`[OMNIX PLAYER] Engine: ${useShakaForDRM ? 'Shaka (DRM/DASH)' : 'HLS.js (plain HLS)'}`);
+    console.log(`[OMNIX PLAYER] Stream: ${finalStreamUrl}`);
+    console.log(`[OMNIX PLAYER] CORS Proxy: ${CORS_PROXY ? 'YES (corsproxy.io)' : 'NO'}`);
 
     // -------------------------------------------------------------------
     // 6A. ENGINE: HLS.js — for all plain M3U8 / HLS streams
@@ -118,20 +153,20 @@
                 enableWorker: true,
                 lowLatencyMode: false,
                 xhrSetup: function (xhr, url) {
-                    // Set custom headers
-                    Object.entries(requestHeaders).forEach(([k, v]) => {
-                        try {
-                            // Some headers like User-Agent and Referer are restricted by browsers
-                            // but we attempt to set them anyway as some environments (like Electron or modified browsers) allow it.
+                    // Inject custom request headers for HLS.js
+                    if (requestHeaders && Object.keys(requestHeaders).length > 0) {
+                        Object.entries(requestHeaders).forEach(([k, v]) => {
                             xhr.setRequestHeader(k, v);
-                        } catch (e) {
-                            console.warn(`[PLAYER] Restricted header ${k} skipped.`);
-                        }
-                    });
+                        });
+                    }
+                    // Blob URLs might fail XHR if originating from file:// - avoid setting credentials
+                    if (!url.startsWith('blob:')) {
+                        // xhr.withCredentials = true; // Disabled for broad CORS
+                    }
                 }
             });
 
-            hlsInstance.loadSource(streamUrl);
+            hlsInstance.loadSource(finalStreamUrl);
             hlsInstance.attachMedia(videoEl);
 
             hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -146,20 +181,30 @@
                     switch (data.type) {
                         case Hls.ErrorTypes.NETWORK_ERROR:
                             console.warn('[OMNIX PLAYER] Network error, retrying...');
+
+                            // If Blob URL fails, it might be due to relative paths inside the M3U8. 
+                            // Try to recover by reloading.
+                            if (finalStreamUrl.startsWith('blob:') && data.details === 'manifestLoadError') {
+                                showError('Manifest Error', 'Failed to load the virtual stream. It may contain invalid or relative paths.');
+                                hlsInstance.destroy();
+                                return;
+                            }
+
                             hlsInstance.startLoad();
                             break;
                         case Hls.ErrorTypes.MEDIA_ERROR:
                             hlsInstance.recoverMediaError();
                             break;
                         default:
-                            showError('Playback Error', `Stream failed: ${data.details}. (Check CORS/Referer)`);
+                            showError('Playback Error', `Stream failed: ${data.details}. The CDN may have blocked this stream.`);
                             break;
                     }
                 }
             });
 
         } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
-            videoEl.src = streamUrl;
+            // Safari native HLS
+            videoEl.src = finalStreamUrl;
             videoEl.addEventListener('loadedmetadata', () => videoEl.play());
             videoEl.addEventListener('loadeddata', hideLoader, { once: true });
             setTimeout(hideLoader, 6000);

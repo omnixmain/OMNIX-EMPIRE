@@ -1,587 +1,382 @@
-// OMNIX SPORTS HUB - Main Logic v2
-// API Endpoints — all sources
-const API_ENDPOINTS = {
-    fancodemain: 'https://raw.githubusercontent.com/jitendra-unatti/fancode/refs/heads/main/data/fancode.m3u',
-    sonyliv1: 'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json',
-    jiohot: 'https://voot.vodep39240327.workers.dev?voot.m3u',
-    liveTv: 'https://dl.dropbox.com/scl/fi/d9n6xrp813zx4o7wc56w9/tv-prueba.txt?rlkey=x7c45o26fr8x7bqqa42uv470m&st=8aic1pey&.m3u',
-    liveSports: 'https://raw.githubusercontent.com/BuddyChewChew/sports/refs/heads/main/liveeventsfilter.m3u8'
-};
+/* OMNIX SPORTS HUB - JSON ONLY APP.JS */
 
-// State
-let allEvents = [];
-let currentFilter = 'all';
-let currentStatus = 'all';
-let currentProvider = 'fancodemain';
+const PROVIDERS = [
+    { id: 'fcin', name: 'FANCODE', logo: 'https://images.fancode.com/skillup-uploads/fc-web-logo/fc_logo_white_bg.svg', url: 'https://raw.githubusercontent.com/jitendra-unatti/fancode/fe98437cfea2582b6c6153f990b112467ad1ec63/data/fancode.json', type: 'json_fc' },
+    { id: 'sonyliv1', name: 'Sony Liv Event Main', logo: 'https://images.slivcdn.com/UI_icons/sonyliv_new_revised_header_logo.png', url: 'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json', type: 'json' },
+    { id: 'sonypro', name: 'SONY Liv PRO', logo: 'https://images.slivcdn.com/UI_icons/sonyliv_new_revised_header_logo.png', url: 'https://raw.githubusercontent.com/doctor-8trange/zyphora/refs/heads/main/data/sony.json', type: 'json_pro' },
+    { id: 'jiohot', name: 'JIO-HOT', logo: 'https://img.hotstar.com/image/upload/v1737554969/web-assets/prod/images/rebrand/logo.png', url: 'https://voot.vodep39240327.workers.dev?voot.m3u', type: 'm3u' },
+    { id: 'omnixv1', name: 'OMNIX LIVE V1', logo: 'https://img10.hotstar.com/image/upload/f_auto,q_90/sources/r1/web-assets/live_badge', url: 'https://dl.dropbox.com/scl/fi/d9n6xrp813zx4o7wc56w9/tv-prueba.txt?rlkey=x7c45o26fr8x7bqqa42uv470m&st=8aic1pey&.m3u', type: 'm3u' },
+    { id: 'omnixv2', name: 'OMNIX LIVE V2', logo: 'https://img10.hotstar.com/image/upload/f_auto,q_90/sources/r1/web-assets/live_badge', url: 'https://raw.githubusercontent.com/BuddyChewChew/sports/refs/heads/main/liveeventsfilter.m3u8', type: 'm3u' }
+];
 
-// DOM
-const eventsGrid = document.getElementById('eventsGrid');
-const loader = document.getElementById('loader');
-const searchInput = document.getElementById('searchInput');
-const navLinks = document.querySelectorAll('.nav-links li');
-const statusLinks = document.querySelectorAll('.status-links li');
-const catLinks = document.querySelectorAll('.cat-links li');
+let allData = [];
+let curStatus = 'all';
+let isTV = false;
 
-/* =========================================================
-   BOOT
-   ========================================================= */
 document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const p = urlParams.get('provider');
-    if (p && API_ENDPOINTS[p]) {
-        currentProvider = p;
-    }
+    const pg = document.getElementById('providerGrid');
+    PROVIDERS.forEach(p => {
+        const d = document.createElement('div');
+        d.className = 'provider-card';
+        d.onclick = () => loadProvider(p);
+        d.innerHTML = `<div class="provider-logo-bg"><img src="${p.logo}"></div>
+            <h3 class="provider-title">${p.name}</h3>
+            <p class="provider-subtitle">(Worldwide)</p>
+            <button class="explore-btn">Explore</button>`;
+        pg.appendChild(d);
+    });
 
-    fetchAllData();
-    setupNavigation();
+    document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+    document.querySelectorAll('.status-links li').forEach(el => {
+        el.addEventListener('click', (e) => {
+            document.querySelectorAll('.status-links li').forEach(l => l.classList.remove('active'));
+            e.target.classList.add('active');
+            curStatus = e.target.dataset.status;
+            applyFilters();
+        });
+    });
+
+    // Handle back button and normal navigation via hash
+    window.addEventListener('hashchange', () => {
+        const hash = window.location.hash;
+        if (hash.startsWith('#provider=')) {
+            const pId = hash.replace('#provider=', '');
+            const p = PROVIDERS.find(x => x.id === pId);
+            if (p) {
+                loadProvider(p, false); // false = don't set hash again
+            }
+        } else {
+            goHome(false);
+        }
+    });
+
+    // Initial load: check hash
+    if (window.location.hash.startsWith('#provider=')) {
+        const pId = window.location.hash.replace('#provider=', '');
+        const p = PROVIDERS.find(x => x.id === pId);
+        if (p) loadProvider(p, false);
+    }
 });
 
-/* =========================================================
-   FETCH ALL DATA
-   ========================================================= */
-async function fetchAllData() {
-    loader.classList.remove('hidden');
-    eventsGrid.innerHTML = '';
-
-    const results = await Promise.allSettled([
-        safeFetch(API_ENDPOINTS.fancodemain, 'text'),
-        safeFetch(API_ENDPOINTS.sonyliv1, 'json'),
-        safeFetch(API_ENDPOINTS.jiohot, 'text'),
-        safeFetch(API_ENDPOINTS.liveTv, 'text'),
-        safeFetch(API_ENDPOINTS.liveSports, 'text'),
-    ]);
-
-    const [fcMain, sl1, jiohot, liveTv, liveSports] = results;
-
-    let parsed = [];
-
-    // Fancode Main M3U
-    if (fcMain.status === 'fulfilled' && fcMain.value) {
-        parsed.push(...parseM3U(fcMain.value, 'Fancode Main', 'fancodemain'));
-    } else {
-        console.warn('[API] Fancode Main failed:', fcMain.reason);
+async function loadProvider(p, push = true) {
+    if (push) {
+        window.location.hash = 'provider=' + p.id;
+        return; // The hashchange event will trigger the actual load immediately
     }
 
-    // Sony Liv Main
-    if (sl1.status === 'fulfilled' && sl1.value) {
-        parsed.push(...parseSonyLiv(sl1.value, 'Sony Liv Main', 'sonyliv1'));
-    } else {
-        console.warn('[API] Sony Liv Main failed:', sl1.reason);
-    }
+    document.getElementById('dashboardView').classList.add('hidden');
+    document.getElementById('eventsView').classList.remove('hidden');
+    document.getElementById('eventsGrid').innerHTML = '';
 
-    // JIO-HOT M3U
-    if (jiohot.status === 'fulfilled' && jiohot.value) {
-        parsed.push(...parseJioHot(jiohot.value));
-    } else {
-        console.warn('[API] JIO-HOT failed:', jiohot.reason);
-    }
+    isTV = p.type === 'm3u';
+    document.getElementById('statusFilters').style.display = isTV ? 'none' : 'flex';
 
-    // Live TV M3U
-    if (liveTv.status === 'fulfilled' && liveTv.value) {
-        parsed.push(...parseM3U(liveTv.value, 'Live TV', 'liveTv'));
-    } else {
-        console.warn('[API] Live TV failed:', liveTv.reason);
-    }
-
-    // Live Sports M3U
-    if (liveSports.status === 'fulfilled' && liveSports.value) {
-        parsed.push(...parseM3U(liveSports.value, 'Live Sports', 'liveSports'));
-    } else {
-        console.warn('[API] Live Sports failed:', liveSports.reason);
-    }
-
-    allEvents = dedupEvents(parsed);
-    console.log(`[OMNIX] Loaded ${allEvents.length} total events.`);
-
-    loader.classList.add('hidden');
-    renderEvents();
+    try {
+        const f = await fetch(p.url);
+        if (!f.ok) throw new Error("Network response was not ok");
+        const t = await f.text();
+        allData = p.type === 'm3u' ? prsM3u(t, p)
+            : p.type === 'json_fc' ? prsFC(JSON.parse(t), p)
+                : p.type === 'json' ? prsSl(JSON.parse(t), p)
+                    : prsSp(JSON.parse(t), p);
+        applyFilters();
+    } catch (e) { console.error(e); }
 }
 
-// Safe fetch wrapper
-async function safeFetch(url, type = 'json') {
-    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return type === 'json' ? res.json() : res.text();
-}
-
-/* =========================================================
-   PARSERS
-   ========================================================= */
-
-// Fancode JSON Parsing is now deprecated in favor of M3U parsing in parseM3U.
-// parseFancode and extractBestM3U8StreamUrl have been removed.
-
-// ---- SONY LIV ----
-function parseSonyLiv(data, source, sourceFilter) {
-    let items = [];
-    if (Array.isArray(data)) items = data;
-    else if (Array.isArray(data.data)) items = data.data;
-    else if (Array.isArray(data.matches)) items = data.matches;
-    else if (Array.isArray(data.upcoming)) items = data.upcoming;
-
-    const results = [];
-    items.forEach(item => {
-        // Sony Liv JSON can nest matches inside category objects
-        if (item.matches && Array.isArray(item.matches)) {
-            item.matches.forEach(m => results.push(buildSonyEvent(m, source, sourceFilter)));
+function goHome(push = true) {
+    if (push) {
+        if (window.location.hash.startsWith('#provider=')) {
+            window.history.back();
+            return;
         } else {
-            results.push(buildSonyEvent(item, source, sourceFilter));
-        }
-    });
-    return results.filter(Boolean);
-}
-
-function buildSonyEvent(m, source, sourceFilter) {
-    if (!m) return null;
-    const streamUrl = m.src_url || m.streamUrl || m.stream_url || m.playback_url || null;
-    return {
-        id: m.contentId || m.id || Math.random().toString(36),
-        title: m.event_name || m.title || m.name || 'Sony Liv Event',
-        category: m.event_category || m.sport || m.category || 'Sports',
-        image: m.src || m.image || m.thumbnail || 'https://via.placeholder.com/640x360/1F2833/45A29E?text=SonyLiv',
-        status: m.isLive ? 'LIVE' : 'UPCOMING',
-        startTime: m.startTime || m.start_time || 'Upcoming',
-        source,
-        sourceFilter,
-        streamUrl,
-        headers: {},
-        drm: null
-    };
-}
-
-// ---- M3U HELPER ----
-function extractAttr(line, attr) {
-    const m = line.match(new RegExp(attr + '="([^"]*)"', 'i'));
-    return m ? m[1] : null;
-}
-
-// ---- STANDARD M3U ----
-function parseM3U(text, source, sourceFilter = 'm3u') {
-    const lines = text.split('\n');
-    const events = [];
-    let cur = null;
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-
-        if (line.startsWith('#EXTINF:')) {
-            const groupTitle = extractAttr(line, 'group-title');
-            const tvgLogo = extractAttr(line, 'tvg-logo');
-            const tvgName = extractAttr(line, 'tvg-name');
-            const httpReferer = extractAttr(line, 'http-referrer') || extractAttr(line, 'http-referer');
-            const httpUA = extractAttr(line, 'http-user-agent');
-
-            const rawTitle = line.split(',').pop().trim() || tvgName || 'Live Channel';
-
-            cur = {
-                id: Math.random().toString(36).slice(2),
-                status: 'LIVE',
-                source,
-                sourceFilter,
-                startTime: '24/7 Channel',
-                streamUrl: null,
-                drm: null,
-                headers: {},
-                image: tvgLogo || 'https://via.placeholder.com/150x150/0B0C10/FFFFFF?text=TV',
-                category: groupTitle || 'TV Channel',
-                title: rawTitle
-            };
-
-            if (httpReferer) cur.headers['Referer'] = httpReferer;
-            if (httpUA) cur.headers['User-Agent'] = httpUA;
-
-            continue;
-        }
-
-        if (!cur) continue;
-
-        // Extract metadata from tags between #EXTINF and URL
-        if (line.startsWith('#EXTHTTP:')) {
-            try {
-                const h = JSON.parse(line.replace('#EXTHTTP:', '').trim());
-                Object.assign(cur.headers, h);
-            } catch (_) { }
-            continue;
-        }
-
-        if (line.startsWith('#EXTVLCOPT:')) {
-            const opt = line.replace('#EXTVLCOPT:', '').trim();
-            if (opt.startsWith('http-user-agent=')) cur.headers['User-Agent'] = opt.replace('http-user-agent=', '');
-            if (opt.startsWith('http-referrer=') || opt.startsWith('http-referer=')) {
-                cur.headers['Referer'] = opt.split('=')[1];
+            window.location.hash = '';
+            // If hash was already empty, hashchange might not fire
+            if (window.location.hash === '') {
+                // fallthrough to manual hide/show just in case
+            } else {
+                return;
             }
-            if (opt.startsWith('http-origin=')) cur.headers['Origin'] = opt.replace('http-origin=', '');
-            continue;
-        }
-
-        if (line.startsWith('#KODIPROP:')) {
-            const kv = line.replace('#KODIPROP:', '');
-            const eqIdx = kv.indexOf('=');
-            if (eqIdx !== -1) {
-                const key = kv.slice(0, eqIdx).trim();
-                const val = kv.slice(eqIdx + 1).trim();
-                if (!cur.drm) cur.drm = { type: 'com.widevine.alpha' };
-                if (key.includes('license_type')) cur.drm.type = val;
-                if (key.includes('license_key') || key.includes('license_url')) cur.drm.licenseUrl = val;
-            }
-            continue;
-        }
-
-        if (line.startsWith('#WV_LICENSE_URL:') || line.startsWith('#DRM-LICENSE-URL:')) {
-            if (!cur.drm) cur.drm = { type: 'com.widevine.alpha' };
-            cur.drm.licenseUrl = line.split(':').slice(1).join(':').trim();
-            continue;
-        }
-
-        if (line.startsWith('http')) {
-            // Check for piped headers (e.g. url|User-Agent=...&Referer=...)
-            const parts = line.split('|');
-            cur.streamUrl = parts[0].trim();
-            if (parts.length > 1) {
-                const headerStr = parts[1];
-                const kvPairs = headerStr.split('&');
-                kvPairs.forEach(pair => {
-                    const [k, v] = pair.split('=');
-                    if (k && v) {
-                        const cleanK = k.trim();
-                        // Normalize common header names
-                        const headerMap = { 'user-agent': 'User-Agent', 'referer': 'Referer', 'origin': 'Origin' };
-                        const finalK = headerMap[cleanK.toLowerCase()] || cleanK;
-                        cur.headers[finalK] = decodeURIComponent(v.trim());
-                    }
-                });
-            }
-
-            // FILTER: Cleanup titles for specific sources
-            if (sourceFilter.includes('fancode')) {
-                // Remove quality suffixes for better dedup
-                cur.title = cur.title.replace(/,\s*\d+p\s*\|\s*\w+/i, '').trim();
-            }
-
-            events.push(cur);
-            cur = null;
         }
     }
-    return events;
+
+    document.getElementById('dashboardView').classList.remove('hidden');
+    document.getElementById('eventsView').classList.add('hidden');
 }
 
-// ---- JIO-HOT ----
-// ---- JIO-HOT ----
-function parseJioHot(text) {
-    const events = [];
-    const lines = text.split('\n');
-    let cur = null;
-    let idx = 1;
+function applyFilters() {
+    const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+    let f = allData;
+    if (!isTV && curStatus !== 'all') f = f.filter(x => x.s === curStatus.toUpperCase());
+    if (q) f = f.filter(x => (x.t || '').toLowerCase().includes(q) || (x.c || '').toLowerCase().includes(q));
 
-    const LOGOS = {
-        Sports: 'https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/Star_Sports_logo.svg/200px-Star_Sports_logo.svg.png',
-        Entertainment: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Hotstar_Logo.png/200px-Hotstar_Logo.png',
-        News: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/CNBC-TV18_Logo.svg/200px-CNBC-TV18_Logo.svg.png',
-        Kids: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Nickelodeon_2009_logo.svg/200px-Nickelodeon_2009_logo.svg.png',
-        Music: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/MTV_India_2022_Logo.svg/200px-MTV_India_2022_Logo.svg.png',
-        Movies: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Hotstar_Logo.png/200px-Hotstar_Logo.png',
-        DEFAULT: 'https://img.hotstar.com/image/upload/v1737554969/web-assets/prod/images/rebrand/logo.png'
-    };
+    const g = document.getElementById('eventsGrid');
+    g.className = isTV ? 'tv-grid' : 'events-grid';
+    g.innerHTML = '';
+    f.forEach(ev => {
+        const c = document.createElement('div');
+        const isPremium = ['fcin', 'sonyliv1', 'sonypro'].includes(ev.src_id || ev.src); // Check source or provider ID
 
-    const isHex = s => /^[0-9a-f]{10,}$/i.test(s);
-    const SKIP = new Set(['dash', 'live', 'bpk-tv', 'mp1', 'mp2', 'fallback', 'index_7.m3u8', 'master.mpd', 'manifest', 'index.m3u8', 'jchls']);
-
-    function newCur() {
-        return {
-            id: 'jiohot_' + (idx++),
-            status: 'LIVE',
-            startTime: '24/7 Live',
-            source: 'JIO-HOT',
-            sourceFilter: 'jiohot',
-            headers: {},
-            drm: null,
-            image: null,
-            category: 'JIO-HOT',
-            title: null
+        c.onclick = () => {
+            if (!ev.u) return alert('No stream');
+            const backUrl = 'Sports.html' + window.location.hash;
+            let url = `player.html?streamUrl=${encodeURIComponent(ev.u)}&title=${encodeURIComponent(ev.t)}&source=${encodeURIComponent(ev.src)}&back=${encodeURIComponent(backUrl)}`;
+            if (ev.d) url += `&drmType=${ev.d.t}&drmLicenseUrl=${encodeURIComponent(ev.d.l)}`;
+            if (ev.h && Object.keys(ev.h).length > 0) url += `&headers=${encodeURIComponent(JSON.stringify(ev.h))}`;
+            window.location.href = url;
         };
-    }
 
-    cur = newCur();
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-
-        if (line.startsWith('#EXTINF:')) {
-            cur.title = line.split(',').pop().trim() || null;
-            cur.image = extractAttr(line, 'tvg-logo') || null;
-            cur.category = extractAttr(line, 'group-title') || 'JIO-HOT';
-            continue;
-        }
-
-        if (line.startsWith('#EXTHTTP:')) {
-            try {
-                const h = JSON.parse(line.replace('#EXTHTTP:', '').trim());
-                Object.assign(cur.headers, h);
-            } catch (_) { }
-            continue;
-        }
-
-        if (line.startsWith('#EXTVLCOPT:')) {
-            const opt = line.replace('#EXTVLCOPT:', '').trim();
-            if (opt.startsWith('http-user-agent=')) cur.headers['User-Agent'] = opt.replace('http-user-agent=', '');
-            if (opt.startsWith('http-referrer=') || opt.startsWith('http-referer=')) {
-                cur.headers['Referer'] = opt.split('=')[1];
-            }
-            if (opt.startsWith('http-origin=')) cur.headers['Origin'] = opt.replace('http-origin=', '');
-            continue;
-        }
-
-        if (line.startsWith('#KODIPROP:')) {
-            const kv = line.replace('#KODIPROP:', '');
-            const eqIdx = kv.indexOf('=');
-            if (eqIdx !== -1) {
-                const key = kv.slice(0, eqIdx).trim();
-                const val = kv.slice(eqIdx + 1).trim();
-                if (!cur.drm) cur.drm = { type: 'com.widevine.alpha' };
-                if (key.includes('license_type')) cur.drm.type = val;
-                if (key.includes('license_key') || key.includes('license_url')) cur.drm.licenseUrl = val;
-            }
-            continue;
-        }
-
-        if (line.startsWith('http')) {
-            cur.streamUrl = line;
-
-            // Derive title from URL if missing
-            if (!cur.title) {
-                try {
-                    const url = new URL(line);
-                    const segments = url.pathname.split('/').filter(s => s && !SKIP.has(s.toLowerCase()) && !isHex(s));
-                    if (segments.length > 0) {
-                        cur.title = segments[segments.length - 1]
-                            .replace(/\.(m3u8?|mpd)$/i, '')
-                            .replace(/[-_]/g, ' ')
-                            .replace(/\b\w/g, c => c.toUpperCase())
-                            .replace(/\s*(Wv|Mob|Hls|Livetvwv|Livetvhls|Hd\d?)$/i, '')
-                            .trim();
-                    }
-                } catch (_) { }
-            }
-            cur.title = cur.title || ('JIO-HOT Ch ' + (idx - 1));
-
-            // Category inference
-            const lc = (cur.title + ' ' + line).toLowerCase();
-            if (lc.includes('sport') || lc.includes('sshd') || lc.includes('select') || lc.includes('star sport'))
-                cur.category = 'Sports';
-            else if (lc.includes('news') || lc.includes('cnbc') || lc.includes('news18') || lc.includes('aaj tak'))
-                cur.category = 'News';
-            else if (lc.includes('color') || lc.includes('star plus') || lc.includes('sony') || lc.includes('zee') || lc.includes('hotstar'))
-                cur.category = 'Entertainment';
-            else if (lc.includes('nick') || lc.includes('sonic') || lc.includes('pogo') || lc.includes('cartoon'))
-                cur.category = 'Kids';
-            else if (lc.includes('music') || lc.includes('mtv') || lc.includes('vh1'))
-                cur.category = 'Music';
-            else if (lc.includes('movie') || lc.includes('cinema') || lc.includes('films'))
-                cur.category = 'Movies';
-
-            // Image fallback
-            if (!cur.image) cur.image = LOGOS[cur.category] || LOGOS.DEFAULT;
-
-            // HOTSTAR SPECIFIC: Use Shaka + Default License for all hotstar streams if no DRM info
-            if (!cur.drm && (line.includes('hotstar.com') || line.includes('jcevents'))) {
-                cur.drm = {
-                    type: 'com.widevine.alpha',
-                    licenseUrl: 'https://pallycon.allinonereborn.workers.dev/api/license/widevine'
-                };
-            }
-
-            // Normalize drm.type
-            if (cur.drm && !cur.drm.type) cur.drm.type = 'com.widevine.alpha';
-
-            events.push(cur);
-            cur = newCur();
-        }
-    }
-    return events;
-}
-
-// ---- DEDUP ----
-function dedupEvents(events) {
-    const seen = new Set();
-    return events.filter(e => {
-        const key = (e.title || '').toLowerCase() + '_' + (e.source || '');
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
-}
-
-/* =========================================================
-   NAVIGATION SETUP
-   ========================================================= */
-function setupNavigation() {
-    // Initial highlight based on currentProvider (e.g. if loaded from URL)
-    navLinks.forEach(l => {
-        l.classList.toggle('active', l.dataset.filter === currentProvider);
-    });
-
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            currentProvider = link.dataset.filter;
-            // Update URL without reload to keep state visible
-            const url = new URL(window.location);
-            url.searchParams.set('provider', currentProvider);
-            window.history.replaceState({}, '', url);
-            renderEvents();
-        });
-    });
-
-    statusLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            statusLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            currentStatus = link.dataset.status;
-            renderEvents();
-        });
-    });
-
-    catLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            catLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            currentFilter = link.dataset.filter;
-            renderEvents();
-        });
-    });
-
-    searchInput.addEventListener('input', renderEvents);
-}
-
-/* =========================================================
-   RENDER EVENTS
-   ========================================================= */
-function renderEvents() {
-    eventsGrid.innerHTML = '';
-
-    const isLiveTVMode = currentProvider === 'liveTv' || currentProvider === 'liveSports' || currentProvider === 'jiohot' || currentProvider.includes('fancode');
-    const topNav = document.querySelector('.top-nav');
-    const catUl = document.querySelector('.cat-links');
-
-    topNav?.style.setProperty('display', isLiveTVMode ? 'none' : 'flex');
-    catUl?.style.setProperty('display', isLiveTVMode ? 'none' : 'flex');
-    eventsGrid.classList.toggle('tv-grid', isLiveTVMode);
-
-    let filtered = allEvents;
-
-    // Provider
-    if (currentProvider !== 'all') {
-        filtered = filtered.filter(e => e.sourceFilter === currentProvider);
-    }
-
-    // Status (not for Live TV)
-    if (!isLiveTVMode && currentStatus !== 'all') {
-        filtered = filtered.filter(e => e.status === currentStatus.toUpperCase());
-    }
-
-    // Category (not for Live TV)
-    if (!isLiveTVMode && currentFilter !== 'all') {
-        filtered = filtered.filter(e => (e.category || '').toLowerCase().includes(currentFilter.toLowerCase()));
-    }
-
-    // Search
-    const q = searchInput.value.trim().toLowerCase();
-    if (q) {
-        filtered = filtered.filter(e =>
-            e.title.toLowerCase().includes(q) ||
-            (e.category || '').toLowerCase().includes(q) ||
-            (e.source || '').toLowerCase().includes(q)
-        );
-    }
-
-    if (filtered.length === 0) {
-        eventsGrid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#C5C6C7;padding:4rem;font-size:1.1rem;">
-            <i class="fa-solid fa-satellite-dish" style="margin-right:10px;color:#66FCF1;"></i>
-            No events found for the selected filters.
-        </p>`;
-        return;
-    }
-
-    filtered.forEach(event => {
-        const card = document.createElement('div');
-
-        if (isLiveTVMode) {
-            card.className = 'tv-card';
-            card.onclick = () => openPlayer(event);
-            card.innerHTML = `
-                <div class="tv-logo-container">
-                    <img src="${event.image}" alt="${escHtml(event.title)}"
-                         onerror="this.src='https://via.placeholder.com/150x150/1F2833/FFFFFF?text=TV'">
+        if (isTV) {
+            c.className = 'tv-card';
+            c.innerHTML = `<div class="tv-logo-container"><img src="${ev.i}"></div><h3 class="tv-title">${ev.t}</h3>`;
+        } else if (isPremium) {
+            c.className = 'premium-card';
+            c.innerHTML = `
+                <div class="premium-image-wrap">
+                    ${ev.s === 'LIVE' ? '<div class="status-badge-premium">LIVE NOW</div>' : `<div class="status-badge-premium" style="background:#666;">${ev.s}</div>`}
+                    <img src="${ev.i}" loading="lazy">
                 </div>
-                <h3 class="tv-title">${escHtml(event.title)}</h3>
-                <span class="tv-category">${escHtml(event.category)}</span>
+                <div class="premium-content">
+                    <h3 class="premium-title">${ev.t}</h3>
+                    <div class="premium-subtitle">
+                        <span>${ev.ch || ev.src}</span>
+                        ${ev.lang ? `<span>${ev.lang}</span>` : ''}
+                    </div>
+                    <div class="premium-footer">
+                        <span class="premium-category">${ev.cat || 'Sports'}</span>
+                        <button class="watch-btn-premium">Watch</button>
+                    </div>
+                </div>
             `;
         } else {
-            card.className = 'event-card';
-            card.onclick = () => openPlayer(event);
-
-            const badge = event.status === 'LIVE'
-                ? `<div class="live-badge">LIVE</div>`
-                : event.status === 'COMPLETED'
-                    ? `<div class="live-badge" style="background:#4B5563;box-shadow:none;">DONE</div>`
-                    : `<div class="live-badge" style="background:#D97706;box-shadow:none;">UPCOMING</div>`;
-
-            const hasStream = !!event.streamUrl;
-            card.innerHTML = `
+            c.className = 'event-card';
+            c.innerHTML = `
                 <div class="card-image-wrap">
-                    ${badge}
-                    <img src="${event.image}" alt="${escHtml(event.title)}"
-                         onerror="this.src='https://via.placeholder.com/640x360/1F2833/66FCF1?text=OMNIX'">
-                    <div class="play-overlay">
-                        <i class="fa-solid ${hasStream ? 'fa-circle-play' : 'fa-lock'}"
-                           title="${hasStream ? 'Play' : 'Stream unavailable'}"></i>
-                    </div>
+                    <div class="live-badge" style="background:${ev.s === 'LIVE' ? 'red' : 'gray'};">${ev.s}</div>
+                    <img src="${ev.i}" loading="lazy">
+                    <div class="play-overlay"><i class="fa-solid fa-play"></i></div>
                 </div>
                 <div class="card-content">
-                    <span class="card-source">${escHtml(event.source)} · ${escHtml(event.category)}</span>
-                    <h3 class="card-title">${escHtml(event.title)}</h3>
-                    <div class="card-meta">
-                        <span class="card-time"><i class="fa-regular fa-clock"></i> ${escHtml(event.startTime || '—')}</span>
-                        ${event.drm ? '<span style="color:#66FCF1;font-size:0.75rem;"><i class="fa-solid fa-shield-halved"></i> DRM</span>' : ''}
-                    </div>
+                    <h3>${ev.t}</h3>
                 </div>
             `;
         }
-        eventsGrid.appendChild(card);
+        g.appendChild(c);
     });
 }
 
-function escHtml(str) {
-    return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function prsM3u(txt, src) {
+    let out = [], cur = null;
+    txt.split('\n').forEach(l => {
+        l = l.trim();
+        if (l.startsWith('#EXTINF:')) {
+            cur = {
+                id: Math.random(), src: src.name, src_id: src.id,
+                t: l.split(',').pop().trim(),
+                i: (l.match(/tvg-logo="([^"]*)"/) || [])[1] || ''
+            };
+        } else if (l.startsWith('#EXTVLCOPT:')) {
+            // Handle VLC options like # EXTVLCOPT:http-user-agent=...
+            if (!cur) cur = { id: Math.random(), src: src.name, t: 'Channel', i: '', h: {} };
+            if (!cur.h) cur.h = {};
+            const opt = l.substring(11).trim();
+            if (opt.startsWith('http-user-agent=')) cur.h['User-Agent'] = opt.substring(16);
+            if (opt.startsWith('http-referrer=')) cur.h['Referer'] = opt.substring(14);
+        } else if (l.startsWith('http')) {
+            if (!cur) cur = { id: Math.random(), src: src.name, t: 'Channel', i: '' };
+            // Split on first pipe: URL|Header-Key=value&Header-Key2=value2
+            const pipeIdx = l.indexOf('|');
+            if (pipeIdx !== -1) {
+                cur.u = l.substring(0, pipeIdx).trim();
+                const headerStr = l.substring(pipeIdx + 1).trim();
+                if (!cur.h) cur.h = {};
+                headerStr.split('&').forEach(part => {
+                    const eqIdx = part.indexOf('=');
+                    if (eqIdx !== -1) {
+                        const key = part.substring(0, eqIdx).trim();
+                        const val = part.substring(eqIdx + 1).trim();
+                        cur.h[key] = val;
+                    }
+                });
+            } else {
+                cur.u = l.trim();
+            }
+            if (!cur.d && l.includes('hotstar')) cur.d = { t: 'com.widevine.alpha', l: 'https://pallycon.allinonereborn.workers.dev/api/license/widevine' };
+            out.push({ ...cur }); cur = null;
+        } else if (cur && l.startsWith('#KODIPROP:license_url=')) {
+            cur.d = { t: 'com.widevine.alpha', l: l.split('=').slice(1).join('=') };
+        }
+    });
+    return out;
 }
 
-/* =========================================================
-   PLAYER NAVIGATION
-   ========================================================= */
-function openPlayer(event) {
-    if (!event.streamUrl) {
-        alert(`⚠️ "${event.title}" has no stream URL. The stream may not be available yet.`);
-        return;
-    }
+function prsSl(d, src) {
+    let arr = d.matches || d.data || d;
+    if (!Array.isArray(arr)) return [];
+    let out = [];
+    arr.forEach(i => {
+        (i.matches || [i]).forEach(m => {
+            const streamUrl = m.video_url || m.src_url || m.streamUrl;
+            const title = m.match_name || m.event_name || m.title;
+            const logo = m.src || m.image || m.logo;
+            const isLive = m.isLive === true || m.isLive === "true";
+            out.push({
+                id: m.contentId || m.id,
+                t: title,
+                i: logo,
+                s: isLive ? 'LIVE' : 'UPCOMING',
+                u: streamUrl,
+                src: src.name,
+                src_id: src.id,
+                cat: m.event_category || "",
+                ch: m.broadcast_channel || "",
+                lang: m.audioLanguageName || ""
+            });
+        });
+    });
+    return out;
+}
 
-    const url = new URL('player.html', window.location.href);
-    url.searchParams.set('streamUrl', event.streamUrl);
-    url.searchParams.set('title', event.title);
-    url.searchParams.set('source', event.source);
-    url.searchParams.set('category', event.category || '');
-    url.searchParams.set('back', `Sports.html?provider=${currentProvider}`);
+function prsSp(d, src) {
+    // Combine live data and upcoming arrays
+    let arr = [...(d.data || []), ...(d.upcoming || [])];
+    if (arr.length === 0 && Array.isArray(d)) arr = d;
+    if (arr.length === 0) return [];
 
-    if (event.drm) {
-        if (event.drm.licenseUrl) url.searchParams.set('drmLicenseUrl', event.drm.licenseUrl);
-        if (event.drm.type) url.searchParams.set('drmType', event.drm.type);
-    }
+    const out = [];
+    const now = new Date();
 
-    if (event.headers && Object.keys(event.headers).length > 0) {
-        url.searchParams.set('headers', JSON.stringify(event.headers));
-    }
+    arr.forEach(i => {
+        let u = null, drm = null;
 
-    window.location.href = url.toString();
+        // Sony PRO logic: multiple_audio_links -> DATA -> [Any Provider Key] -> Playback_videoURL / WIDEVINE
+        const mal = i.MULTIPLE_AUDIO_LINKS || i.multiple_audio_links;
+        if (mal && mal.length > 0) {
+            const dataObj = mal[0].DATA || mal[0].data;
+            if (dataObj) {
+                for (const key in dataObj) {
+                    const entry = dataObj[key];
+                    if (entry?.Playback_videoURL && entry.Playback_videoURL !== "NA") {
+                        u = entry.Playback_videoURL;
+                        const lic = entry.WIDEVINE || entry.widevine;
+                        if (lic && lic !== "NA") {
+                            drm = { t: 'com.widevine.alpha', l: lic };
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Fallback for stream URL or Trailer
+        if (!u && i.stream_info?.platformVariants?.videoUrl && i.stream_info.platformVariants.videoUrl !== "NA") {
+            u = i.stream_info.platformVariants.videoUrl;
+        }
+        if (!u && i.stream_info?.platformVariants?.trailerUrl && i.stream_info.platformVariants.trailerUrl !== "NA") {
+            u = i.stream_info.platformVariants.trailerUrl;
+        }
+
+        // Determine Status based on air_dates and URL availability
+        let s = 'UPCOMING';
+        let headers = {};
+
+        if (u || i.stream_info?.dai_asset_key) {
+            // If no primary URL but we have DAI, use it as fallback
+            if (!u && i.stream_info?.dai_asset_key) {
+                u = i.stream_info.dai_asset_key;
+            }
+
+            s = 'LIVE'; // Default to LIVE if we have a URL
+
+            // Set required headers for Sony Akamai/SSAI streams
+            headers = {
+                'Origin': 'https://www.sonyliv.com',
+                'Referer': 'https://www.sonyliv.com/',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            };
+
+            if (i.air_dates) {
+                try {
+                    // Safe date parsing: "04 Mar 2026, 12:35 AM" -> "04 Mar 2026 12:35 AM"
+                    const startStr = i.air_dates.contractStartDate ? i.air_dates.contractStartDate.replace(/,/g, '') : null;
+                    const endStr = i.air_dates.contractEndDate ? i.air_dates.contractEndDate.replace(/,/g, '') : null;
+
+                    const start = startStr ? new Date(startStr) : null;
+                    const end = endStr ? new Date(endStr) : null;
+
+                    if (start && now < start) s = 'UPCOMING';
+                    else if (end && now > end) s = 'COMPLETED';
+                } catch (e) { }
+            }
+        }
+
+        out.push({
+            id: i.contentId,
+            t: i.video_info?.episodeTitle || i.title || i.video_info?.title || "Sony Liv PRO",
+            i: i.image_cdn?.landscape_thumb || i.image_cdn?.thumbnail || "",
+            s,
+            u,
+            d: drm,
+            h: headers,
+            src: src.name,
+            src_id: src.id,
+            cat: i.video_info?.genres?.[0] || "",
+            ch: i.stream_info?.broadcast_channel || ""
+        });
+    });
+    return out;
+}
+function prsFC(d, src) {
+    // Root-level headers (User-Agent, Referer) apply to all match streams
+    const headers = d.headers || {};
+    const arr = d.matches || [];
+    return arr.map(m => {
+        let streamUrl = m.STREAMING_CDN?.Primary_Playback_URL || m.STREAMING_CDN?.fancode_cdn || null;
+
+        // Try to use auto_streams which contains the full signed master playlist M3U8 string
+        if (m.auto_streams && m.auto_streams.length > 0 && m.auto_streams[0].auto) {
+            try {
+                // Instead of a Blob URL (which is revoked on navigation), store the raw M3U8 string in sessionStorage
+                const autoStr = m.auto_streams[0].auto;
+                const sid = 'fc_auto_' + (m.match_id || Math.random().toString(36).substr(2, 9));
+                sessionStorage.setItem(sid, autoStr);
+                streamUrl = "session:" + sid; // player.js will intercept this
+            } catch (e) {
+                console.error('Failed to store auto_streams into Session', e);
+            }
+        }
+
+        // Android App Fallback Logic: Proxy unsigned Fancode links if raw streamUrl (not session) is found
+        if (streamUrl && !streamUrl.startsWith('session:')) {
+            if (streamUrl.includes('fancode.com') && !streamUrl.includes('hdntl=')) {
+                // Proxy unsigned requests via live222.php backend logic
+                streamUrl = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(streamUrl) + '|Origin=https://allinonereborn.online';
+                // Add default User-Agent and Referer headers for proxy
+                headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+                headers['Referer'] = 'https://allinonereborn.online/fcww/player_world.html';
+            }
+        }
+
+        // Normalise status: LIVE, UPCOMING, COMPLETED
+        const rawStatus = (m.status || m.streamingStatus || '').toUpperCase();
+        let s = 'UPCOMING';
+        if (rawStatus === 'LIVE' || rawStatus === 'STARTED') s = 'LIVE';
+        else if (rawStatus === 'COMPLETED' || rawStatus === 'FINISHED') s = 'COMPLETED';
+
+        const img = m.image ||
+            m.image_cdn?.APP ||
+            m.image_cdn?.PLAYBACK ||
+            m.image_cdn?.TATAPLAY || '';
+
+        return {
+            id: m.match_id,
+            t: m.title,
+            c: m.category || '',
+            i: img,
+            s,
+            u: streamUrl,
+            h: headers,
+            src: src.name,
+            src_id: src.id
+        };
+    });
 }
