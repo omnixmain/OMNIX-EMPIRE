@@ -192,27 +192,37 @@
                 enableWorker: true,
                 lowLatencyMode: false,
                 xhrSetup: function (xhr, url) {
-                    // [NEW] Internal Proxying for HLS.js
-                    const isRestrictedHls = finalStreamUrl.includes('sportsbd') || finalStreamUrl.includes('webiptv.site') || finalStreamUrl.includes('ta.bia-cf.live.pv-cdn.net');
+                    // Internal Proxying for HLS.js
+                    // Fancode CDNs require Referer + UA which can't be set directly in browser.
+                    // This also catches segment requests when finalStreamUrl is a blob: (session M3U8 case).
+                    const isFancodeCDN = url.includes('fancode.com') || url.includes('in-mc-flive') || url.includes('bd-mc-flive');
+                    const isRestrictedHls = isFancodeCDN || finalStreamUrl.includes('sportsbd') || finalStreamUrl.includes('webiptv.site') || finalStreamUrl.includes('ta.bia-cf.live.pv-cdn.net');
                     const hasSpecialHls = requestHeaders['User-Agent'] || requestHeaders['Cookie'] || requestHeaders['Referer'];
 
-                    if ((isRestrictedHls || hasSpecialHls) && !url.startsWith('blob:') && !url.includes('allinonereborn.online')) {
+                    // Never proxy blob: or already-proxied URLs
+                    const skipProxy = url.startsWith('blob:') || url.startsWith('data:') || url.includes('allinonereborn.online') || url.includes('corsproxy.io');
+
+                    if (!skipProxy && (isRestrictedHls || hasSpecialHls)) {
                         let pxHls = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(url);
-                        if (requestHeaders['User-Agent']) pxHls += '|User-Agent=' + encodeURIComponent(requestHeaders['User-Agent']);
-                        if (requestHeaders['Cookie']) pxHls += '|Cookie=' + encodeURIComponent(requestHeaders['Cookie']);
-                        if (requestHeaders['Referer']) pxHls += '|Referer=' + encodeURIComponent(requestHeaders['Referer']);
+                        // Pass Fancode required headers via proxy pipe
+                        const ua = requestHeaders['User-Agent'] || 'ReactNativeVideo/9.3.0 (Linux;Android 13) AndroidXMedia3/1.6.1';
+                        const ref = requestHeaders['Referer'] || 'https://fancode.com/';
+                        if (isFancodeCDN) {
+                            pxHls += '|User-Agent=' + encodeURIComponent(ua);
+                            pxHls += '|Referer=' + encodeURIComponent(ref);
+                        } else {
+                            if (requestHeaders['User-Agent']) pxHls += '|User-Agent=' + encodeURIComponent(requestHeaders['User-Agent']);
+                            if (requestHeaders['Cookie']) pxHls += '|Cookie=' + encodeURIComponent(requestHeaders['Cookie']);
+                            if (requestHeaders['Referer']) pxHls += '|Referer=' + encodeURIComponent(requestHeaders['Referer']);
+                        }
                         xhr.open('GET', pxHls, true);
                     }
 
-                    // Inject custom request headers for HLS.js
+                    // Inject non-forbidden custom request headers for HLS.js
                     if (requestHeaders && Object.keys(requestHeaders).length > 0) {
                         Object.entries(requestHeaders).forEach(([k, v]) => {
                             if (['origin', 'referer', 'user-agent', 'cookie'].includes(k.toLowerCase())) return;
-                            try {
-                                xhr.setRequestHeader(k, v);
-                            } catch (e) {
-                                console.warn('[OMNIX PLAYER] Header set failed:', k);
-                            }
+                            try { xhr.setRequestHeader(k, v); } catch (e) { /* browser may block */ }
                         });
                     }
                 }

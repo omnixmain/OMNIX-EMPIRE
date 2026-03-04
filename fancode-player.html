@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>OMNIX · Fancode Player</title>
+    <meta name="description" content="OMNIX Fancode Premium Sports Video Player with HD quality selection.">
+    <meta name="theme-color" content="#0a0e1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer">
+
+    <!-- Video.js CSS -->
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- HLS.js — the PRIMARY engine (must load before Video.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.14/dist/hls.min.js"></script>
+    <!-- Video.js — UI controls only -->
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <!-- videojs-contrib-quality-levels — quality level tracking -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels@4.0.0/dist/videojs-contrib-quality-levels.min.js"></script>
+    <!-- videojs-hls-quality-selector — quality menu UI -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/videojs-hls-quality-selector@2.0.0/dist/videojs-hls-quality-selector.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --acc: #f59e0b;
+            --bg-deep: #060810;
+            --text-secondary: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: var(--bg-deep);
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #f1f5f9;
+        }
+
+        #page-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            background: linear-gradient(135deg, #0a0e1a 0%, #0f172a 50%, #0a1628 100%);
+        }
+
+        /* ---- TOP BAR ---- */
+        #top-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            background: linear-gradient(180deg, rgba(6, 8, 16, 0.98) 0%, rgba(6, 8, 16, 0) 100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 200;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        #top-bar.hidden-bar {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+
+        #back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            background: rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        #back-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+            transform: scale(1.07);
+        }
+
+        #title-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        #display-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        #display-source {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        #live-dot {
+            width: 7px;
+            height: 7px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse-dot 1.2s infinite;
+            display: none;
+        }
+
+        #live-dot.active {
+            display: inline-block;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.7);
+            }
+        }
+
+        .omnix-badge {
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.08em;
+            white-space: nowrap;
+            flex-shrink: 0;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+            text-transform: uppercase;
+        }
+
+        /* ---- VIDEO AREA ---- */
+        #video-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+        }
+
+        /* Native <video> fills container */
+        #omnix-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            outline: none;
+            display: block;
+        }
+
+        /* Video.js custom controls overlay */
+        #vjs-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0.92) 0%, transparent 100%);
+            padding: 10px 14px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: opacity 0.4s ease;
+        }
+
+        #vjs-controls.hidden-bar {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Progress bar */
+        #progress-wrap {
+            position: relative;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: height 0.15s;
+        }
+
+        #progress-wrap:hover {
+            height: 6px;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            width: 0%;
+            pointer-events: none;
+            transition: width 0.25s linear;
+        }
+
+        #progress-thumb {
+            position: absolute;
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+            pointer-events: none;
+            display: none;
+        }
+
+        #progress-wrap:hover #progress-thumb {
+            display: block;
+        }
+
+        /* Controls row */
+        #ctrl-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ctrl-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 17px;
+            cursor: pointer;
+            padding: 4px 6px;
+            transition: color 0.15s, transform 0.15s;
+            display: flex;
+            align-items: center;
+        }
+
+        .ctrl-btn:hover {
+            color: white;
+            transform: scale(1.12);
+        }
+
+        #volume-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        #volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 70px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        #volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        #time-display {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        /* Speed button */
+        #speed-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        #speed-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Quality menu */
+        #quality-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #quality-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        #quality-menu {
+            position: absolute;
+            bottom: 56px;
+            right: 14px;
+            background: rgba(10, 14, 26, 0.97);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 140px;
+            z-index: 200;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+            display: none;
+            backdrop-filter: blur(16px);
+        }
+
+        #quality-menu.open {
+            display: block;
+        }
+
+        #quality-menu .q-header {
+            padding: 8px 12px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .q-item {
+            padding: 8px 14px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.15s;
+        }
+
+        .q-item:hover {
+            background: rgba(59, 130, 246, 0.18);
+        }
+
+        .q-item.active {
+            background: rgba(59, 130, 246, 0.25);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .q-item .q-check {
+            font-size: 10px;
+            color: var(--primary);
+            opacity: 0;
+        }
+
+        .q-item.active .q-check {
+            opacity: 1;
+        }
+
+        /* Speed menu */
+        #speed-menu {
+            position: absolute;
+            bottom: 56px;
+            right: 90px;
+            background: rgba(10, 14, 26, 0.97);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 120px;
+            z-index: 200;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+            display: none;
+            backdrop-filter: blur(16px);
+        }
+
+        #speed-menu.open {
+            display: block;
+        }
+
+        #speed-menu .q-header {
+            padding: 8px 12px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        /* Fullscreen btn */
+        #fullscreen-btn {
+            font-size: 15px;
+        }
+
+        /* ---- LOADER ---- */
+        #loader-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, #0d1b35 0%, #060810 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            gap: 24px;
+            transition: opacity 0.5s ease;
+        }
+
+        #loader-overlay.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-logo {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--primary), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .loader-ring {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(59, 130, 246, 0.15);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loader-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* ---- ERROR OVERLAY ---- */
+        #error-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, #1a0818 0%, #060810 100%);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 150;
+            padding: 24px;
+            text-align: center;
+            gap: 16px;
+        }
+
+        .error-icon {
+            width: 72px;
+            height: 72px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #ef4444;
+        }
+
+        #error-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+
+        #error-message {
+            font-size: 13px;
+            color: var(--text-secondary);
+            max-width: 380px;
+            line-height: 1.6;
+        }
+
+        .error-btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .error-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+
+        /* ---- OVERLAY OVERLAYS (buffering, big play) ---- */
+        #buffering-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 54px;
+            height: 54px;
+            border: 3px solid rgba(255, 255, 255, 0.15);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+            display: none;
+            z-index: 80;
+            pointer-events: none;
+        }
+
+        #big-play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background: rgba(59, 130, 246, 0.8);
+            backdrop-filter: blur(8px);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: white;
+            z-index: 60;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.5);
+            transition: all 0.2s ease;
+        }
+
+        #big-play-btn:hover {
+            background: var(--primary);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        #big-play-btn.visible {
+            display: flex;
+        }
+
+        /* Status chips */
+        #status-chips {
+            position: absolute;
+            bottom: 56px;
+            left: 14px;
+            display: flex;
+            gap: 8px;
+            z-index: 90;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        #status-chips.hidden-bar {
+            opacity: 0;
+        }
+
+        .chip {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+
+        .chip i {
+            font-size: 9px;
+            opacity: 0.7;
+        }
+
+        /* Mobile */
+        @media (max-width: 480px) {
+            #display-title {
+                font-size: 13px;
+            }
+
+            #volume-wrap {
+                display: none;
+            }
+
+            #big-play-btn {
+                width: 56px;
+                height: 56px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="page-wrapper">
+
+        <!-- TOP BAR -->
+        <div id="top-bar">
+            <a id="back-btn" href="fancode.html" title="Back"><i class="fas fa-arrow-left"></i></a>
+            <div id="title-info">
+                <div id="display-title">Loading stream...</div>
+                <div id="display-source">
+                    <span id="live-dot" class="active"></span>
+                    <span id="source-text">Fancode · OMNIX</span>
+                </div>
+            </div>
+            <div class="omnix-badge">⚡ OMNIX</div>
+        </div>
+
+        <!-- VIDEO CONTAINER -->
+        <div id="video-container">
+            <video id="omnix-video" playsinline crossorigin="anonymous"></video>
+
+            <!-- Big Play -->
+            <div id="big-play-btn"><i class="fas fa-play" style="margin-left:4px"></i></div>
+            <!-- Buffering -->
+            <div id="buffering-spinner"></div>
+
+            <!-- Status chips -->
+            <div id="status-chips">
+                <div class="chip"><i class="fas fa-signal"></i><span id="stream-type-chip">HLS · Live</span></div>
+                <div class="chip"><i class="fas fa-shield-alt" style="color:#3b82f6"></i>OMNIX SECURE</div>
+            </div>
+
+            <!-- QUALITY MENU -->
+            <div id="quality-menu">
+                <div class="q-header"><i class="fas fa-sliders-h" style="margin-right:5px"></i>Quality</div>
+                <!-- items injected by JS -->
+            </div>
+            <!-- SPEED MENU -->
+            <div id="speed-menu">
+                <div class="q-header"><i class="fas fa-tachometer-alt" style="margin-right:5px"></i>Speed</div>
+            </div>
+
+            <!-- CUSTOM CONTROLS -->
+            <div id="vjs-controls">
+                <!-- Progress -->
+                <div id="progress-wrap">
+                    <div id="progress-fill">
+                        <div id="progress-thumb"></div>
+                    </div>
+                </div>
+                <!-- Control row -->
+                <div id="ctrl-row">
+                    <button class="ctrl-btn" id="play-pause-btn" title="Play/Pause"><i class="fas fa-play"
+                            id="play-icon"></i></button>
+                    <div id="volume-wrap">
+                        <button class="ctrl-btn" id="mute-btn" title="Mute"><i class="fas fa-volume-up"
+                                id="vol-icon"></i></button>
+                        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
+                    </div>
+                    <span id="time-display">0:00 / --:--</span>
+                    <div class="spacer"></div>
+                    <button id="speed-btn" title="Speed">1×</button>
+                    <button id="quality-btn" title="Quality"><i class="fas fa-layer-group"></i> <span
+                            id="quality-label">AUTO</span></button>
+                    <button class="ctrl-btn" id="fullscreen-btn" title="Fullscreen"><i class="fas fa-expand"
+                            id="fs-icon"></i></button>
+                </div>
+            </div>
+
+            <!-- LOADER -->
+            <div id="loader-overlay">
+                <div class="loader-logo">OMNIX</div>
+                <div class="loader-ring"></div>
+                <div class="loader-text" id="loader-status">Connecting to Fancode stream...</div>
+            </div>
+
+            <!-- ERROR -->
+            <div id="error-overlay">
+                <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div id="error-title">Stream Error</div>
+                <div id="error-message">Unable to load the stream. Please try again.</div>
+                <a id="error-back-btn" href="fancode.html" class="error-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Events
+                </a>
+            </div>
+        </div><!-- /video-container -->
+
+    </div><!-- /page-wrapper -->
+
+    <script>
+        (function () {
+            'use strict';
+
+            // ================================================================
+            // 1. URL PARAMS
+            // ================================================================
+            const params = new URLSearchParams(window.location.search);
+            const rawStreamUrl = params.get('streamUrl') || '';
+            const title = decodeURIComponent(params.get('title') || 'Fancode Live');
+            const source = decodeURIComponent(params.get('source') || 'Fancode');
+            const category = decodeURIComponent(params.get('category') || 'Sports');
+            const backPage = params.get('back') || 'fancode.html';
+
+            let requestHeaders = {};
+            try {
+                const rh = params.get('headers');
+                if (rh) requestHeaders = JSON.parse(decodeURIComponent(rh));
+            } catch (e) { }
+
+            // ================================================================
+            // 2. DOM REFS
+            // ================================================================
+            const videoEl = document.getElementById('omnix-video');
+            const topBar = document.getElementById('top-bar');
+            const controlsEl = document.getElementById('vjs-controls');
+            const statusChips = document.getElementById('status-chips');
+            const loaderOverlay = document.getElementById('loader-overlay');
+            const loaderStatus = document.getElementById('loader-status');
+            const errorOverlay = document.getElementById('error-overlay');
+            const errorTitle = document.getElementById('error-title');
+            const errorMessage = document.getElementById('error-message');
+            const qualityMenu = document.getElementById('quality-menu');
+            const qualityBtn = document.getElementById('quality-btn');
+            const qualityLabel = document.getElementById('quality-label');
+            const speedMenu = document.getElementById('speed-menu');
+            const speedBtn = document.getElementById('speed-btn');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const playIcon = document.getElementById('play-icon');
+            const muteBtn = document.getElementById('mute-btn');
+            const volIcon = document.getElementById('vol-icon');
+            const volSlider = document.getElementById('volume-slider');
+            const progressWrap = document.getElementById('progress-wrap');
+            const progressFill = document.getElementById('progress-fill');
+            const timeDisplay = document.getElementById('time-display');
+            const fsBtn = document.getElementById('fullscreen-btn');
+            const fsIcon = document.getElementById('fs-icon');
+            const bigPlay = document.getElementById('big-play-btn');
+            const bufferSpinner = document.getElementById('buffering-spinner');
+            const backBtn = document.getElementById('back-btn');
+            const errorBackBtn = document.getElementById('error-back-btn');
+
+            // ================================================================
+            // 3. FILL UI
+            // ================================================================
+            document.getElementById('display-title').textContent = title;
+            document.getElementById('source-text').textContent = source + ' · ' + category;
+            document.title = title + ' — OMNIX Player';
+            backBtn.href = backPage;
+            errorBackBtn.href = backPage;
+
+            // ================================================================
+            // 4. AUTO-HIDE UI ON IDLE
+            // ================================================================
+            let hideTimer;
+            function showUI() {
+                topBar.classList.remove('hidden-bar');
+                controlsEl.classList.remove('hidden-bar');
+                statusChips.classList.remove('hidden-bar');
+                clearTimeout(hideTimer);
+                hideTimer = setTimeout(() => {
+                    if (!videoEl.paused) {
+                        topBar.classList.add('hidden-bar');
+                        controlsEl.classList.add('hidden-bar');
+                        statusChips.classList.add('hidden-bar');
+                    }
+                }, 4000);
+            }
+            document.addEventListener('mousemove', showUI);
+            document.addEventListener('touchstart', showUI, { passive: true });
+            showUI();
+
+            // ================================================================
+            // 5. HELPERS
+            // ================================================================
+            function hideLoader() {
+                loaderOverlay.classList.add('hide');
+            }
+
+            function showError(heading, msg) {
+                errorTitle.textContent = heading;
+                errorMessage.textContent = msg;
+                errorOverlay.style.display = 'flex';
+                loaderOverlay.classList.add('hide');
+                document.getElementById('live-dot').classList.remove('active');
+            }
+
+            function fmtTime(s) {
+                if (!s || isNaN(s) || !isFinite(s)) return '--:--';
+                const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+                return m + ':' + (sec < 10 ? '0' : '') + sec;
+            }
+
+            // ================================================================
+            // 6. RESOLVE SESSION STREAM (auto_streams blob support)
+            // ================================================================
+            function resolveStreamUrl(raw) {
+                if (!raw) return null;
+                if (!raw.startsWith('session:')) return raw;
+                const sid = raw.replace('session:', '');
+                const autoStr = sessionStorage.getItem(sid);
+                if (!autoStr) {
+                    showError('Stream Expired', 'Please go back and reopen the match.');
+                    return null;
+                }
+                // Try to extract best sub-stream URL from master M3U8 text
+                const best = extractBestQuality(autoStr);
+                if (best && best.startsWith('http')) {
+                    loaderStatus.textContent = 'Resolved: ' + (best.match(/(1080p|720p|540p|480p|360p|240p)/)?.[0] || 'stream');
+                    return best;
+                }
+                // Serve entire M3U8 as Blob
+                const blob = new Blob([autoStr], { type: 'application/vnd.apple.mpegurl' });
+                return URL.createObjectURL(blob);
+            }
+
+            function extractBestQuality(txt) {
+                const lines = txt.split('\n').map(l => l.trim()).filter(l => l);
+                const order = ['1080p', '720p', '540p', '480p', '360p', '240p'];
+                const map = {}; let first = null;
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].startsWith('#EXT-X-STREAM-INF') && lines[i + 1] && !lines[i + 1].startsWith('#')) {
+                        const url = lines[i + 1];
+                        if (!first) first = url;
+                        for (const q of order) {
+                            if (url.includes('/' + q + '.m3u8') || url.includes('_' + q) || url.toLowerCase().includes(q)) {
+                                if (!map[q]) map[q] = url; break;
+                            }
+                        }
+                    }
+                }
+                for (const q of order) if (map[q]) return map[q];
+                return first;
+            }
+
+            // ================================================================
+            // 7. QUALITY LEVELS (from HLS manifest)
+            // ================================================================
+            let qualityLevels = []; // [{height, bitrate, index}]
+            let currentLevel = -1; // -1 = AUTO
+
+            function buildQualityMenu(levels) {
+                qualityMenu.innerHTML = '<div class="q-header"><i class="fas fa-sliders-h" style="margin-right:5px"></i>Quality</div>';
+                // AUTO entry
+                const auto = document.createElement('div');
+                auto.className = 'q-item active';
+                auto.dataset.level = '-1';
+                auto.innerHTML = '<i class="fas fa-check q-check"></i><span>AUTO</span><span style="color:rgba(255,255,255,.3);font-size:11px;margin-left:auto">Adaptive</span>';
+                auto.addEventListener('click', () => setLevel(-1));
+                qualityMenu.appendChild(auto);
+
+                levels.forEach((lvl, i) => {
+                    const item = document.createElement('div');
+                    item.className = 'q-item';
+                    item.dataset.level = i;
+                    const label = lvl.height ? lvl.height + 'p' : 'Level ' + (i + 1);
+                    const kbps = lvl.bitrate ? Math.round(lvl.bitrate / 1000) + ' kbps' : '';
+                    item.innerHTML = '<i class="fas fa-check q-check"></i><span>' + label + '</span><span style="color:rgba(255,255,255,.3);font-size:11px;margin-left:auto">' + kbps + '</span>';
+                    item.addEventListener('click', () => setLevel(i));
+                    qualityMenu.appendChild(item);
+                });
+            }
+
+            function setLevel(idx) {
+                currentLevel = idx;
+                if (hlsInst) hlsInst.currentLevel = idx;
+                const label = idx === -1 ? 'AUTO' : (qualityLevels[idx]?.height ? qualityLevels[idx].height + 'p' : 'Level ' + (idx + 1));
+                qualityLabel.textContent = label;
+                // Update active state
+                document.querySelectorAll('#quality-menu .q-item').forEach(el => {
+                    const elLevel = parseInt(el.dataset.level);
+                    el.classList.toggle('active', elLevel === idx);
+                });
+                qualityMenu.classList.remove('open');
+            }
+
+            // ================================================================
+            // 8. SPEED MENU BUILD
+            // ================================================================
+            const speedList = [0.5, 0.75, 1, 1.25, 1.5, 2];
+            function buildSpeedMenu() {
+                const hdr = speedMenu.querySelector('.q-header');
+                speedMenu.innerHTML = '';
+                speedMenu.appendChild(hdr);
+                speedList.forEach(s => {
+                    const item = document.createElement('div');
+                    item.className = 'q-item' + (s === 1 ? ' active' : '');
+                    item.dataset.speed = s;
+                    item.innerHTML = '<i class="fas fa-check q-check"></i><span>' + s + '×</span>';
+                    item.addEventListener('click', () => {
+                        videoEl.playbackRate = s;
+                        speedBtn.textContent = s + '×';
+                        document.querySelectorAll('#speed-menu .q-item').forEach(el => {
+                            el.classList.toggle('active', parseFloat(el.dataset.speed) === s);
+                        });
+                        speedMenu.classList.remove('open');
+                    });
+                    speedMenu.appendChild(item);
+                });
+            }
+            buildSpeedMenu();
+
+            // ================================================================
+            // 9. CONTROLS WIRING
+            // ================================================================
+            function updatePlayIcon() {
+                playIcon.className = videoEl.paused ? 'fas fa-play' : 'fas fa-pause';
+            }
+
+            playPauseBtn.addEventListener('click', () => {
+                videoEl.paused ? videoEl.play() : videoEl.pause();
+                showUI();
+            });
+
+            bigPlay.addEventListener('click', () => {
+                videoEl.play();
+                bigPlay.classList.remove('visible');
+            });
+
+            muteBtn.addEventListener('click', () => {
+                videoEl.muted = !videoEl.muted;
+                volIcon.className = videoEl.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+            });
+
+            volSlider.addEventListener('input', () => {
+                videoEl.volume = parseFloat(volSlider.value);
+                videoEl.muted = (videoEl.volume === 0);
+                volIcon.className = videoEl.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+            });
+
+            // Progress bar
+            progressWrap.addEventListener('click', (e) => {
+                if (!videoEl.duration || !isFinite(videoEl.duration)) return;
+                const rect = progressWrap.getBoundingClientRect();
+                const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                videoEl.currentTime = pct * videoEl.duration;
+            });
+
+            videoEl.addEventListener('timeupdate', () => {
+                const dur = videoEl.duration;
+                const cur = videoEl.currentTime;
+                if (dur && isFinite(dur)) {
+                    progressFill.style.width = ((cur / dur) * 100) + '%';
+                    timeDisplay.textContent = fmtTime(cur) + ' / ' + fmtTime(dur);
+                } else {
+                    // Live stream
+                    timeDisplay.textContent = fmtTime(cur) + ' / LIVE';
+                    progressFill.style.width = '100%';
+                }
+            });
+
+            // Fullscreen
+            fsBtn.addEventListener('click', () => {
+                const container = document.getElementById('video-container');
+                if (!document.fullscreenElement) {
+                    (container.requestFullscreen || container.webkitRequestFullscreen).call(container);
+                } else {
+                    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+                }
+            });
+            document.addEventListener('fullscreenchange', () => {
+                fsIcon.className = document.fullscreenElement ? 'fas fa-compress' : 'fas fa-expand';
+            });
+
+            // Quality / Speed menu toggle
+            qualityBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                speedMenu.classList.remove('open');
+                qualityMenu.classList.toggle('open');
+            });
+            speedBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                qualityMenu.classList.remove('open');
+                speedMenu.classList.toggle('open');
+            });
+            document.addEventListener('click', () => {
+                qualityMenu.classList.remove('open');
+                speedMenu.classList.remove('open');
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+                if (e.code === 'Space' || e.code === 'KeyK') { e.preventDefault(); videoEl.paused ? videoEl.play() : videoEl.pause(); showUI(); }
+                if (e.code === 'KeyF') fsBtn.click();
+                if (e.code === 'KeyM') muteBtn.click();
+                if (e.code === 'ArrowRight') { videoEl.currentTime += 10; showUI(); }
+                if (e.code === 'ArrowLeft') { videoEl.currentTime -= 10; showUI(); }
+                if (e.code === 'Escape') window.location.href = backPage;
+            });
+
+            // Touch double-tap seek
+            let lastTap = 0;
+            document.getElementById('video-container').addEventListener('touchend', (e) => {
+                const now = Date.now();
+                if (now - lastTap < 350 && now - lastTap > 0) {
+                    const x = e.changedTouches[0].clientX;
+                    videoEl.currentTime += (x < window.innerWidth / 2) ? -10 : 10;
+                }
+                lastTap = now;
+            });
+
+            // Video events → UI state
+            videoEl.addEventListener('play', () => { updatePlayIcon(); bigPlay.classList.remove('visible'); bufferSpinner.style.display = 'none'; });
+            videoEl.addEventListener('pause', () => { updatePlayIcon(); if (!videoEl.ended) bigPlay.classList.add('visible'); });
+            videoEl.addEventListener('waiting', () => { bufferSpinner.style.display = 'block'; });
+            videoEl.addEventListener('playing', () => { bufferSpinner.style.display = 'none'; hideLoader(); document.getElementById('live-dot').classList.add('active'); });
+            videoEl.addEventListener('ended', () => { updatePlayIcon(); });
+            videoEl.addEventListener('volumechange', () => {
+                volIcon.className = videoEl.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+                if (!videoEl.muted) volSlider.value = videoEl.volume;
+            });
+            videoEl.addEventListener('loadeddata', () => { setTimeout(hideLoader, 400); });
+
+            // ================================================================
+            // 10. HLS.JS ENGINE  — primary for all HLS/M3U8 streams
+            // ================================================================
+            if (!rawStreamUrl) {
+                showError('No Stream URL', 'No stream URL was provided. Please go back to events list.');
+                return;
+            }
+
+            const finalStreamUrl = resolveStreamUrl(rawStreamUrl);
+            if (!finalStreamUrl) return;
+
+            const isBlob = finalStreamUrl.startsWith('blob:');
+            const isM3u8 = isBlob || finalStreamUrl.toLowerCase().includes('.m3u8') || finalStreamUrl.includes('live222.php');
+            document.getElementById('stream-type-chip').textContent = isM3u8 ? 'HLS · Live' : 'MP4';
+
+            // Build Fancode proxy URL for HLS segment requests
+            function buildFancodeProxy(url) {
+                if (!url) return url;
+                if (url.startsWith('blob:') || url.startsWith('data:')) return url;
+                if (url.includes('allinonereborn.online')) return url;
+                const ua = requestHeaders['User-Agent'] || 'ReactNativeVideo/9.3.0 (Linux;Android 13) AndroidXMedia3/1.6.1';
+                const ref = requestHeaders['Referer'] || 'https://fancode.com/';
+                let px = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(url);
+                px += '|User-Agent=' + encodeURIComponent(ua);
+                px += '|Referer=' + encodeURIComponent(ref);
+                return px;
+            }
+
+            let hlsInst = null;
+
+            function startHls(srcUrl) {
+                if (!Hls.isSupported()) {
+                    // Safari native HLS
+                    if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+                        videoEl.src = srcUrl;
+                        videoEl.play().catch(() => { });
+                    } else {
+                        showError('Browser Not Supported', 'HLS.js is not supported in this browser.');
+                    }
+                    return;
+                }
+
+                hlsInst = new Hls({
+                    maxLoadingRetry: 6,
+                    fragLoadingMaxRetry: 6,
+                    enableWorker: true,
+                    lowLatencyMode: false,
+                    startLevel: -1, // AUTO quality start
+
+                    xhrSetup: function (xhr, url) {
+                        // Proxy Fancode/restricted CDN segments through allinonereborn
+                        const isFancode = url.includes('fancode.com') || url.includes('in-mc-flive') || url.includes('bd-mc-flive') || url.includes('akamaized') || url.includes('akamaicdn');
+                        const isRestricted = isFancode || finalStreamUrl.includes('sportsbd') || finalStreamUrl.includes('webiptv.site');
+                        const hasHeaders = requestHeaders['User-Agent'] || requestHeaders['Referer'] || requestHeaders['Cookie'];
+                        const skipProxy = url.startsWith('blob:') || url.startsWith('data:') || url.includes('allinonereborn.online') || url.includes('corsproxy.io');
+
+                        if (!skipProxy && (isRestricted || hasHeaders)) {
+                            let px = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(url);
+                            const ua = requestHeaders['User-Agent'] || 'ReactNativeVideo/9.3.0 (Linux;Android 13) AndroidXMedia3/1.6.1';
+                            const ref = requestHeaders['Referer'] || 'https://fancode.com/';
+                            if (isFancode || hasHeaders) {
+                                px += '|User-Agent=' + encodeURIComponent(ua);
+                                px += '|Referer=' + encodeURIComponent(ref);
+                            }
+                            if (requestHeaders['Cookie']) px += '|Cookie=' + encodeURIComponent(requestHeaders['Cookie']);
+                            xhr.open('GET', px, true);
+                        }
+
+                        // Inject non-forbidden headers
+                        Object.entries(requestHeaders).forEach(([k, v]) => {
+                            if (['origin', 'referer', 'user-agent', 'cookie'].includes(k.toLowerCase())) return;
+                            try { xhr.setRequestHeader(k, v); } catch (e) { }
+                        });
+                    }
+                });
+
+                // Quality levels from manifest
+                hlsInst.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+                    qualityLevels = (data.levels || []).map((l, i) => ({
+                        height: l.height || 0,
+                        bitrate: l.bitrate || 0,
+                        index: i
+                    })).sort((a, b) => b.height - a.height);
+                    buildQualityMenu(qualityLevels);
+                    loaderStatus.textContent = qualityLevels.length ? 'Loaded ' + qualityLevels.length + ' quality levels' : 'Stream ready';
+                });
+
+                // Track current playing level label
+                hlsInst.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
+                    const lvl = hlsInst.levels[data.level];
+                    if (lvl) {
+                        const lbl = lvl.height ? lvl.height + 'p' : 'Level ' + (data.level + 1);
+                        if (currentLevel === -1) qualityLabel.textContent = 'AUTO (' + lbl + ')';
+                    }
+                });
+
+                hlsInst.on(Hls.Events.ERROR, (event, data) => {
+                    console.error('[OMNIX] HLS Error:', data.type, data.details, data);
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                console.warn('[OMNIX] Network error — retrying...');
+                                hlsInst.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                console.warn('[OMNIX] Media error — recovering...');
+                                hlsInst.recoverMediaError();
+                                break;
+                            default:
+                                showError('Stream Error', 'HLS Error: ' + data.details + '. The stream may have ended or been blocked by CDN.');
+                        }
+                    }
+                });
+
+                hlsInst.loadSource(srcUrl);
+                hlsInst.attachMedia(videoEl);
+
+                videoEl.addEventListener('loadedmetadata', () => {
+                    videoEl.play().catch(e => { console.warn('[OMNIX] Autoplay blocked:', e); bigPlay.classList.add('visible'); });
+                }, { once: true });
+
+                // Fallback: hide loader after 10s
+                setTimeout(hideLoader, 10000);
+            }
+
+            // MP4 / non-HLS
+            function startDirect(srcUrl) {
+                videoEl.src = srcUrl;
+                videoEl.play().catch(() => { bigPlay.classList.add('visible'); });
+                setTimeout(hideLoader, 8000);
+            }
+
+            // ---- LAUNCH ----
+            if (isM3u8) {
+                loaderStatus.textContent = 'Starting HLS engine...';
+                // If it's the allinonereborn proxy URL, load it directly (already proxied)
+                const srcToLoad = finalStreamUrl;
+                startHls(srcToLoad);
+            } else {
+                loaderStatus.textContent = 'Loading video...';
+                startDirect(finalStreamUrl);
+            }
+
+            // Back button destroys HLS instance cleanly
+            backBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (hlsInst) { hlsInst.destroy(); hlsInst = null; }
+                window.location.href = backPage;
+            });
+            errorBackBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (hlsInst) { hlsInst.destroy(); hlsInst = null; }
+                window.location.href = backPage;
+            });
+
+        })();
+    </script>
+</body>
+
+</html>

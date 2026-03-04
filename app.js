@@ -60,6 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadProvider(p, push = true) {
+    // ── Fancode → open dedicated fancode.html page ──
+    if (p.id === 'fcin') {
+        window.location.href = 'fancode.html';
+        return;
+    }
+
     if (push) {
         window.location.hash = 'provider=' + p.id;
         return; // The hashchange event will trigger the actual load immediately

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancode Live Events - Live Sports Streaming</title>
+
+    <!-- SEO & Meta Tags (Cloned from reference) -->
+    <meta name="description"
+        content="Watch live sports streaming on Fancode Player. Live cricket, football, and sports events with multiple player options. HD quality streaming with IN and BD servers.">
+    <meta name="keywords"
+        content="sports streaming, sports live, watch sports cricket, watch fancode, live stream sports, cricket live, football live, sports events, live matches, hd sports streaming">
+    <meta name="author" content="OMNIX EMPIRE">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:title" content="Fancode Player - Live Sports Streaming">
+    <meta property="og:description"
+        content="Watch live sports streaming on Fancode Player. Live cricket, football, and sports events with multiple player options.">
+    <meta property="og:type" content="website">
+    <meta name="referrer" content="no-referrer">
+
+    <meta name="theme-color" content="#1e40af">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Custom animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Premium & AdFree badges */
+        .premium-badge {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+        }
+
+        .adfree-indicator {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 transition-colors duration-300">
+
+    <!-- Header -->
+    <header
+        class="bg-gradient-to-r from-blue-900 to-indigo-800 text-white py-6 px-4 rounded-xl shadow-lg mb-8 mx-4 mt-4 relative overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-10"></div>
+        <!-- Decorative circles -->
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-500 opacity-20 rounded-full blur-2xl"></div>
+
+        <div class="container mx-auto text-center relative z-10">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2 tracking-tight">Watch Fancode With OMNIX</h1>
+            <div id="live-counter"
+                class="inline-block bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold shadow-md transition-all hover:bg-white/30 hover:scale-105 filter drop-shadow-sm">
+                <i class="fas fa-spinner fa-spin mr-2"></i>Loading events...
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 max-w-7xl">
+
+        <!-- Category Filter -->
+        <div class="mb-8 bg-white rounded-xl shadow-md p-5 border border-gray-100">
+            <h2 class="text-lg font-bold mb-4 text-gray-800 flex items-center">
+                <i class="fas fa-filter mr-2 text-blue-500"></i> Filter by Category
+            </h2>
+            <div id="category-filters" class="flex flex-wrap gap-3 custom-scrollbar overflow-x-auto pb-2">
+                <button
+                    class="category-filter-btn px-5 py-2 rounded-full bg-blue-600 text-white text-sm font-medium transition-all hover:bg-blue-700 active:scale-95 shadow border border-transparent"
+                    data-category="all">
+                    <i class="fas fa-globe mr-2"></i>All Events
+                </button>
+                <!-- Categories will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Matches Grid -->
+        <div id="matches-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
+            <!-- Loading State -->
+            <div id="loading-state" class="col-span-full flex flex-col items-center justify-center py-20">
+                <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4">
+                </div>
+                <p class="text-gray-600 text-lg font-medium animate-pulse">Fetching live data from Fancode.....</p>
+            </div>
+        </div>
+
+        <!-- No Matches State (Hidden by default) -->
+        <div id="no-matches-state" class="hidden flex-col items-center justify-center py-16 text-center">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-calendar-times text-4xl text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-700 mb-2">No Matches Found</h3>
+            <p class="text-gray-500 max-w-md mx-auto">There are currently no live or upcoming matches for the selected
+                category. Please check back later.</p>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <!-- Telegram Button -->
+        <a href="#" target="_blank"
+            class="w-14 h-14 bg-gradient-to-tr from-blue-500 to-sky-400 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 hover:shadow-cyan-500/50 active:scale-95">
+            <i class="fab fa-telegram-plane text-2xl ml-[-2px] mt-[2px]"></i>
+        </a>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = 'https://raw.githubusercontent.com/jitendra-unatti/fancode/fe98437cfea2582b6c6153f990b112467ad1ec63/data/fancode.json';
+
+        // State
+        let allMatches = [];
+        let categories = new Set();
+        let currentCategory = 'all';
+
+        // DOM Elements
+        const matchesContainer = document.getElementById('matches-container');
+        const loadingState = document.getElementById('loading-state');
+        const noMatchesState = document.getElementById('no-matches-state');
+        const categoryFilters = document.getElementById('category-filters');
+        const liveCounter = document.getElementById('live-counter');
+
+        // ---------------------------------------------------------------
+        // Fancode auto_streams M3U8 quality picker
+        // Extracts best available quality URL from the M3U8 playlist text
+        // Priority: 1080p > 720p > 540p > 480p > 360p > 240p > first URL
+        // ---------------------------------------------------------------
+        function extractBestQualityUrl(m3u8Text) {
+            if (!m3u8Text) return null;
+            const lines = m3u8Text.split('\n').map(l => l.trim()).filter(l => l);
+            const qualityOrder = ['1080p', '720p', '540p', '480p', '360p', '240p'];
+
+            // Build a map: quality label → URL
+            const qualityMap = {};
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith('#EXT-X-STREAM-INF') && lines[i + 1] && !lines[i + 1].startsWith('#')) {
+                    const url = lines[i + 1];
+                    for (const q of qualityOrder) {
+                        if (url.includes('/' + q + '.m3u8') || url.includes('_' + q) || url.includes(q + '.')) {
+                            qualityMap[q] = url;
+                            break;
+                        }
+                    }
+                    // Fallback: store first found URL
+                    if (!qualityMap['_first']) qualityMap['_first'] = url;
+                }
+            }
+
+            // Return best available
+            for (const q of qualityOrder) {
+                if (qualityMap[q]) return qualityMap[q];
+            }
+            return qualityMap['_first'] || null;
+        }
+
+        // ------------------------------------------------------------
+        // Play functionality — 3-layer URL priority for Fancode
+        // Layer 1: STREAMING_CDN clean URL (no expiring token)
+        // Layer 2: auto_streams blob fallback (full M3U8 text)
+        // Layer 3: error alert
+        // ------------------------------------------------------------
+        window.playMatch = function (matchIdStr, titleStr, categoryStr) {
+            const match = allMatches.find(m => m.match_id.toString() === matchIdStr);
+            if (!match) return;
+
+            const language = (match.auto_streams && match.auto_streams[0] && match.auto_streams[0].language) || 'ENGLISH';
+            const safeTitle = encodeURIComponent(titleStr);
+            const safeCat = encodeURIComponent(categoryStr || 'Sports');
+            const safeSource = 'Fancode+' + encodeURIComponent(language);
+
+            // Fancode CDN requires these headers via proxy
+            const fancodeHeaders = {
+                'Referer': 'https://fancode.com/',
+                'User-Agent': 'ReactNativeVideo/9.3.0 (Linux;Android 13) AndroidXMedia3/1.6.1'
+            };
+            const headersParam = encodeURIComponent(JSON.stringify(fancodeHeaders));
+            const baseParams = '&title=' + safeTitle + '&source=' + safeSource
+                + '&category=' + safeCat + '&headers=' + headersParam
+                + '&back=fancode.html';
+
+            // ── Layer 1: STREAMING_CDN clean index.m3u8 (no hdntl token = never expires) ──
+            const cdn = match.STREAMING_CDN;
+            const cleanUrl = cdn && (cdn.fancode_cdn || cdn.Primary_Playback_URL || cdn.fancode_bd_cdn);
+            if (cleanUrl && cleanUrl !== 'Unavailable') {
+                // Route through allinonereborn proxy so Referer/UA reach the CDN correctly
+                const proxied = 'https://allinonereborn.online/fcww/live222.php?url='
+                    + encodeURIComponent(cleanUrl)
+                    + '|Referer=' + encodeURIComponent('https://fancode.com/')
+                    + '|User-Agent=' + encodeURIComponent('ReactNativeVideo/9.3.0 (Linux;Android 13) AndroidXMedia3/1.6.1');
+                window.location.href = 'fancode-player.html?streamUrl=' + encodeURIComponent(proxied) + baseParams;
+                return;
+            }
+
+            // ── Layer 2: auto_streams M3U8 blob (player.js converts string → Blob URL) ──
+            if (match.auto_streams && match.auto_streams.length > 0 && match.auto_streams[0].auto) {
+                const streamData = match.auto_streams[0].auto;
+                const sid = 'fc_' + matchIdStr;
+                sessionStorage.setItem(sid, streamData);
+                window.location.href = 'fancode-player.html?streamUrl=session:' + sid + baseParams;
+                return;
+            }
+
+            // ── Layer 3: No stream ──
+            alert('No stream available for this match yet. Please wait for the event to go live.');
+        };
+
+        document.addEventListener('DOMContentLoaded', fetchMatches);
+
+        async function fetchMatches() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('Failed to fetch data');
+                const data = await response.json();
+
+                if (data && data.matches && Array.isArray(data.matches)) {
+                    allMatches = data.matches;
+                    const liveCount = allMatches.filter(m => m.status === 'LIVE' || m.streamingStatus === 'STARTED').length;
+                    const totalCount = allMatches.length;
+
+                    liveCounter.innerHTML = '<span class="bg-red-500 w-2 h-2 rounded-full inline-block mr-2 animate-pulse"></span> ' + liveCount + ' Live / ' + totalCount + ' Total Events';
+                    liveCounter.classList.remove('bg-white/20');
+                    liveCounter.classList.add('bg-white/30', 'border', 'border-white/40');
+
+                    allMatches.forEach(match => {
+                        if (match.category) categories.add(match.category);
+                    });
+
+                    renderCategories();
+                    renderMatches(allMatches);
+                } else {
+                    throw new Error('Invalid data format');
+                }
+            } catch (error) {
+                console.error('Error fetching matches:', error);
+                liveCounter.innerHTML = '<i class="fas fa-exclamation-triangle mr-2 text-red-300"></i> Error loading events';
+                loadingState.innerHTML =
+                    '<div class="text-red-500 text-5xl mb-4"><i class="fas fa-plug-circle-xmark"></i></div>' +
+                    '<p class="text-gray-800 text-lg font-bold mb-2">Failed to load data</p>' +
+                    '<p class="text-gray-500 text-sm">Please check your internet connection and try again.</p>' +
+                    '<button onclick="location.reload()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">Retry</button>';
+            }
+        }
+
+        function renderCategories() {
+            categoryFilters.innerHTML = '<button class="category-filter-btn px-5 py-2 rounded-full bg-blue-600 text-white text-sm font-medium transition-all shadow border border-transparent" data-category="all"><i class="fas fa-globe mr-2"></i>All Events</button>';
+
+            const getCategoryIcon = (cat) => {
+                const lower = cat.toLowerCase();
+                if (lower.includes('cricket')) return 'fa-baseball-bat-ball';
+                if (lower.includes('football') || lower.includes('soccer')) return 'fa-futbol';
+                if (lower.includes('basketball')) return 'fa-basketball';
+                if (lower.includes('tennis')) return 'fa-baseball';
+                if (lower.includes('kabaddi')) return 'fa-person-running';
+                if (lower.includes('hockey')) return 'fa-hockey-puck';
+                return 'fa-trophy';
+            };
+
+            Array.from(categories).sort().forEach(category => {
+                const btn = document.createElement('button');
+                btn.className = 'category-filter-btn px-5 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium transition-all border border-gray-200';
+                btn.dataset.category = category;
+                btn.innerHTML = '<i class="fas ' + getCategoryIcon(category) + ' mr-2 text-gray-500"></i> ' + category;
+
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.category-filter-btn').forEach(b => {
+                        b.className = 'category-filter-btn px-5 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium transition-all border border-gray-200';
+                        const icon = b.querySelector('i');
+                        if (icon) icon.classList.replace('text-blue-200', 'text-gray-500');
+                        if (icon && b.dataset.category === 'all') icon.classList.replace('text-white', 'text-gray-500');
+                    });
+                    btn.className = 'category-filter-btn px-5 py-2 rounded-full bg-blue-600 text-white text-sm font-medium transition-all shadow border border-transparent';
+                    const btnIcon = btn.querySelector('i');
+                    if (btnIcon) { btnIcon.classList.remove('text-gray-500'); btnIcon.classList.add('text-white'); }
+                    currentCategory = category;
+                    filterAndRenderMatches();
+                });
+
+                categoryFilters.appendChild(btn);
+            });
+
+            const allBtn = categoryFilters.querySelector('[data-category="all"]');
+            allBtn.addEventListener('click', () => {
+                document.querySelectorAll('.category-filter-btn').forEach(b => {
+                    b.className = 'category-filter-btn px-5 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium transition-all border border-gray-200';
+                    const icon = b.querySelector('i');
+                    if (icon) icon.classList.replace('text-white', 'text-gray-500');
+                });
+                allBtn.className = 'category-filter-btn px-5 py-2 rounded-full bg-blue-600 text-white text-sm font-medium transition-all shadow border border-transparent';
+                const allBtnIcon = allBtn.querySelector('i');
+                if (allBtnIcon) { allBtnIcon.classList.remove('text-gray-500'); allBtnIcon.classList.add('text-white'); }
+                currentCategory = 'all';
+                filterAndRenderMatches();
+            });
+        }
+
+        function filterAndRenderMatches() {
+            if (currentCategory === 'all') {
+                renderMatches(allMatches);
+            } else {
+                renderMatches(allMatches.filter(m => m.category === currentCategory));
+            }
+        }
+
+        function renderMatches(matches) {
+            matchesContainer.innerHTML = '';
+
+            if (matches.length === 0) {
+                noMatchesState.classList.remove('hidden');
+                noMatchesState.classList.add('flex');
+                return;
+            }
+
+            noMatchesState.classList.add('hidden');
+            noMatchesState.classList.remove('flex');
+
+            matches.forEach((match, index) => {
+                const isLive = match.status === 'LIVE' || match.streamingStatus === 'STARTED' || match.status === 'IN_PROGRESS';
+
+                let imageUrl = 'https://placehold.co/600x338/1e3a8a/ffffff?text=Fancode+Event';
+                let fallbackUrl = imageUrl;
+                if (match.image_cdn) {
+                    imageUrl = match.image_cdn.APP || match.image_cdn.SPORTS || match.image_cdn.CLOUDFARE || match.image_cdn.TATAPLAY || match.image || imageUrl;
+                    fallbackUrl = match.image_cdn.CLOUDFARE || match.image || fallbackUrl;
+                } else if (match.image) {
+                    imageUrl = match.image;
+                }
+
+                let matchTeamsHtml = '';
+                if (match.team && match.team.length >= 2) {
+                    const team1 = match.team[0];
+                    const team2 = match.team[1];
+                    const flag1 = team1.flag ? team1.flag.src : 'https://placehold.co/100x100/eeeeee/999999?text=' + (team1.shortName || 'T1');
+                    const flag2 = team2.flag ? team2.flag.src : 'https://placehold.co/100x100/eeeeee/999999?text=' + (team2.shortName || 'T2');
+
+                    let scoreText = '';
+                    if (team1.cricketScore && team1.cricketScore.length > 0) {
+                        const s = team1.cricketScore[0];
+                        scoreText = '<div class="text-xs font-bold text-center mt-2">' + s.runs + '/' + s.wickets + ' <span class="text-gray-400 font-normal">(' + s.overs + ')</span></div>';
+                    }
+
+                    matchTeamsHtml =
+                        '<div class="flex flex-col mb-4 bg-gray-50/50 p-3 rounded-xl border border-gray-100">' +
+                        '<div class="flex justify-between items-center w-full">' +
+                        '<div class="flex flex-col items-center gap-2 w-5/12">' +
+                        '<div class="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center p-1 overflow-hidden border border-gray-200">' +
+                        '<img src="' + flag1 + '" alt="' + (team1.shortName || '') + '" class="w-full h-full object-contain" />' +
+                        '</div>' +
+                        '<span class="text-xs font-bold text-gray-800 text-center uppercase tracking-wide truncate w-full" style="color:' + (team1.color || '#374151') + '">' + (team1.shortName || team1.name) + '</span>' +
+                        '</div>' +
+                        '<div class="flex flex-col items-center justify-center w-2/12">' +
+                        '<span class="text-[10px] font-black text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full">VS</span>' +
+                        '</div>' +
+                        '<div class="flex flex-col items-center gap-2 w-5/12">' +
+                        '<div class="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center p-1 overflow-hidden border border-gray-200">' +
+                        '<img src="' + flag2 + '" alt="' + (team2.shortName || '') + '" class="w-full h-full object-contain" />' +
+                        '</div>' +
+                        '<span class="text-xs font-bold text-gray-800 text-center uppercase tracking-wide truncate w-full" style="color:' + (team2.color || '#374151') + '">' + (team2.shortName || team2.name) + '</span>' +
+                        '</div>' +
+                        '</div>' +
+                        scoreText +
+                        '</div>';
+                }
+
+                const liveBadge = isLive
+                    ? '<div class="px-2.5 py-1 bg-red-600/90 backdrop-blur-sm text-white text-[10px] font-bold rounded flex items-center gap-1.5 shadow-sm uppercase tracking-wider border border-red-500/50"><span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> LIVE</div>'
+                    : '<div class="px-2.5 py-1 bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold rounded shadow-sm uppercase tracking-wider">UPCOMING</div>';
+
+                const proBadge = match.premium ? '<div class="px-2 py-0.5 premium-badge text-[10px] font-bold rounded-sm uppercase tracking-widest border border-orange-400/50 flex items-center"><i class="fas fa-crown mr-1"></i> PRO</div>' : '';
+                const adFreeBadge = match.adFree ? '<div class="px-2 py-0.5 adfree-indicator text-[10px] font-bold rounded-sm uppercase tracking-widest border border-emerald-400/50 flex items-center"><i class="fas fa-ban mr-1"></i> AD-FREE</div>' : '';
+
+                const safeTitle = (match.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                const cardHtml =
+                    '<div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col fade-in border border-gray-200/60 overflow-hidden group transform hover:-translate-y-1" style="animation-delay:' + (index * 0.05) + 's">' +
+                    '<div class="relative overflow-hidden aspect-video bg-gray-200">' +
+                    '<img src="' + imageUrl + '" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Match Cover" loading="lazy" onerror="this.onerror=null;this.src=\'' + fallbackUrl + '\';" />' +
+                    '<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>' +
+                    '<div class="absolute top-3 left-3 flex gap-2">' + liveBadge + '</div>' +
+                    '<div class="absolute top-3 right-3 flex gap-2">' +
+                    '<div class="px-2.5 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold rounded shadow-sm uppercase tracking-wider border border-white/10">' +
+                    '<i class="fas fa-trophy mr-1.5 text-yellow-500"></i> ' + (match.category || 'Sports') +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="absolute bottom-3 right-3 flex gap-2">' + proBadge + adFreeBadge + '</div>' +
+                    '</div>' +
+                    '<div class="p-4 flex-grow flex flex-col relative z-10 bg-white">' +
+                    '<h3 class="font-bold text-gray-900 text-[15px] leading-snug mb-1.5 line-clamp-2" title="' + (match.title || '') + '">' + (match.title || '') + '</h3>' +
+                    '<div class="flex items-center text-gray-500 text-xs mb-4">' +
+                    '<i class="far fa-calendar-alt mr-1.5 text-blue-500"></i>' +
+                    '<span class="truncate">' + (match.tournament || match.startTime || 'Event') + '</span>' +
+                    '</div>' +
+                    matchTeamsHtml +
+                    '<div class="mt-auto pt-2">' +
+                    '<button onclick="playMatch(\'' + match.match_id + '\',\'' + safeTitle + '\',\'' + (match.category || 'Sports') + '\')" class="flex items-center justify-center w-full py-2.5 bg-blue-50 text-blue-700 font-semibold text-sm rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-300 group/btn border border-blue-100 hover:border-blue-600 shadow-sm">' +
+                    '<i class="fas fa-play mr-2 text-blue-600 group-hover/btn:text-white transition-colors"></i> Watch Match' +
+                    '</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = cardHtml;
+                matchesContainer.appendChild(wrapper.firstChild);
+            });
+        }
+    </script>
+</body>
+
+</html>
