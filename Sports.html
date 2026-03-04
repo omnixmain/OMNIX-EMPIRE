@@ -14,6 +14,11 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Player Engines -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.7/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.7/controls.min.css">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
 
@@ -49,7 +54,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Instagram */
         .social-btn.instagram {
             background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
             color: #fff;
@@ -63,7 +67,6 @@
             filter: brightness(1.1);
         }
 
-        /* Telegram */
         .social-btn.telegram {
             background: #0088cc;
             color: #fff;
@@ -106,7 +109,6 @@
             justify-self: unset;
         }
 
-        /* ── Responsive ──────────────────────────── */
         @media (max-width: 600px) {
             .social-btns {
                 flex-direction: column;
@@ -127,6 +129,119 @@
                 width: 130px;
             }
         }
+
+        /* ── PLAYER OVERLAY STYLE ───────────────────── */
+        #playerView {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #playerView.hidden {
+            display: none !important;
+        }
+
+        .player-top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+            z-index: 500;
+            transition: opacity 0.4s ease;
+        }
+
+        .player-back-nav {
+            background: rgba(31, 40, 51, 0.85);
+            border: 1px solid rgba(102, 252, 241, 0.25);
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            margin-right: 1.5rem;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .player-back-nav:hover {
+            background: #66FCF1;
+            color: #000;
+            transform: scale(1.1);
+        }
+
+        .stream-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stream-title-player {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        .stream-meta-player {
+            font-size: 0.8rem;
+            color: #66FCF1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 3px;
+        }
+
+        #videoContainerInternal {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            position: relative;
+        }
+
+        #videoContainerInternal video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Overlay loader / error container inside player */
+        .overlay-center {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: white;
+        }
+
+        .overlay-center.hidden {
+            display: none;
+        }
+
+        /* Shaka fixes */
+        .shaka-controls-container {
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        .shaka-range-element {
+            --shaka-range-fill-color: #66FCF1 !important;
+        }
     </style>
 </head>
 
@@ -143,6 +258,7 @@
     <main class="main-content">
         <!-- Dashboard (Providers List) -->
         <div id="dashboardView" class="view-section">
+
             <div class="provider-grid" id="providerGrid">
                 <!-- Provider cards dynamically injected over here -->
             </div>
@@ -180,9 +296,288 @@
         <p class="footer-copy">© 2026 OMNIX LIVE HUB. All rights reserved.</p>
     </footer>
 
+    <!-- INTERNAL PLAYER VIEW -->
+    <div id="playerView" class="hidden">
+        <div class="player-top-bar" id="playerTopBar">
+            <button class="player-back-nav" onclick="closeOmnixPlayer()" title="Back">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="stream-info">
+                <h1 class="stream-title-player" id="internalTitle">PREMIUM STREAM</h1>
+                <span class="stream-meta-player" id="internalSource">OMNIX NETWORK</span>
+            </div>
+        </div>
+
+        <div id="videoContainerInternal">
+            <video id="internalVideo" autoplay playsinline></video>
+
+            <div id="playerLoader" class="overlay-center hidden">
+                <i class="fa-solid fa-spinner fa-spin fa-3x" style="color: #66FCF1;"></i>
+                <p style="margin-top: 15px; font-weight: 500;">Loading Stream...</p>
+            </div>
+
+            <div id="playerError" class="overlay-center hidden" style="background: rgba(31, 40, 51, 0.95);">
+                <i class="fa-solid fa-triangle-exclamation fa-3x" style="color: #ff3333; margin-bottom: 1rem;"></i>
+                <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.4rem;">Playback Failed</h3>
+                <p id="errorTxt" style="margin-top: 10px; opacity: 0.8; max-width: 80%; text-align: center;">Stream
+                    unavailable or region blocked</p>
+                <button onclick="closeOmnixPlayer()"
+                    style="margin-top: 20px; padding: 10px 20px; border-radius: 8px; border: none; background: #66FCF1; color: #000; font-weight: bold; cursor: pointer;">Go
+                    Back</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Custom JS -->
     <script src="app.js"></script>
     <script src="ads.js"></script>
+
+    <!-- INTERNAL PLAYER LOGIC -->
+    <script>
+        let currentHls = null;
+        let shakaPlayer = null;
+        const videoEl = document.getElementById('internalVideo');
+
+        let hideTimer;
+        const topBar = document.getElementById('playerTopBar');
+        const showTopBar = () => {
+            topBar.style.opacity = '1';
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(() => { topBar.style.opacity = '0'; }, 3000);
+        };
+        document.getElementById('playerView').addEventListener('mousemove', showTopBar);
+        document.getElementById('playerView').addEventListener('touchstart', showTopBar);
+
+        window.startOmnixPlayer = async function (url, title, source, drmObj, headersObj) {
+            console.log("Starting Internal Player:", url);
+            document.body.style.overflow = 'hidden';
+            document.getElementById('playerView').classList.remove('hidden');
+            document.getElementById('internalTitle').textContent = title || 'Stream';
+            document.getElementById('internalSource').textContent = source || 'OMNIX';
+            document.getElementById('playerLoader').classList.remove('hidden');
+            document.getElementById('playerError').classList.add('hidden');
+            showTopBar();
+            cleanupEngines();
+
+            let finalUrl = url;
+
+            if (finalUrl.startsWith('session:')) {
+                const sid = finalUrl.replace('session:', '');
+                let autoStr = sessionStorage.getItem(sid);
+                if (autoStr) {
+                    try {
+                        autoStr = autoStr.replace(/\\n/g, '\n');
+                        const blob = new Blob([autoStr], { type: 'application/vnd.apple.mpegurl' });
+                        finalUrl = URL.createObjectURL(blob);
+                    } catch (e) {
+                        showError("Failed to convert session text to blob");
+                        return;
+                    }
+                } else {
+                    showError("Stream Expired. Please reload.");
+                    return;
+                }
+            } else if (finalUrl.includes('dai.google.com')) {
+                // Native DAI streams support CORS out of the box. 
+                // Proxying them breaks 302 redirects and relative manifest paths.
+                const needsResolution = true;
+            } else {
+                const hasSpecialHeaders = headersObj && (headersObj['User-Agent'] || headersObj['Cookie'] || headersObj['Referer']);
+                const isRestrictedHost = finalUrl.includes('sportsbd') || finalUrl.includes('webiptv.site') || finalUrl.includes('ta.bia-cf.live.pv-cdn.net');
+                const isAlreadyProxied = finalUrl.startsWith('https://allinonereborn.online') || finalUrl.includes('corsproxy.io');
+                const isSameOrigin = finalUrl.startsWith(window.location.origin) || finalUrl.startsWith('/');
+
+                if (!isAlreadyProxied && !isSameOrigin && !finalUrl.startsWith('blob:')) {
+                    if (!hasSpecialHeaders && !isRestrictedHost && Object.keys(headersObj || {}).length > 0) {
+                        finalUrl = 'https://corsproxy.io/?' + encodeURIComponent(finalUrl);
+                    }
+                }
+            }
+
+            const isM3u8 = finalUrl.startsWith('blob:') || finalUrl.toLowerCase().includes('.m3u') || finalUrl.toLowerCase().includes('playlist');
+            const isMpd = finalUrl.toLowerCase().split('?')[0].endsWith('.mpd') || finalUrl.toLowerCase().includes('.mpd');
+            const isHotstar = finalUrl.toLowerCase().includes('hotstar.com') || (source && source.toLowerCase().includes('jio-hot'));
+
+            let finalDrmLicense = (drmObj && drmObj.l) ? drmObj.l : null;
+            if (!finalDrmLicense && isHotstar) {
+                finalDrmLicense = 'https://pallycon.allinonereborn.workers.dev/api/license/widevine';
+            }
+
+            const hasDrm = !!finalDrmLicense || isMpd;
+            videoEl.muted = false;
+
+            try {
+                if (hasDrm) {
+                    let activeDrmObj = drmObj || {};
+                    if (finalDrmLicense && !activeDrmObj.l) {
+                        activeDrmObj = { t: 'com.widevine.alpha', l: finalDrmLicense };
+                    }
+                    await initShaka(finalUrl, activeDrmObj, headersObj);
+                } else {
+                    await initHls(finalUrl, headersObj);
+                }
+            } catch (err) {
+                showError("Error: " + err.message);
+            }
+        };
+
+        window.closeOmnixPlayer = function () {
+            document.getElementById('playerView').classList.add('hidden');
+            document.body.style.overflow = '';
+            cleanupEngines();
+        };
+
+        function cleanupEngines() {
+            if (currentHls) { currentHls.destroy(); currentHls = null; }
+            if (shakaPlayer) { shakaPlayer.destroy(); shakaPlayer = null; }
+            videoEl.removeAttribute('src');
+            videoEl.load();
+            videoEl.controls = false;
+        }
+
+        function showError(msg) {
+            document.getElementById('playerLoader').classList.add('hidden');
+            document.getElementById('playerError').classList.remove('hidden');
+            document.getElementById('errorTxt').textContent = msg;
+            cleanupEngines();
+        }
+
+        async function initShaka(url, drmObj, headersObj) {
+            shaka.polyfill.installAll();
+            if (!shaka.Player.isBrowserSupported()) {
+                showError('Browser Not Supported for DRM');
+                return;
+            }
+            videoEl.setAttribute('crossorigin', 'anonymous');
+            shakaPlayer = new shaka.Player(videoEl);
+
+            const ui = new shaka.ui.Overlay(shakaPlayer, document.getElementById('videoContainerInternal'), videoEl);
+            ui.configure({
+                addBigPlayButton: true,
+                controlPanelElements: ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'fullscreen', 'overflow_menu']
+            });
+
+            shakaPlayer.addEventListener('error', (e) => {
+                const err = e.detail;
+                console.error("Shaka Error", err);
+                showError(`Playback error (Code: ${err.code})`);
+            });
+
+            const config = { streaming: { bufferingGoal: 30, rebufferingGoal: 2, retryParameters: { maxAttempts: 5 } } };
+
+            if (drmObj && drmObj.l) {
+                config.drm = { retryParameters: { maxAttempts: 5 } };
+                if (drmObj.t === 'clearkey') {
+                    if (drmObj.l.includes(':') && !drmObj.l.startsWith('http')) {
+                        const parts = drmObj.l.split(':');
+                        if (parts.length === 2) {
+                            config.drm.clearKeys = { [parts[0]]: parts[1] };
+                        }
+                    } else {
+                        config.drm.clearKeys = { [drmObj.l]: drmObj.l };
+                    }
+                } else {
+                    const srv = drmObj.t || 'com.widevine.alpha';
+                    config.drm.servers = { [srv]: drmObj.l };
+                }
+            }
+
+            shakaPlayer.getNetworkingEngine().registerRequestFilter((type, request) => {
+                const isRestrictedShaka = request.uris[0].includes('sportsbd') || request.uris[0].includes('webiptv.site') || request.uris[0].includes('ta.bia-cf.live.pv-cdn.net') || request.uris[0].includes('fancode');
+                const hasSpecialShaka = headersObj && (headersObj['User-Agent'] || headersObj['Cookie'] || headersObj['Referer']);
+
+                if (isRestrictedShaka || hasSpecialShaka) {
+                    const originalUri = request.uris[0];
+                    if (!originalUri.includes('allinonereborn.online') && !originalUri.startsWith('blob:') && !originalUri.startsWith('data:')) {
+                        let pxS = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(originalUri);
+                        if (headersObj['Origin']) pxS += '|Origin=' + encodeURIComponent(headersObj['Origin']);
+                        if (headersObj['User-Agent']) pxS += '|User-Agent=' + encodeURIComponent(headersObj['User-Agent']);
+                        if (headersObj['Cookie']) pxS += '|Cookie=' + encodeURIComponent(headersObj['Cookie']);
+                        if (headersObj['Referer']) pxS += '|Referer=' + encodeURIComponent(headersObj['Referer']);
+                        request.uris = [pxS];
+                        delete request.headers['Origin'];
+                        delete request.headers['User-Agent'];
+                        delete request.headers['Cookie'];
+                        delete request.headers['Referer'];
+                    }
+                }
+
+                if (headersObj) {
+                    Object.entries(headersObj).forEach(([k, v]) => {
+                        if (!['referer', 'origin', 'cookie', 'user-agent'].includes(k.toLowerCase())) {
+                            request.headers[k] = v;
+                        }
+                    });
+                }
+            });
+
+            shakaPlayer.configure(config);
+            try {
+                await shakaPlayer.load(url);
+                videoEl.play().catch(e => console.warn('Shaka autoplay blocked', e));
+                document.getElementById('playerLoader').classList.add('hidden');
+            } catch (loadErr) {
+                showError(`Stream Load Failed (Code: ${loadErr.code})`);
+            }
+        }
+
+        async function initHls(url, headersObj) {
+            videoEl.controls = true;
+            if (Hls.isSupported()) {
+                currentHls = new Hls({
+                    maxLoadingRetry: 6,
+                    fragLoadingMaxRetry: 6,
+                    xhrSetup: function (xhr, u) {
+                        const isRestrictedHls = url.includes('sportsbd') || url.includes('webiptv.site') || url.includes('ta.bia-cf.live.pv-cdn.net') || url.includes('fancode');
+                        const hasSpecialHls = headersObj && (headersObj['User-Agent'] || headersObj['Cookie'] || headersObj['Referer']);
+
+                        if ((isRestrictedHls || hasSpecialHls) && !u.startsWith('blob:') && !u.includes('allinonereborn.online')) {
+                            let pxHls = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(u);
+                            if (headersObj['Origin']) pxHls += '|Origin=' + encodeURIComponent(headersObj['Origin']);
+                            if (headersObj['User-Agent']) pxHls += '|User-Agent=' + encodeURIComponent(headersObj['User-Agent']);
+                            if (headersObj['Cookie']) pxHls += '|Cookie=' + encodeURIComponent(headersObj['Cookie']);
+                            if (headersObj['Referer']) pxHls += '|Referer=' + encodeURIComponent(headersObj['Referer']);
+                            xhr.open('GET', pxHls, true);
+                        }
+
+                        if (headersObj) {
+                            Object.entries(headersObj).forEach(([k, v]) => {
+                                if (!['referer', 'origin', 'cookie', 'user-agent'].includes(k.toLowerCase())) {
+                                    try { xhr.setRequestHeader(k, v); } catch (e) { }
+                                }
+                            });
+                        }
+                    }
+                });
+                currentHls.loadSource(url);
+                currentHls.attachMedia(videoEl);
+                currentHls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    videoEl.play().catch(e => console.warn('HLS autoplay blocked', e));
+                    document.getElementById('playerLoader').classList.add('hidden');
+                });
+                currentHls.on(Hls.Events.ERROR, (e, data) => {
+                    if (data.fatal) {
+                        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                            if (url.startsWith('blob:') && data.details === 'manifestLoadError') {
+                                showError("Failed to load virtual stream.");
+                                currentHls.destroy();
+                                return;
+                            }
+                            currentHls.startLoad();
+                        } else {
+                            showError("HLS Fatal Error: " + data.details);
+                        }
+                    }
+                });
+            } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+                videoEl.src = url;
+                videoEl.play();
+                document.getElementById('playerLoader').classList.add('hidden');
+            } else {
+                showError("Browser does not support HLS");
+            }
+        }
+    </script>
 </body>
 
 </html>

@@ -159,8 +159,20 @@
         // Only apply CORS proxy if not already absolute/proxied and is cross-origin
         const isAlreadyProxied = finalStreamUrl.startsWith('https://allinonereborn.online') || finalStreamUrl.includes('corsproxy.io');
         const isSameOrigin = finalStreamUrl.startsWith(window.location.origin) || finalStreamUrl.startsWith('/');
+
         if (!isAlreadyProxied && !isSameOrigin && !finalStreamUrl.startsWith('blob:')) {
-            finalStreamUrl = CORS_PROXY ? (CORS_PROXY + encodeURIComponent(finalStreamUrl)) : finalStreamUrl;
+            // Internal Proxying Check: If we have special headers or are from a restricted host,
+            // we will handle the proxying INSIDE the player engines (HLS.js / Shaka) 
+            // via request filtering. This ensures relative paths resolve correctly.
+            const hasSpecialHeaders = requestHeaders['User-Agent'] || requestHeaders['Cookie'] || requestHeaders['Referer'];
+            const isRestrictedHost = finalStreamUrl.includes('sportsbd') || finalStreamUrl.includes('webiptv.site') || finalStreamUrl.includes('ta.bia-cf.live.pv-cdn.net');
+
+            if (hasSpecialHeaders || isRestrictedHost) {
+                console.log('[OMNIX PLAYER] Internal Proxying Enabled for this stream.');
+            } else if (Object.keys(requestHeaders).length > 0) {
+                // For standard cross-origin requests with simple headers, use corsproxy.io as fallback
+                finalStreamUrl = 'https://corsproxy.io/?' + encodeURIComponent(finalStreamUrl);
+            }
         }
     }
 
@@ -180,21 +192,28 @@
                 enableWorker: true,
                 lowLatencyMode: false,
                 xhrSetup: function (xhr, url) {
+                    // [NEW] Internal Proxying for HLS.js
+                    const isRestrictedHls = finalStreamUrl.includes('sportsbd') || finalStreamUrl.includes('webiptv.site') || finalStreamUrl.includes('ta.bia-cf.live.pv-cdn.net');
+                    const hasSpecialHls = requestHeaders['User-Agent'] || requestHeaders['Cookie'] || requestHeaders['Referer'];
+
+                    if ((isRestrictedHls || hasSpecialHls) && !url.startsWith('blob:') && !url.includes('allinonereborn.online')) {
+                        let pxHls = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(url);
+                        if (requestHeaders['User-Agent']) pxHls += '|User-Agent=' + encodeURIComponent(requestHeaders['User-Agent']);
+                        if (requestHeaders['Cookie']) pxHls += '|Cookie=' + encodeURIComponent(requestHeaders['Cookie']);
+                        if (requestHeaders['Referer']) pxHls += '|Referer=' + encodeURIComponent(requestHeaders['Referer']);
+                        xhr.open('GET', pxHls, true);
+                    }
+
                     // Inject custom request headers for HLS.js
                     if (requestHeaders && Object.keys(requestHeaders).length > 0) {
                         Object.entries(requestHeaders).forEach(([k, v]) => {
-                            // SKIP forbidden headers that browsers block
-                            if (['origin', 'referer', 'user-agent'].includes(k.toLowerCase())) return;
+                            if (['origin', 'referer', 'user-agent', 'cookie'].includes(k.toLowerCase())) return;
                             try {
                                 xhr.setRequestHeader(k, v);
                             } catch (e) {
                                 console.warn('[OMNIX PLAYER] Header set failed:', k);
                             }
                         });
-                    }
-                    // Blob URLs might fail XHR if originating from file:// - avoid setting credentials
-                    if (!url.startsWith('blob:')) {
-                        // xhr.withCredentials = true; // Disabled for broad CORS
                     }
                 }
             });
@@ -274,15 +293,48 @@
     const shakaConfig = {
         streaming: { bufferingGoal: 30, rebufferingGoal: 2, retryParameters: { maxAttempts: 5 } },
         drm: {
-            servers: finalDrmLicense ? { [drmType]: finalDrmLicense } : {},
             retryParameters: { maxAttempts: 5 }
         }
     };
 
+    if (finalDrmLicense) {
+        if (drmType === 'clearkey' && !finalDrmLicense.startsWith('http')) {
+            const parts = finalDrmLicense.split(':');
+            if (parts.length === 2) {
+                shakaConfig.drm.clearKeys = { [parts[0]]: parts[1] };
+            } else {
+                shakaConfig.drm.clearKeys = { [finalDrmLicense]: finalDrmLicense };
+            }
+        } else {
+            shakaConfig.drm.servers = { [drmType]: finalDrmLicense };
+        }
+    }
+
     shakaPlayer.getNetworkingEngine().registerRequestFilter((type, request) => {
-        // Apply headers to ALL requests (Manifest, Segment, License)
+        // [NEW] Internal Proxying for Shaka (Manifest, Segments, License)
+        const isRestrictedShaka = finalStreamUrl.includes('sportsbd') || finalStreamUrl.includes('webiptv.site') || finalStreamUrl.includes('ta.bia-cf.live.pv-cdn.net');
+        const hasSpecialShaka = requestHeaders['User-Agent'] || requestHeaders['Cookie'] || requestHeaders['Referer'];
+
+        if (isRestrictedShaka || hasSpecialShaka) {
+            const originalUri = request.uris[0];
+            // Only proxy if not already absolute/proxied
+            if (!originalUri.includes('allinonereborn.online') && !originalUri.startsWith('blob:')) {
+                let pxS = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(originalUri);
+                if (requestHeaders['User-Agent']) pxS += '|User-Agent=' + encodeURIComponent(requestHeaders['User-Agent']);
+                if (requestHeaders['Cookie']) pxS += '|Cookie=' + encodeURIComponent(requestHeaders['Cookie']);
+                if (requestHeaders['Referer']) pxS += '|Referer=' + encodeURIComponent(requestHeaders['Referer']);
+                request.uris = [pxS];
+
+                // Clear forbidden headers from the request object so Shaka/Browser doesn't fail
+                delete request.headers['User-Agent'];
+                delete request.headers['Cookie'];
+                delete request.headers['Referer'];
+            }
+        }
+
+        // Apply remaining headers
         Object.entries(requestHeaders).forEach(([k, v]) => {
-            if (['origin', 'referer', 'user-agent'].includes(k.toLowerCase())) return;
+            if (['origin', 'referer', 'user-agent', 'cookie'].includes(k.toLowerCase())) return;
             request.headers[k] = v;
         });
 
@@ -297,10 +349,11 @@
     shakaPlayer.configure(shakaConfig);
 
     try {
-        await shakaPlayer.load(streamUrl);
+        // [MOD] Use finalStreamUrl for consistency
+        await shakaPlayer.load(finalStreamUrl);
         videoEl.addEventListener('loadeddata', hideLoader, { once: true });
         setTimeout(hideLoader, 5000);
-        await videoEl.play();
+        await videoEl.play().catch(e => console.warn('[OMNIX PLAYER] Shaka Autoplay blocked:', e));
     } catch (loadErr) {
         console.error('[OMNIX PLAYER] Shaka load error:', loadErr);
         showError('Stream Load Failed', `Error: ${loadErr.code}. (CORS/DRM restriction)`);
