@@ -858,10 +858,25 @@
             }
 
             // ================================================================
-            // 6. RESOLVE SESSION STREAM (auto_streams blob support)
+            // 6. RESOLVE SESSION STREAM (auto_streams blob support & proxy unwrap)
             // ================================================================
             function resolveStreamUrl(raw) {
                 if (!raw) return null;
+
+                // Unwrap previously proxied URLs so HLS.js uses the real base URL for relative paths
+                if (raw.includes('allinonereborn.online/fcww/live222.php?url=')) {
+                    try {
+                        const urlParam = new URL(raw).searchParams.get('url');
+                        if (urlParam) {
+                            // Extract just the URL part before any pipe '|' delimiter
+                            const actualUrl = urlParam.split('|')[0];
+                            if (actualUrl && actualUrl.startsWith('http')) {
+                                return actualUrl;
+                            }
+                        }
+                    } catch (e) { }
+                }
+
                 if (!raw.startsWith('session:')) return raw;
                 const sid = raw.replace('session:', '');
                 const autoStr = sessionStorage.getItem(sid);
@@ -869,34 +884,10 @@
                     showError('Stream Expired', 'Please go back and reopen the match.');
                     return null;
                 }
-                // Try to extract best sub-stream URL from master M3U8 text
-                const best = extractBestQuality(autoStr);
-                if (best && best.startsWith('http')) {
-                    loaderStatus.textContent = 'Resolved: ' + (best.match(/(1080p|720p|540p|480p|360p|240p)/)?.[0] || 'stream');
-                    return best;
-                }
-                // Serve entire M3U8 as Blob
-                const blob = new Blob([autoStr], { type: 'application/vnd.apple.mpegurl' });
+                // Serve entire adaptive M3U8 as a Blob to retain all quality levels
+                const formattedAutoStr = autoStr.replace(/\\n/g, '\n');
+                const blob = new Blob([formattedAutoStr], { type: 'application/vnd.apple.mpegurl' });
                 return URL.createObjectURL(blob);
-            }
-
-            function extractBestQuality(txt) {
-                const lines = txt.split('\n').map(l => l.trim()).filter(l => l);
-                const order = ['1080p', '720p', '540p', '480p', '360p', '240p'];
-                const map = {}; let first = null;
-                for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].startsWith('#EXT-X-STREAM-INF') && lines[i + 1] && !lines[i + 1].startsWith('#')) {
-                        const url = lines[i + 1];
-                        if (!first) first = url;
-                        for (const q of order) {
-                            if (url.includes('/' + q + '.m3u8') || url.includes('_' + q) || url.toLowerCase().includes(q)) {
-                                if (!map[q]) map[q] = url; break;
-                            }
-                        }
-                    }
-                }
-                for (const q of order) if (map[q]) return map[q];
-                return first;
             }
 
             // ================================================================

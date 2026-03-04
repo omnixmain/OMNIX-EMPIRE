@@ -2,6 +2,7 @@
 
 const PROVIDERS = [
     { id: 'fcin', name: 'FANCODE', logo: 'https://images.fancode.com/skillup-uploads/fc-web-logo/fc_logo_white_bg.svg', url: 'https://raw.githubusercontent.com/jitendra-unatti/fancode/fe98437cfea2582b6c6153f990b112467ad1ec63/data/fancode.json', type: 'json_fc' },
+    { id: 'fcin2', name: 'FANCODE-V2', logo: 'https://images.fancode.com/skillup-uploads/fc-web-logo/fc_logo_white_bg.svg', url: '', type: 'json_fc' },
     { id: 'sonyliv1', name: 'Sony Liv Event Main', logo: 'https://images.slivcdn.com/UI_icons/sonyliv_new_revised_header_logo.png', url: 'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json', type: 'json' },
     { id: 'sonypro', name: 'SONY Liv PRO', logo: 'https://images.slivcdn.com/UI_icons/sonyliv_new_revised_header_logo.png', url: 'https://raw.githubusercontent.com/doctor-8trange/zyphora/refs/heads/main/data/sony.json', type: 'json_pro' },
     { id: 'jiohot', name: 'JIO-HOT', logo: 'https://img.hotstar.com/image/upload/v1737554969/web-assets/prod/images/rebrand/logo.png', url: 'https://voot.vodep39240327.workers.dev?voot.m3u', type: 'm3u' },
@@ -63,6 +64,10 @@ async function loadProvider(p, push = true) {
     // ── Fancode → open dedicated fancode.html page ──
     if (p.id === 'fcin') {
         window.location.href = 'fancode.html';
+        return;
+    }
+    if (p.id === 'fcin2') {
+        window.location.href = 'Fancode-2.html';
         return;
     }
 
@@ -329,9 +334,7 @@ function prsSp(d, src) {
         const addStream = (url, drm, suffix) => {
             if (!url || url === "NA" || url === "Unavailable") return;
             let finalUrl = url;
-            if (!url.startsWith('blob:') && !url.startsWith('session:') && !url.includes('allinonereborn') && !url.includes('corsproxy')) {
-                finalUrl = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(url) + '|Origin=https://www.sonyliv.com|Referer=https://www.sonyliv.com/|User-Agent=' + encodeURIComponent(ua);
-            }
+            // Let player.js/Sports.html handle proxying internally to support relative URLs correctly
             streams.push({
                 name: suffix,
                 u: finalUrl,
@@ -481,12 +484,9 @@ function prsFC(d, src) {
                 finalHeaders['User-Agent'] = uaNormal;
                 finalHeaders['Referer'] = refererFancode;
 
-                if (!url.startsWith('blob:') && !url.startsWith('session:') && !url.includes('allinonereborn') && !url.includes('corsproxy.io')) {
-                    finalUrl = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(url) +
-                        '|Origin=' + encodeURIComponent(refererFancode) +
-                        '|Referer=' + encodeURIComponent(refererFancode) +
-                        '|User-Agent=' + encodeURIComponent(uaNormal);
-                }
+                // Pass the raw URL to allow internal proxying to work correctly
+                // with relative paths.
+                finalUrl = url;
             }
 
             streams.push({

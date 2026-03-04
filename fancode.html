@@ -82,20 +82,23 @@
     </style>
 </head>
 
-<body class="bg-gray-50 transition-colors duration-300">
+<body class="bg-[#0f0f0f] text-gray-100 transition-colors duration-300">
 
     <!-- Header -->
     <header
-        class="bg-gradient-to-r from-blue-900 to-indigo-800 text-white py-6 px-4 rounded-xl shadow-lg mb-8 mx-4 mt-4 relative overflow-hidden">
-        <div class="absolute inset-0 bg-black opacity-10"></div>
-        <!-- Decorative circles -->
-        <div class="absolute -top-10 -right-10 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl"></div>
-        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-500 opacity-20 rounded-full blur-2xl"></div>
+        class="bg-gradient-to-r from-[#1a1a1a] to-[#2b2512] text-white py-6 px-4 rounded-xl shadow-2xl mb-8 mx-4 mt-4 relative overflow-hidden border border-[#d4af37]/30">
+        <div class="absolute inset-0 bg-black opacity-40"></div>
+        <!-- Decorative styling -->
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#d4af37] opacity-10 rounded-full blur-2xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-yellow-600 opacity-10 rounded-full blur-2xl"></div>
 
         <div class="container mx-auto text-center relative z-10">
-            <h1 class="text-3xl md:text-4xl font-bold mb-2 tracking-tight">Watch Fancode With OMNIX</h1>
+            <h1
+                class="text-3xl md:text-4xl font-extrabold mb-2 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-[#fff3cd]">
+                Watch Fancode With OMNIX
+            </h1>
             <div id="live-counter"
-                class="inline-block bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold shadow-md transition-all hover:bg-white/30 hover:scale-105 filter drop-shadow-sm">
+                class="inline-block bg-[#1a1a1a]/80 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold shadow-[0_0_15px_rgba(212,175,55,0.2)] border border-[#d4af37]/40 transition-all hover:bg-[#2a2a2a] hover:scale-105 filter drop-shadow-md text-[#d4af37]">
                 <i class="fas fa-spinner fa-spin mr-2"></i>Loading events...
             </div>
         </div>
@@ -105,13 +108,13 @@
     <div class="container mx-auto px-4 max-w-7xl">
 
         <!-- Category Filter -->
-        <div class="mb-8 bg-white rounded-xl shadow-md p-5 border border-gray-100">
-            <h2 class="text-lg font-bold mb-4 text-gray-800 flex items-center">
-                <i class="fas fa-filter mr-2 text-blue-500"></i> Filter by Category
+        <div class="mb-8 bg-[#161616] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] p-5 border border-[#333]">
+            <h2 class="text-lg font-bold mb-4 text-[#e0e0e0] flex items-center">
+                <i class="fas fa-filter mr-2 text-[#d4af37]"></i> Filter by Category
             </h2>
             <div id="category-filters" class="flex flex-wrap gap-3 custom-scrollbar overflow-x-auto pb-2">
                 <button
-                    class="category-filter-btn px-5 py-2 rounded-full bg-blue-600 text-white text-sm font-medium transition-all hover:bg-blue-700 active:scale-95 shadow border border-transparent"
+                    class="category-filter-btn px-5 py-2 rounded-full bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-black text-sm font-bold transition-all hover:opacity-90 active:scale-95 shadow-[0_2px_10px_rgba(212,175,55,0.3)] border border-transparent"
                     data-category="all">
                     <i class="fas fa-globe mr-2"></i>All Events
                 </button>
@@ -123,31 +126,40 @@
         <div id="matches-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
             <!-- Loading State -->
             <div id="loading-state" class="col-span-full flex flex-col items-center justify-center py-20">
-                <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4">
+                <div
+                    class="w-16 h-16 border-4 border-[#d4af37] border-t-transparent rounded-full animate-spin mb-4 shadow-[0_0_15px_rgba(212,175,55,0.4)]">
                 </div>
-                <p class="text-gray-600 text-lg font-medium animate-pulse">Fetching live data from Fancode.....</p>
+                <p class="text-[#d4af37] text-lg font-bold animate-pulse tracking-wide">Fetching live data from
+                    Fancode.....</p>
             </div>
         </div>
 
         <!-- No Matches State (Hidden by default) -->
         <div id="no-matches-state" class="hidden flex-col items-center justify-center py-16 text-center">
-            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <i class="fas fa-calendar-times text-4xl text-gray-400"></i>
+            <div
+                class="w-24 h-24 bg-[#1a1a1a] border border-[#333] rounded-full flex items-center justify-center mb-4 shadow-lg">
+                <i class="fas fa-calendar-times text-4xl text-[#555]"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-700 mb-2">No Matches Found</h3>
-            <p class="text-gray-500 max-w-md mx-auto">There are currently no live or upcoming matches for the selected
+            <h3 class="text-xl font-bold text-[#e0e0e0] mb-2">No Matches Found</h3>
+            <p class="text-gray-400 max-w-md mx-auto">There are currently no live or upcoming matches for the selected
                 category. Please check back later.</p>
         </div>
     </div>
 
     <!-- Floating Action Button -->
-    <div class="fixed bottom-6 right-6 z-50">
+    <div class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-4 items-end pointer-events-auto">
         <!-- Telegram Button -->
-        <a href="#" target="_blank"
-            class="w-14 h-14 bg-gradient-to-tr from-blue-500 to-sky-400 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 hover:shadow-cyan-500/50 active:scale-95">
-            <i class="fab fa-telegram-plane text-2xl ml-[-2px] mt-[2px]"></i>
+        <a href="https://t.me/omnix_Empire" target="_blank" rel="noopener noreferrer"
+            class="w-14 h-14 bg-gradient-to-tr from-[#2AABEE] to-[#229ED9] text-white rounded-full shadow-[0_5px_15px_rgba(42,171,238,0.4)] flex items-center justify-center transition-all hover:scale-110 active:scale-95 group relative z-[10000]">
+            <i class="fab fa-telegram-plane text-[28px] pr-1 pt-1"></i>
+            <span
+                class="absolute right-16 bg-[#1a1a1a] border border-[#333] text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">Join
+                Telegram</span>
         </a>
     </div>
+
+    <!-- Ads Integration -->
+    <script src="ads.js"></script>
 
     <script>
         // Configuration
@@ -223,25 +235,23 @@
                 + '&category=' + safeCat + '&headers=' + headersParam
                 + '&back=fancode.html';
 
-            // ── Layer 1: STREAMING_CDN clean index.m3u8 (no hdntl token = never expires) ──
-            const cdn = match.STREAMING_CDN;
-            const cleanUrl = cdn && (cdn.fancode_cdn || cdn.Primary_Playback_URL || cdn.fancode_bd_cdn);
-            if (cleanUrl && cleanUrl !== 'Unavailable') {
-                // Route through allinonereborn proxy so Referer/UA reach the CDN correctly
-                const proxied = 'https://allinonereborn.online/fcww/live222.php?url='
-                    + encodeURIComponent(cleanUrl)
-                    + '|Referer=' + encodeURIComponent('https://fancode.com/')
-                    + '|User-Agent=' + encodeURIComponent('ReactNativeVideo/9.3.0 (Linux;Android 13) AndroidXMedia3/1.6.1');
-                window.location.href = 'fancode-player.html?streamUrl=' + encodeURIComponent(proxied) + baseParams;
-                return;
-            }
-
-            // ── Layer 2: auto_streams M3U8 blob (player.js converts string → Blob URL) ──
+            // ── Layer 1: auto_streams M3U8 blob (adaptive multi-quality, hdntl token) ──
             if (match.auto_streams && match.auto_streams.length > 0 && match.auto_streams[0].auto) {
                 const streamData = match.auto_streams[0].auto;
                 const sid = 'fc_' + matchIdStr;
                 sessionStorage.setItem(sid, streamData);
                 window.location.href = 'fancode-player.html?streamUrl=session:' + sid + baseParams;
+                return;
+            }
+
+            // ── Layer 2: STREAMING_CDN clean index.m3u8 (no hdntl token = never expires) ──
+            const cdn = match.STREAMING_CDN;
+            const cleanUrl = cdn && (cdn.fancode_cdn || cdn.Primary_Playback_URL || cdn.fancode_bd_cdn);
+            if (cleanUrl && cleanUrl !== 'Unavailable') {
+                // Pass the raw URL instead of proxying it here.
+                // fancode-player.html automatically intercepts and proxies Fancode URLs via xhrSetup
+                // which allows hls.js to correctly resolve relative segment/playlist URLs.
+                window.location.href = 'fancode-player.html?streamUrl=' + encodeURIComponent(cleanUrl) + baseParams;
                 return;
             }
 
@@ -302,20 +312,25 @@
 
             Array.from(categories).sort().forEach(category => {
                 const btn = document.createElement('button');
-                btn.className = 'category-filter-btn px-5 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium transition-all border border-gray-200';
+                btn.className = 'category-filter-btn px-5 py-2 rounded-full bg-[#1a1a1a] text-[#e0e0e0] hover:bg-[#2a2a2a] text-sm font-medium transition-all border border-[#333]';
                 btn.dataset.category = category;
-                btn.innerHTML = '<i class="fas ' + getCategoryIcon(category) + ' mr-2 text-gray-500"></i> ' + category;
+                btn.innerHTML = '<i class="fas ' + getCategoryIcon(category) + ' mr-2 text-[#d4af37]/70"></i> ' + category;
 
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.category-filter-btn').forEach(b => {
-                        b.className = 'category-filter-btn px-5 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium transition-all border border-gray-200';
+                        b.className = 'category-filter-btn px-5 py-2 rounded-full bg-[#1a1a1a] text-[#e0e0e0] hover:bg-[#2a2a2a] text-sm font-medium transition-all border border-[#333]';
                         const icon = b.querySelector('i');
-                        if (icon) icon.classList.replace('text-blue-200', 'text-gray-500');
-                        if (icon && b.dataset.category === 'all') icon.classList.replace('text-white', 'text-gray-500');
+                        if (icon) {
+                            icon.classList.remove('text-black');
+                            icon.classList.add('text-[#d4af37]/70');
+                        }
                     });
-                    btn.className = 'category-filter-btn px-5 py-2 rounded-full bg-blue-600 text-white text-sm font-medium transition-all shadow border border-transparent';
+                    btn.className = 'category-filter-btn px-5 py-2 rounded-full bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-black text-sm font-bold transition-all shadow-[0_2px_10px_rgba(212,175,55,0.3)] border border-transparent';
                     const btnIcon = btn.querySelector('i');
-                    if (btnIcon) { btnIcon.classList.remove('text-gray-500'); btnIcon.classList.add('text-white'); }
+                    if (btnIcon) {
+                        btnIcon.classList.remove('text-[#d4af37]/70');
+                        btnIcon.classList.add('text-black');
+                    }
                     currentCategory = category;
                     filterAndRenderMatches();
                 });
@@ -326,13 +341,19 @@
             const allBtn = categoryFilters.querySelector('[data-category="all"]');
             allBtn.addEventListener('click', () => {
                 document.querySelectorAll('.category-filter-btn').forEach(b => {
-                    b.className = 'category-filter-btn px-5 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium transition-all border border-gray-200';
+                    b.className = 'category-filter-btn px-5 py-2 rounded-full bg-[#1a1a1a] text-[#e0e0e0] hover:bg-[#2a2a2a] text-sm font-medium transition-all border border-[#333]';
                     const icon = b.querySelector('i');
-                    if (icon) icon.classList.replace('text-white', 'text-gray-500');
+                    if (icon) {
+                        icon.classList.remove('text-black');
+                        icon.classList.add('text-[#d4af37]/70');
+                    }
                 });
-                allBtn.className = 'category-filter-btn px-5 py-2 rounded-full bg-blue-600 text-white text-sm font-medium transition-all shadow border border-transparent';
+                allBtn.className = 'category-filter-btn px-5 py-2 rounded-full bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-black text-sm font-bold transition-all shadow-[0_2px_10px_rgba(212,175,55,0.3)] border border-transparent';
                 const allBtnIcon = allBtn.querySelector('i');
-                if (allBtnIcon) { allBtnIcon.classList.remove('text-gray-500'); allBtnIcon.classList.add('text-white'); }
+                if (allBtnIcon) {
+                    allBtnIcon.classList.remove('text-[#d4af37]/70');
+                    allBtnIcon.classList.add('text-black');
+                }
                 currentCategory = 'all';
                 filterAndRenderMatches();
             });
@@ -380,64 +401,96 @@
                     let scoreText = '';
                     if (team1.cricketScore && team1.cricketScore.length > 0) {
                         const s = team1.cricketScore[0];
-                        scoreText = '<div class="text-xs font-bold text-center mt-2">' + s.runs + '/' + s.wickets + ' <span class="text-gray-400 font-normal">(' + s.overs + ')</span></div>';
+                        scoreText = '<div class="text-[10px] font-bold text-center mt-3 text-white/90 drop-shadow-md pb-1">' + s.runs + '/' + s.wickets + ' <span class="text-white/60 font-normal">(' + s.overs + ')</span></div>';
                     }
 
                     matchTeamsHtml =
-                        '<div class="flex flex-col mb-4 bg-gray-50/50 p-3 rounded-xl border border-gray-100">' +
-                        '<div class="flex justify-between items-center w-full">' +
-                        '<div class="flex flex-col items-center gap-2 w-5/12">' +
-                        '<div class="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center p-1 overflow-hidden border border-gray-200">' +
+                        '<div class="flex flex-col relative z-20 mt-6">' +
+                        '<div class="flex justify-between items-center w-full px-2">' +
+                        '<!-- Team 1 -->' +
+                        '<div class="flex flex-col items-center gap-2 w-[40%]">' +
+                        '<div class="w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center p-1 border-2 border-white/20">' +
                         '<img src="' + flag1 + '" alt="' + (team1.shortName || '') + '" class="w-full h-full object-contain" />' +
                         '</div>' +
-                        '<span class="text-xs font-bold text-gray-800 text-center uppercase tracking-wide truncate w-full" style="color:' + (team1.color || '#374151') + '">' + (team1.shortName || team1.name) + '</span>' +
+                        '<span class="text-[11px] sm:text-xs font-bold text-white text-center w-full truncate drop-shadow-md mt-1 block" title="' + (team1.name || team1.shortName) + '">' +
+                        (team1.name || team1.shortName) +
+                        '</span>' +
                         '</div>' +
-                        '<div class="flex flex-col items-center justify-center w-2/12">' +
-                        '<span class="text-[10px] font-black text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full">VS</span>' +
+
+                        '<!-- VS -->' +
+                        '<div class="flex flex-col items-center justify-center">' +
+                        '<img src="https://images.fancode.com/skillup-uploads/fc-web-logo/vs_icon.png" onerror="this.src=\'https://placehold.co/40x40/transparent/ffaa00?text=VS\'" style="width: 35px; height: 35px; object-fit: contain; filter: drop-shadow(0 4px 5px rgba(0,0,0,0.6));" alt="VS" />' +
                         '</div>' +
-                        '<div class="flex flex-col items-center gap-2 w-5/12">' +
-                        '<div class="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center p-1 overflow-hidden border border-gray-200">' +
+
+                        '<!-- Team 2 -->' +
+                        '<div class="flex flex-col items-center gap-2 w-[40%]">' +
+                        '<div class="w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center p-1 border-2 border-white/20">' +
                         '<img src="' + flag2 + '" alt="' + (team2.shortName || '') + '" class="w-full h-full object-contain" />' +
                         '</div>' +
-                        '<span class="text-xs font-bold text-gray-800 text-center uppercase tracking-wide truncate w-full" style="color:' + (team2.color || '#374151') + '">' + (team2.shortName || team2.name) + '</span>' +
+                        '<span class="text-[11px] sm:text-xs font-bold text-white text-center w-full truncate drop-shadow-md mt-1 block" title="' + (team2.name || team2.shortName) + '">' +
+                        (team2.name || team2.shortName) +
+                        '</span>' +
                         '</div>' +
                         '</div>' +
                         scoreText +
                         '</div>';
                 }
 
-                const liveBadge = isLive
-                    ? '<div class="px-2.5 py-1 bg-red-600/90 backdrop-blur-sm text-white text-[10px] font-bold rounded flex items-center gap-1.5 shadow-sm uppercase tracking-wider border border-red-500/50"><span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> LIVE</div>'
-                    : '<div class="px-2.5 py-1 bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold rounded shadow-sm uppercase tracking-wider">UPCOMING</div>';
+                const isLiveStatus = (match.status === 'LIVE' || match.streamingStatus === 'STARTED' || match.status === 'IN_PROGRESS');
 
-                const proBadge = match.premium ? '<div class="px-2 py-0.5 premium-badge text-[10px] font-bold rounded-sm uppercase tracking-widest border border-orange-400/50 flex items-center"><i class="fas fa-crown mr-1"></i> PRO</div>' : '';
-                const adFreeBadge = match.adFree ? '<div class="px-2 py-0.5 adfree-indicator text-[10px] font-bold rounded-sm uppercase tracking-widest border border-emerald-400/50 flex items-center"><i class="fas fa-ban mr-1"></i> AD-FREE</div>' : '';
+                const liveBadge = isLiveStatus
+                    ? '<div class="px-4 py-1.5 bg-[#f03b3b] text-white text-[10px] font-bold rounded-full flex items-center shadow-[0_2px_8px_rgba(240,59,59,0.5)] tracking-widest border border-transparent">LIVE</div>'
+                    : '<div class="px-4 py-1.5 bg-[#141414] text-white text-[10px] font-bold rounded-full shadow-md border border-white/10 tracking-widest">UPCOMING</div>';
 
                 const safeTitle = (match.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                 const cardHtml =
-                    '<div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col fade-in border border-gray-200/60 overflow-hidden group transform hover:-translate-y-1" style="animation-delay:' + (index * 0.05) + 's">' +
-                    '<div class="relative overflow-hidden aspect-video bg-gray-200">' +
-                    '<img src="' + imageUrl + '" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Match Cover" loading="lazy" onerror="this.onerror=null;this.src=\'' + fallbackUrl + '\';" />' +
-                    '<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>' +
-                    '<div class="absolute top-3 left-3 flex gap-2">' + liveBadge + '</div>' +
-                    '<div class="absolute top-3 right-3 flex gap-2">' +
-                    '<div class="px-2.5 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold rounded shadow-sm uppercase tracking-wider border border-white/10">' +
-                    '<i class="fas fa-trophy mr-1.5 text-yellow-500"></i> ' + (match.category || 'Sports') +
+                    '<div class="relative rounded-3xl shadow-2xl hover:shadow-[0_10px_30px_rgba(255,100,50,0.15)] transition-all duration-300 flex flex-col fade-in overflow-hidden group border border-white/5 bg-[#141414] w-full min-h-[340px] sm:min-h-[370px]"' +
+                    'style="animation-delay:' + (index * 0.05) + 's">' +
+
+                    '<!-- Background Image Overlay -->' +
+                    '<div class="absolute inset-0 w-full h-full z-0">' +
+                    '<img src="' + imageUrl + '" class="w-full h-full object-cover opacity-[0.35] transition-transform duration-1000 group-hover:scale-110" alt="Match Cover" loading="lazy" onerror="this.onerror=null;this.src=\'' + fallbackUrl + '\';" />' +
+                    '<div class="absolute inset-0 bg-gradient-to-b from-[#181818]/60 via-[#141414]/80 to-[#141414]"></div>' +
+                    '<div class="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent"></div>' +
+                    '</div>' +
+
+                    '<!-- Top Container: Status & Category info -->' +
+                    '<div class="flex justify-between items-start pt-4 px-4 w-full relative z-10">' +
+                    '<!-- Left: Status -->' +
+                    liveBadge +
+
+                    '<!-- Right: League/Category -->' +
+                    '<div class="flex flex-col items-end gap-1 text-right max-w-[55%]">' +
+                    '<div class="text-white font-bold text-[11px] sm:text-[12px] tracking-wide drop-shadow-md truncate w-full">' +
+                    (match.tournament || match.category || 'Sports') +
+                    '</div>' +
+                    '<div class="text-[#c1c1c1] font-semibold text-[9px] uppercase tracking-widest truncate w-full">' +
+                    (match.category || 'Event') +
                     '</div>' +
                     '</div>' +
-                    '<div class="absolute bottom-3 right-3 flex gap-2">' + proBadge + adFreeBadge + '</div>' +
                     '</div>' +
-                    '<div class="p-4 flex-grow flex flex-col relative z-10 bg-white">' +
-                    '<h3 class="font-bold text-gray-900 text-[15px] leading-snug mb-1.5 line-clamp-2" title="' + (match.title || '') + '">' + (match.title || '') + '</h3>' +
-                    '<div class="flex items-center text-gray-500 text-xs mb-4">' +
-                    '<i class="far fa-calendar-alt mr-1.5 text-blue-500"></i>' +
-                    '<span class="truncate">' + (match.tournament || match.startTime || 'Event') + '</span>' +
-                    '</div>' +
+
+                    '<!-- Body Content -->' +
+                    '<div class="px-4 pb-4 flex-grow flex flex-col relative z-20 justify-end pt-2">' +
+
                     matchTeamsHtml +
-                    '<div class="mt-auto pt-2">' +
-                    '<button onclick="playMatch(\'' + match.match_id + '\',\'' + safeTitle + '\',\'' + (match.category || 'Sports') + '\')" class="flex items-center justify-center w-full py-2.5 bg-blue-50 text-blue-700 font-semibold text-sm rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-300 group/btn border border-blue-100 hover:border-blue-600 shadow-sm">' +
-                    '<i class="fas fa-play mr-2 text-blue-600 group-hover/btn:text-white transition-colors"></i> Watch Match' +
+
+                    '<!-- Bottom Info (Title & Time) -->' +
+                    '<div class="text-center mt-3 mb-4 w-full px-2">' +
+                    '<h3 class="font-bold text-white text-[13px] sm:text-[14px] leading-snug truncate drop-shadow-md w-full" title="' + (match.title || '') + '">' +
+                    (match.title || '') +
+                    '</h3>' +
+                    '<div class="text-[#999999] text-[10px] sm:text-[11px] mt-1.5 font-medium tracking-wide">' +
+                    (match.startTime || 'Scheduled') +
+                    '</div>' +
+                    '</div>' +
+
+                    '<!-- Watch Now Button -->' +
+                    '<div class="mt-auto items-end w-full">' +
+                    '<button onclick="playMatch(\'' + match.match_id + '\',\'' + safeTitle + '\',\'' + (match.category || 'Sports') + '\')" ' +
+                    'class="flex items-center justify-center w-full py-2.5 sm:py-3 bg-gradient-to-r from-[#ff512f] to-[#f09819] text-white font-bold text-[13px] rounded-full transition-all duration-300 transform hover:scale-[1.03] shadow-[0_6px_20px_rgba(255,81,47,0.3)] hover:shadow-[0_8px_25px_rgba(255,81,47,0.5)] border border-[#ff512f]/20">' +
+                    '<i class="fas fa-play-circle mr-2 text-[16px]"></i> Watch Now' +
                     '</button>' +
                     '</div>' +
                     '</div>' +
