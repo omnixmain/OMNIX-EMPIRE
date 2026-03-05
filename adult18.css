@@ -31,7 +31,7 @@ a {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1800px;
     margin: 0 auto;
     padding: 0 5%;
 }
@@ -49,7 +49,7 @@ a {
 }
 
 .nav-container {
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 0 auto;
     padding: 10px 5%;
     display: flex;
@@ -136,7 +136,7 @@ main.container {
 
 /* Category Line */
 .category-line {
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 0 auto;
     overflow-x: auto;
     white-space: nowrap;
@@ -188,9 +188,37 @@ main.container {
 /* Video Grid */
 .video-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
     margin-bottom: 3rem;
+}
+
+@media (min-width: 768px) {
+    .video-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 12px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .video-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+}
+
+@media (min-width: 1440px) {
+    .video-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (min-width: 2000px) {
+    .video-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 25px;
+    }
 }
 
 .video-card {
@@ -281,6 +309,7 @@ main.container {
     margin-bottom: 4px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     color: var(--text-white);
@@ -387,13 +416,13 @@ main.container {
 
 .player-body {
     flex-grow: 1;
-    overflow: hidden;
-    /* Prevent body scroll */
+    overflow-y: auto;
+    /* Allow scrolling inside modal body */
     padding: 0;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    /* Stacking top and bottom by default */
     align-items: stretch;
-    /* Stretch to fill height */
 }
 
 .player-body::-webkit-scrollbar {
@@ -410,8 +439,8 @@ main.container {
 }
 
 .video-main-section {
-    width: 60%;
-    /* Slightly smaller width */
+    width: 100%;
+    /* Full width */
     flex-shrink: 0;
     background: #000;
     padding: 15px 20px;
@@ -420,15 +449,14 @@ main.container {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    /* Center content vertically */
 }
 
 .video-wrapper {
     width: 100%;
     margin: 0 auto;
     aspect-ratio: 16/9;
-    max-height: 60vh;
-    /* Constrain max height */
+    max-height: 50vh;
+    /* Avoid video taking full vertical screen */
     background: #000;
     border-radius: 12px;
     overflow: hidden;
@@ -446,6 +474,12 @@ main.container {
     outline: none;
     object-fit: contain;
     /* Keep aspect ratio inside constrained height */
+}
+
+/* Force hide native controls if injected by browser */
+.video-wrapper video::-webkit-media-controls,
+.video-wrapper video::-webkit-media-controls-enclosure {
+    display: none !important;
 }
 
 /* Telegram Promo Section */
@@ -524,11 +558,9 @@ main.container {
     padding: 15px 20px;
     background: var(--bg-main);
     flex-grow: 1;
-    width: 40%;
-    /* Increase right side width a bit */
-    border-left: 1px solid var(--border-color);
-    overflow-y: auto;
-    /* Scroll ONLY the recommended side */
+    width: 100%;
+    border-top: 1px solid var(--border-color);
+    overflow-y: visible;
 }
 
 .recommended-header {
@@ -550,9 +582,21 @@ main.container {
 }
 
 .compact-grid {
-    grid-template-columns: repeat(3, 1fr);
-    /* Exactly 3 cards per row */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 12px;
+}
+
+@media (min-width: 768px) {
+    .compact-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+}
+
+@media (min-width: 1440px) {
+    .compact-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
 }
 
 .compact-grid .card-info h3 {
@@ -568,8 +612,45 @@ footer {
     font-size: 0.9rem;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
+/* Responsive adjustments for specific elements */
+@media (min-width: 1024px) {
+
+    /* Only horizontal layout on larger landscape screens */
+    .player-body {
+        flex-direction: row;
+        overflow: hidden;
+        /* Prevent body scroll when side-by-side */
+    }
+
+    .video-main-section {
+        width: 60%;
+        max-height: none;
+        /* Remove max-height when side-by-side */
+    }
+
+    .recommended-section {
+        width: 40%;
+        border-top: none;
+        border-left: 1px solid var(--border-color);
+        overflow-y: auto;
+    }
+
+    .video-wrapper {
+        max-height: 65vh;
+    }
+}
+
+@media (max-width: 1024px) {
+    .player-content {
+        height: 95vh;
+    }
+
+    .video-main-section {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 768px) {
     .nav-container {
         flex-direction: column;
         gap: 10px;
@@ -597,30 +678,6 @@ footer {
         border-radius: 0;
     }
 
-    .player-body {
-        flex-direction: column;
-        overflow-y: auto;
-        /* Allow full scrolling on mobile */
-    }
-
-    .video-main-section {
-        width: 100%;
-        position: relative;
-    }
-
-    .recommended-section {
-        width: 100%;
-        border-left: none;
-        padding: 15px;
-        overflow-y: visible;
-        /* Let parent scroll */
-    }
-
-    .compact-grid {
-        grid-template-columns: repeat(2, 1fr);
-        /* 2 per line on mobile */
-    }
-
     .telegram-promo {
         flex-direction: column;
         text-align: center;
@@ -632,7 +689,49 @@ footer {
     }
 
     .video-grid {
-        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
         gap: 10px;
+    }
+}
+
+/* TV and Large Monitors */
+@media (min-width: 1440px) {
+    .player-content {
+        max-width: 90vw;
+        height: 85vh;
+    }
+
+    .video-main-section {
+        width: 65%;
+    }
+
+    .recommended-section {
+        width: 35%;
+    }
+
+    .logo img {
+        height: 70px;
+        max-width: 300px;
+    }
+}
+
+@media (min-width: 2000px) {
+
+    .container,
+    .nav-container,
+    .category-line {
+        max-width: 95vw;
+    }
+
+    .player-content {
+        max-width: 85vw;
+        height: 85vh;
+    }
+
+    .video-main-section {
+        width: 70%;
+    }
+
+    .recommended-section {
+        width: 30%;
     }
 }

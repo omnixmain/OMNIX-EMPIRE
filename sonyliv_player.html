@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SonyLIV Premium Player - OMNIX</title>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Player Engines -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <!-- Shaka Player with UI -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.7/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.7/controls.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold-primary: #FFD700;
+            --gold-secondary: #D4AF37;
+            --bg-dark: #050505;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* ---- TOP BAR ---- */
+        .player-top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+            z-index: 500;
+            transition: opacity 0.4s ease;
+        }
+
+        .back-btn {
+            background: rgba(20, 20, 20, 0.7);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            color: var(--gold-primary);
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            margin-right: 1.5rem;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .back-btn:hover {
+            background: rgba(212, 175, 55, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .stream-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .stream-info h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            color: #fff;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stream-info span {
+            font-size: 0.75rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 3px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #ff3333;
+            border-radius: 50%;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(255, 51, 51, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(255, 51, 51, 0);
+            }
+        }
+
+        /* ---- VIDEO CONTAINER ---- */
+        #videoContainer {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #000;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            outline: none;
+        }
+
+        /* ---- OVERLAYS ---- */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 5, 5, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .overlay.hidden {
+            display: none !important;
+        }
+
+        .spinner {
+            width: 55px;
+            height: 55px;
+            border: 3px solid rgba(212, 175, 55, 0.15);
+            border-top-color: var(--gold-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-msg {
+            color: #ff3333;
+            text-align: center;
+            max-width: 80%;
+            font-family: 'Outfit', sans-serif;
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 51, 51, 0.3);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .error-msg i {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-msg h3 {
+            font-size: 1.6rem;
+            margin-bottom: 0.8rem;
+            color: #fff;
+        }
+
+        .error-msg p {
+            color: #ccc;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 1.8rem;
+            line-height: 1.5;
+        }
+
+        .error-msg button {
+            background: var(--gold-primary);
+            color: #000;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .error-msg button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        /* ---- SHAKA UI THEME OVERRIDES ---- */
+
+        /* Container styling */
+        .shaka-video-container {
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        /* Base control bar */
+        .shaka-bottom-controls {
+            padding: 15px 20px 20px !important;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, transparent 100%) !important;
+        }
+
+        /* Range colors (progress bar and volume) */
+        .shaka-range-element {
+            /* Using CSS variables specific to shaka UI */
+            --shaka-range-fill-color: var(--gold-primary) !important;
+            --shaka-range-base-color: rgba(255, 255, 255, 0.2) !important;
+        }
+
+        /* Make thumb stand out more */
+        .shaka-range-element::-webkit-slider-thumb {
+            background: #fff !important;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5) !important;
+            transform: scale(1.1);
+        }
+
+        /* Volume specific */
+        .shaka-volume-bar-value {
+            background-color: var(--gold-primary) !important;
+        }
+
+        /* Overflow menu styling (Settings menu for Quality/Audio) */
+        .shaka-overflow-menu {
+            background: rgba(15, 15, 15, 0.95) !important;
+            border: 1px solid rgba(212, 175, 55, 0.3) !important;
+            border-radius: 12px !important;
+            backdrop-filter: blur(10px) !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8) !important;
+            padding: 8px 0 !important;
+            color: white !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        .shaka-settings-menu {
+            background: transparent !important;
+        }
+
+        .shaka-settings-menu button {
+            color: #e0e0e0 !important;
+            padding: 12px 20px !important;
+            font-size: 14px !important;
+            transition: background 0.2s ease !important;
+        }
+
+        .shaka-settings-menu button:hover {
+            background: rgba(212, 175, 55, 0.15) !important;
+            color: var(--gold-primary) !important;
+        }
+
+        /* Active checking icon */
+        .shaka-settings-menu i.material-icons-round {
+            color: var(--gold-primary) !important;
+        }
+
+        /* Big center play button */
+        .shaka-play-button {
+            background-color: rgba(212, 175, 55, 0.7) !important;
+            border-radius: 50% !important;
+            padding: 15px !important;
+            backdrop-filter: blur(5px) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .shaka-play-button:hover {
+            background-color: var(--gold-primary) !important;
+            transform: scale(1.1) !important;
+        }
+
+        /* Text coloring in controls */
+        .shaka-current-time {
+            color: #ccc !important;
+            font-weight: 500 !important;
+            font-size: 13px !important;
+        }
+
+        /* Control icons hover states */
+        .shaka-controls-button-panel .material-icons-round {
+            transition: color 0.2s ease, transform 0.2s ease !important;
+        }
+
+        .shaka-controls-button-panel button:hover .material-icons-round {
+            color: var(--gold-primary) !important;
+            transform: scale(1.1) !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="player-top-bar" id="topBar">
+        <a href="SonyLiv Live Events.html" class="back-btn"><i class="fa-solid fa-chevron-left"></i></a>
+        <div class="stream-info">
+            <h1 id="streamTitle">Loading Event...</h1>
+            <span>
+                <div class="live-dot"></div> SONYLIV EXCLUSIVE PREMIUM
+            </span>
+        </div>
+    </div>
+
+    <div id="videoContainer">
+        <!-- We use data-shaka-player-container inside a wrapper -->
+        <div data-shaka-player-container style="width:100%; height:100%;">
+            <video id="videoPlayer" data-shaka-player autoplay playsinline></video>
+        </div>
+
+        <div id="loader" class="overlay">
+            <div class="spinner"></div>
+            <p
+                style="color:var(--gold-primary); font-weight: 600; font-family:'Outfit', sans-serif; letter-spacing: 1px;">
+                Negotiating with SonyLIV Servers...</p>
+        </div>
+
+        <div id="errorOverlay" class="overlay hidden">
+            <div class="error-msg">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <h3>Playback Unavailable</h3>
+                <p id="errorText">The requested stream could not be loaded or is geographically restricted.</p>
+                <button onclick="window.history.back()">Return to List</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('videoPlayer');
+        let currentHls = null;
+        let shakaPlayer = null;
+        let shakaUI = null;
+        let globalHeaders = null;
+
+        // UI fading for top bar (syncing with mouse movement / touch)
+        let hideTimer;
+        const topBar = document.getElementById('topBar');
+        const showTopBar = () => {
+            topBar.style.opacity = '1';
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(() => { topBar.style.opacity = '0'; }, 3500);
+        };
+        document.body.addEventListener('mousemove', showTopBar);
+        document.body.addEventListener('touchstart', showTopBar);
+        // Also show top bar when video pauses or shows controls
+        video.addEventListener('pause', () => { clearTimeout(hideTimer); topBar.style.opacity = '1'; });
+        video.addEventListener('play', showTopBar);
+        showTopBar();
+
+        function showError(msg) {
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('errorOverlay').classList.remove('hidden');
+            document.getElementById('errorText').textContent = msg;
+        }
+
+        async function initPlayer() {
+            const params = new URLSearchParams(window.location.search);
+            const streamId = params.get('id');
+
+            if (!streamId) {
+                showError("No Stream ID provided. Navigate here from the events page.");
+                return;
+            }
+
+            const streamDataStr = sessionStorage.getItem(streamId);
+            if (!streamDataStr) {
+                showError("Stream session expired or invalid. Please select the event again.");
+                return;
+            }
+
+            const streamData = JSON.parse(streamDataStr);
+            document.getElementById('streamTitle').textContent = streamData.title + ' (' + streamData.lang + ')';
+
+            const url = streamData.url;
+            const drmUrl = streamData.drmUrl;
+            globalHeaders = streamData.headers || {};
+
+            if (!url) {
+                showError("Stream URL is empty.");
+                return;
+            }
+
+            // Default behavior: mpd and DRM streams (Widevine) go to Shaka. Clear m3u8s go to HLS.js for better live support.
+            if (isMpd || drmUrl) {
+                await initShaka(url, drmUrl);
+            } else if (url.includes('.m3u8')) {
+                initHls(url);
+            } else {
+                // Try Shaka as a universal fallback
+                await initShaka(url, drmUrl);
+            }
+        }
+
+        async function initShaka(url, drmUrl) {
+            shaka.polyfill.installAll();
+
+            if (!shaka.Player.isBrowserSupported()) {
+                showError('Your browser does not support the advanced Shaka Player (DRM playback).');
+                return;
+            }
+
+            // Init the UI manager which attaches to the data-shaka-player-container
+            const videoContainer = document.querySelector('[data-shaka-player-container]');
+
+            shakaPlayer = new shaka.Player(video);
+            shakaUI = new shaka.ui.Overlay(shakaPlayer, videoContainer, video);
+
+            // Configure Advanced UI
+            const uiConfig = {
+                addBigPlayButton: true,
+                clearBufferOnPlay: true,
+                controlPanelElements: [
+                    'play_pause',
+                    'time_and_duration',
+                    'spacer',
+                    'mute',
+                    'volume',
+                    'captions',         // Subtitles toggle
+                    'quality',          // Quick quality toggle
+                    'language',         // Audio language toggle 
+                    'fullscreen',
+                    'overflow_menu'     // Deep settings for all of the above
+                ],
+                overflowMenuButtons: ['captions', 'quality', 'language', 'playback_rate'],
+                seekBarColors: {
+                    base: 'rgba(255, 255, 255, 0.2)',
+                    buffered: 'rgba(255, 255, 255, 0.4)',
+                    played: '#FFD700', // Gold Main
+                }
+            };
+            shakaUI.configure(uiConfig);
+
+            // Player Event Listeners
+            shakaPlayer.addEventListener('error', (e) => {
+                console.error("Shaka Player Error", e.detail);
+
+                // If Shaka fails on HLS, fallback to HLS.js gracefully
+                if (url.includes('.m3u8')) {
+                    console.warn("Shaka failed on HLS. Falling back to native/HLS.js...");
+                    shakaUI.destroy();
+                    shakaPlayer.destroy();
+                    initHls(url);
+                } else {
+                    showError(`Playback Error Code: ${e.detail.code || 'Unknown'}`);
+                }
+            });
+
+            // Player Configuration setup
+            const config = {
+                streaming: {
+                    bufferingGoal: 30,
+                    rebufferingGoal: 2,
+                    retryParameters: { maxAttempts: 5 }
+                },
+                preferredAudioLanguage: 'en',
+            };
+
+            if (drmUrl) {
+                config.drm = {
+                    servers: {
+                        'com.widevine.alpha': drmUrl
+                    },
+                    advanced: {
+                        'com.widevine.alpha': {
+                            videoRobustness: 'SW_SECURE_CRYPTO',
+                            audioRobustness: 'SW_SECURE_CRYPTO'
+                        }
+                    },
+                    retryParameters: { maxAttempts: 5 }
+                };
+            }
+
+            // Register CORS proxy similar to OMNIX implementation if needed by headers
+            shakaPlayer.getNetworkingEngine().registerRequestFilter((type, request) => {
+                const hasSpecialShaka = globalHeaders && (globalHeaders['User-Agent'] || globalHeaders['Cookie'] || globalHeaders['Referer']);
+
+                // Only proxy if special headers provided and not already proxied via our own workers
+                if (hasSpecialShaka) {
+                    const originalUri = request.uris[0];
+                    if (!originalUri.includes('allinonereborn.online') && !originalUri.startsWith('blob:') && !originalUri.startsWith('data:')) {
+                        let pxS = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(originalUri);
+                        if (globalHeaders['Origin']) pxS += '|Origin=' + encodeURIComponent(globalHeaders['Origin']);
+                        if (globalHeaders['User-Agent']) pxS += '|User-Agent=' + encodeURIComponent(globalHeaders['User-Agent']);
+                        if (globalHeaders['Cookie']) pxS += '|Cookie=' + encodeURIComponent(globalHeaders['Cookie']);
+                        if (globalHeaders['Referer']) pxS += '|Referer=' + encodeURIComponent(globalHeaders['Referer']);
+                        request.uris = [pxS];
+
+                        // Prevent browser from complaining about unsafe headers
+                        delete request.headers['Origin'];
+                        delete request.headers['User-Agent'];
+                        delete request.headers['Cookie'];
+                        delete request.headers['Referer'];
+                    }
+                }
+
+                if (globalHeaders) {
+                    Object.entries(globalHeaders).forEach(([k, v]) => {
+                        if (!['referer', 'origin', 'cookie', 'user-agent'].includes(k.toLowerCase())) {
+                            request.headers[k] = v;
+                        }
+                    });
+                }
+            });
+
+            shakaPlayer.configure(config);
+
+            try {
+                await shakaPlayer.load(url);
+                video.play();
+                document.getElementById('loader').classList.add('hidden');
+
+                // Notify user tracks are available if multiple exist
+                const tracks = shakaPlayer.getVariantTracks();
+                const audioLangs = new Set(tracks.map(t => t.language));
+                if (audioLangs.size > 1) {
+                    console.log(`Multiple audio tracks found: ${Array.from(audioLangs).join(', ')}`);
+                }
+
+            } catch (err) {
+                console.error("Load Error:", err);
+                if (url.includes('.m3u8')) {
+                    shakaUI.destroy();
+                    shakaPlayer.destroy();
+                    initHls(url);
+                } else {
+                    showError(`Failed to negotiate stream parameters (Error ${err.code || err.message})`);
+                }
+            }
+        }
+
+        // HLS.js Fallback (Only used if Shaka completely fails on an m3u8)
+        function initHls(url) {
+            video.controls = true; // Use native/HLS controls
+            if (Hls.isSupported()) {
+                currentHls = new Hls({
+                    maxLoadingRetry: 6,
+                    xhrSetup: function (xhr, u) {
+                        // Always proxy HLS segments to avoid CORS issues on live streams
+                        let pxHls = 'https://allinonereborn.online/fcww/live222.php?url=' + encodeURIComponent(u);
+
+                        if (globalHeaders) {
+                            if (globalHeaders['Origin']) pxHls += '|Origin=' + encodeURIComponent(globalHeaders['Origin']);
+                            if (globalHeaders['User-Agent']) pxHls += '|User-Agent=' + encodeURIComponent(globalHeaders['User-Agent']);
+                            if (globalHeaders['Cookie']) pxHls += '|Cookie=' + encodeURIComponent(globalHeaders['Cookie']);
+                            if (globalHeaders['Referer']) pxHls += '|Referer=' + encodeURIComponent(globalHeaders['Referer']);
+                        }
+
+                        xhr.open('GET', pxHls, true);
+
+                        if (globalHeaders) {
+                            Object.entries(globalHeaders).forEach(([k, v]) => {
+                                if (!['referer', 'origin', 'cookie', 'user-agent'].includes(k.toLowerCase())) {
+                                    try { xhr.setRequestHeader(k, v); } catch (e) { }
+                                }
+                            });
+                        }
+                    }
+                });
+                currentHls.loadSource(url);
+                currentHls.attachMedia(video);
+                currentHls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    video.play();
+                    document.getElementById('loader').classList.add('hidden');
+                });
+                currentHls.on(Hls.Events.ERROR, (e, data) => {
+                    if (data.fatal) {
+                        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                            currentHls.startLoad();
+                        } else {
+                            showError("HLS Native Fallback Error: " + data.details);
+                        }
+                    }
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+                video.play();
+                document.getElementById('loader').classList.add('hidden');
+            } else {
+                showError("Browser does not support HLS playback natively.");
+            }
+        }
+
+        // Run Initialization
+        document.addEventListener('DOMContentLoaded', initPlayer);
+    </script>
+</body>
+
+</html>

@@ -4,13 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adult18 | OMNIX EMPIRE</title>
+    <title>OMNIX 18+ | Adults Only Zone</title>
     <meta name="description" content="Adult18 Platform - Live & VOD Content">
     <link rel="stylesheet" href="adult18.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <!-- Shaka Player UI CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.10/controls.min.css" />
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 </head>
 
@@ -68,10 +69,12 @@
             <div class="player-body">
                 <div class="video-main-section">
                     <div class="video-wrapper">
-                        <video id="mainVideo" controls crossorigin playsinline>
-                            <source src="" type="video/mp4">
-                            Your browser does not support HTML5 video.
-                        </video>
+                        <!-- Shaka Player Container -->
+                        <div id="videoContainer"
+                            style="width:100%; height:100%; border-radius: 12px; overflow: hidden; position: relative;">
+                            <video id="mainVideo" autoplay
+                                style="width:100%; height: 100%; background-color:#000; outline: none;"></video>
+                        </div>
                     </div>
 
                     <!-- Telegram Join Promo -->
@@ -113,8 +116,8 @@
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <!-- Shaka Player Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.10/shaka-player.ui.min.js"></script>
     <script src="adult18.js"></script>
     <script src="ads.js"></script>
 </body>

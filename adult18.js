@@ -14,8 +14,8 @@ const playerTitle = document.getElementById('playerTitle');
 let allItems = [];
 let currentCategory = 'all';
 
-let plyrPlayer = null;
-let hlsInstance = null;
+let shakaPlayer = null;
+let shakaUI = null;
 
 const CORS_PROXIES = [
     '', // Try direct first
@@ -179,9 +179,9 @@ function renderGrid() {
         return;
     }
 
-    // Limit rendering for performance if it's too huge, but usually adult M3Us are easily handleable
-    // Let's render max 200 items initially to avoid DOM lock
-    const renderLimit = Math.min(filtered.length, 300);
+    // Limit rendering for performance
+    // Let's render max 50 items initially to avoid DOM lock
+    const renderLimit = Math.min(filtered.length, 50);
 
     for (let i = 0; i < renderLimit; i++) {
         const item = filtered[i];
@@ -197,7 +197,8 @@ function renderGrid() {
         if (item.logo) {
             mediaHtml = `<img src="${item.logo}" alt="${item.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x169/141414/e50914?text=No+Image'">`;
         } else {
-            mediaHtml = `<video data-src="${item.url}" class="lazy-video" preload="none" muted playsinline style="width:100%; height:100%; object-fit:cover;" onmouseover="this.play().catch(e=>{})" onmouseout="this.pause()"></video>`;
+            // Replace lazy video hover previews with placeholder to save resources
+            mediaHtml = `<img src="https://via.placeholder.com/300x169/141414/e50914?text=${encodeURIComponent(item.title)}" loading="lazy" alt="${item.title}">`;
         }
 
         card.innerHTML = `
@@ -213,124 +214,100 @@ function renderGrid() {
 
         videoGrid.appendChild(card);
     }
-
-    // IntersectionObserver to fetch video metadata when in view
-    if (!window.videoObserver) {
-        window.videoObserver = new IntersectionObserver((entries, obs) => {
-            entries.forEach(entry => {
-                const v = entry.target;
-                if (entry.isIntersecting) {
-                    if (v.dataset.src) {
-                        v.src = v.dataset.src;
-                        v.preload = "metadata"; // Load just enough for a starting frame
-                        v.removeAttribute('data-src');
-                    }
-                } else if (!v.paused) {
-                    v.pause(); // Pause off-screen videos to save resources
-                }
-            });
-        }, { rootMargin: '150px' });
-    }
-
-    document.querySelectorAll('.video-grid .lazy-video').forEach(vid => {
-        window.videoObserver.observe(vid);
-    });
 }
 
 function openPlayer(item) {
-    if (plyrPlayer) {
-        plyrPlayer.destroy();
-        plyrPlayer = null;
-    }
-    if (hlsInstance) {
-        hlsInstance.destroy();
-        hlsInstance = null;
-    }
-
     playerTitle.textContent = item.title;
     const url = item.url;
 
-    // Clear old source
-    mainVideo.src = '';
-    mainVideo.removeAttribute('src');
-
-    const defaultOptions = {
-        autoplay: true,
-        controls: [
-            'play-large', 'restart', 'rewind', 'play', 'fast-forward',
-            'progress', 'current-time', 'duration', 'mute', 'volume',
-            'captions', 'settings', 'pip', 'airplay', 'fullscreen'
-        ],
-        settings: ['quality', 'speed', 'loop'],
-    };
-
-    if (Hls.isSupported() && (url.includes('.m3u8') || url.includes('.ts') || url.includes('.m3u'))) {
-        hlsInstance = new Hls({
-            maxMaxBufferLength: 60,
-            maxBufferSize: 30 * 1000 * 1000,
-            manifestLoadingMaxRetry: 5,
-        });
-
-        hlsInstance.loadSource(url);
-        hlsInstance.attachMedia(mainVideo);
-        window.hlsInstance = hlsInstance;
-
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-            const availableQualities = hlsInstance.levels.map((l) => l.height);
-            availableQualities.unshift(0); // Auto mode
-
-            defaultOptions.quality = {
-                default: 0,
-                options: availableQualities,
-                forced: true,
-                onChange: (e) => updateQuality(e),
-            };
-
-            plyrPlayer = new Plyr(mainVideo, defaultOptions);
-            plyrPlayer.play().catch(e => console.log('Autoplay prevented', e));
-        });
-
-        hlsInstance.on(Hls.Events.ERROR, function (event, data) {
-            if (data.fatal) {
-                switch (data.type) {
-                    case Hls.ErrorTypes.NETWORK_ERROR:
-                        console.log("fatal network error encountered, try to recover");
-                        hlsInstance.startLoad();
-                        break;
-                    case Hls.ErrorTypes.MEDIA_ERROR:
-                        console.log("fatal media error encountered, try to recover");
-                        hlsInstance.recoverMediaError();
-                        break;
-                    default:
-                        hlsInstance.destroy();
-                        break;
-                }
-            }
-        });
-    } else {
-        // Native fallback or MP4
-        mainVideo.src = url;
-        plyrPlayer = new Plyr(mainVideo, defaultOptions);
-        plyrPlayer.play().catch(e => console.log('Autoplay prevented', e));
-    }
+    // We will initialize the player if it doesn't exist yet for this session.
+    // If it does exist, we just load the new source.
+    initPlayer().then(() => {
+        loadVideo(url);
+    }).catch(error => {
+        console.error("Error setting up Shaka Player:", error);
+    });
 
     populateRecommended(item);
-
     playerModal.style.display = 'flex';
 }
 
-function updateQuality(newQuality) {
-    if (!window.hlsInstance) return;
-    window.hlsInstance.levels.forEach((level, levelIndex) => {
-        if (level.height === newQuality) {
-            console.log("Found quality match with " + newQuality);
-            window.hlsInstance.currentLevel = levelIndex;
+async function initPlayer() {
+    if (shakaPlayer) return; // Already initialized
+
+    // Install built-in polyfills to patch browser incompatibilities.
+    shaka.polyfill.installAll();
+
+    // Check to see if the browser supports the basic APIs Shaka needs.
+    if (!shaka.Player.isBrowserSupported()) {
+        console.error('Browser not supported!');
+        return;
+    }
+
+    const video = document.getElementById('mainVideo');
+    const container = document.getElementById('videoContainer');
+
+    shakaPlayer = new shaka.Player(video);
+    shakaUI = new shaka.ui.Overlay(shakaPlayer, container, video);
+
+    // Configure the Player logic to avoid freezing
+    shakaPlayer.configure({
+        streaming: {
+            bufferingGoal: 7, // Kept low for Live streams with limited windows
+            rebufferingGoal: 1.5, // Start playing faster after a freeze
+            bufferBehind: 10,
+            jumpLargeGaps: true, // Jump over gaps in the stream
+            ignoreTextStreamFailures: true,
+            alwaysStreamText: false,
+        },
+        manifest: {
+            retryParameters: {
+                maxAttempts: 15, // Increase max attempts for flaky streams
+                baseDelay: 1000,
+                backoffFactor: 1.5,
+                fuzzFactor: 0.5,
+                timeout: 10000,
+            }
+        },
+        abr: {
+            enabled: false, // Many IPTV streams report wrong bandwidth leading to constant freezing attempts
         }
     });
-    if (newQuality === 0) {
-        window.hlsInstance.currentLevel = -1; //Enable AUTO quality if option.value = 0
+
+    // Configure the UI
+    const config = {
+        'controlPanelElements': [
+            'play_pause', 'time_and_duration', 'spacer', 'mute', 'volume',
+            'playback_rate', 'quality', 'language', 'picture_in_picture', 'fullscreen'
+        ],
+        'playbackRates': [0.5, 0.75, 1, 1.25, 1.5, 2],
+    };
+    shakaUI.configure(config);
+
+    // Listen for error events.
+    shakaPlayer.addEventListener('error', onErrorEvent);
+}
+
+async function loadVideo(url) {
+    if (!shakaPlayer) return;
+    try {
+        await shakaPlayer.load(url);
+        // This runs if the asynchronous load is successful.
+        console.log('The video has now been loaded!');
+    } catch (e) {
+        onError(e);
     }
 }
+
+function onErrorEvent(event) {
+    onError(event.detail);
+}
+
+function onError(error) {
+    console.error('Error code', error.code, 'object', error);
+}
+
+/* Removed old Plyr / HLS.js logic */
 
 function populateRecommended(currentItem) {
     const recommendedGrid = document.getElementById('recommendedGrid');
@@ -346,7 +323,7 @@ function populateRecommended(currentItem) {
         similar = [...similar, ...randomOthers];
     }
 
-    const finalRecs = similar.sort(() => 0.5 - Math.random()).slice(0, 12);
+    const finalRecs = similar.sort(() => 0.5 - Math.random()).slice(0, 8);
 
     finalRecs.forEach(item => {
         const card = document.createElement('div');
@@ -363,7 +340,8 @@ function populateRecommended(currentItem) {
         if (item.logo) {
             mediaHtml = `<img src="${item.logo}" alt="${item.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x169/141414/e50914?text=No+Image'">`;
         } else {
-            mediaHtml = `<video data-src="${item.url}" class="lazy-video" preload="none" muted playsinline style="width:100%; height:100%; object-fit:cover;" onmouseover="this.play().catch(e=>{})" onmouseout="this.pause()"></video>`;
+            // Replace lazy video hover previews with placeholder to save resources
+            mediaHtml = `<img src="https://via.placeholder.com/300x169/141414/e50914?text=${encodeURIComponent(item.title)}" loading="lazy" alt="${item.title}">`;
         }
 
         card.innerHTML = `
@@ -378,25 +356,16 @@ function populateRecommended(currentItem) {
         `;
         recommendedGrid.appendChild(card);
     });
-
-    // Attach observer to new recommended videos
-    document.querySelectorAll('#recommendedGrid .lazy-video').forEach(vid => {
-        if (window.videoObserver) window.videoObserver.observe(vid);
-    });
 }
 
 function closePlayer() {
     playerModal.style.display = 'none';
-    if (plyrPlayer) {
-        plyrPlayer.pause();
-        plyrPlayer.destroy();
-        plyrPlayer = null;
+    if (shakaPlayer) {
+        // Unload the current stream to stop downloading and playing
+        shakaPlayer.unload().catch(error => {
+            console.error("Error unloading Shaka player:", error);
+        });
     }
-    if (hlsInstance) {
-        hlsInstance.destroy();
-        hlsInstance = null;
-    }
-    mainVideo.src = '';
 }
 
 // Close player if clicked outside the content content

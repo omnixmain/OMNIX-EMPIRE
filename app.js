@@ -8,7 +8,8 @@ const PROVIDERS = [
     { id: 'jiohot', name: 'JIO-HOT', logo: 'https://img.hotstar.com/image/upload/v1737554969/web-assets/prod/images/rebrand/logo.png', url: 'https://voot.vodep39240327.workers.dev?voot.m3u', type: 'm3u' },
     { id: 'omnixv1', name: 'OMNIX LIVE V1', logo: 'https://img10.hotstar.com/image/upload/f_auto,q_90/sources/r1/web-assets/live_badge', url: 'https://dl.dropbox.com/scl/fi/d9n6xrp813zx4o7wc56w9/tv-prueba.txt?rlkey=x7c45o26fr8x7bqqa42uv470m&st=8aic1pey&.m3u', type: 'm3u' },
     { id: 'omnixv2', name: 'OMNIX LIVE V2', logo: 'https://img10.hotstar.com/image/upload/f_auto,q_90/sources/r1/web-assets/live_badge', url: 'https://raw.githubusercontent.com/BuddyChewChew/sports/refs/heads/main/liveeventsfilter.m3u8', type: 'm3u' },
-    { id: 'icc', name: 'ICC', logo: 'https://play-lh.googleusercontent.com/LD3LA29f1QUuTsmpCatwmXfV3_PQqMgV5wX36KFuFu1G7HVz0Flu87X-H5bu9_FVyKU=w240-h480-rw', url: 'https://sportsbd.top/demo/liveevent.php', type: 'm3u' }
+    { id: 'icc', name: 'ICC', logo: 'https://play-lh.googleusercontent.com/LD3LA29f1QUuTsmpCatwmXfV3_PQqMgV5wX36KFuFu1G7HVz0Flu87X-H5bu9_FVyKU=w240-h480-rw', url: 'https://sportsbd.top/demo/liveevent.php', type: 'm3u' },
+    { id: 'freetv', name: 'FREE-TV', logo: 'https://i.ibb.co/VcJHGM5F/omnix-iptv.png', url: '', type: 'freetv' }
 ];
 
 let allData = [];
@@ -62,12 +63,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadProvider(p, push = true) {
     // ── Fancode → open dedicated fancode.html page ──
+    if (p.id === 'freetv') {
+        window.location.href = 'Omnix_freetv.html';
+        return;
+    }
     if (p.id === 'fcin') {
         window.location.href = 'fancode.html';
         return;
     }
     if (p.id === 'fcin2') {
         window.location.href = 'Fancode-2.html';
+        return;
+    }
+    if (p.id === 'sonypro') {
+        window.location.href = 'SonyLiv Live Events.html';
         return;
     }
 
