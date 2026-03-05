@@ -368,6 +368,91 @@
                 height: 250px;
             }
         }
+
+        /* Mobile & Tablet Specific Layout Tweaks */
+        @media (max-width: 850px) {
+            .stats-row {
+                gap: 15px;
+            }
+
+            .stat-item {
+                flex: 1 1 30%;
+                /* 3 items per row on tablet */
+                margin-bottom: 20px;
+            }
+
+            .stat-item:nth-child(3n)::after {
+                display: none;
+                /* remove right border for last item in row */
+            }
+
+            .stat-item:last-child::after {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .app-title-area {
+                align-items: center;
+            }
+
+            .app-title {
+                font-size: 1.8rem;
+            }
+
+            .downloads-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .screenshots-container {
+                gap: 10px;
+            }
+
+            .screenshot-card {
+                flex: 0 0 calc(50% - 10px);
+                /* Show 2 at a time on tablet */
+                min-width: 200px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-header {
+                padding: 15px;
+            }
+
+            .app-title {
+                font-size: 1.5rem;
+            }
+
+            .stat-item {
+                flex: 1 1 45%;
+                /* 2 items per row on mobile */
+            }
+
+            .stat-item:nth-child(2n)::after {
+                display: none;
+            }
+
+            .stat-item:not(:nth-child(2n))::after {
+                display: block;
+            }
+
+            .screenshot-card {
+                flex: 0 0 calc(85% - 10px);
+                /* Show almost 1 at a time on mobile */
+                min-width: 180px;
+            }
+
+            .card-title {
+                font-size: 0.95rem;
+            }
+        }
     </style>
 </head>
 
@@ -386,7 +471,7 @@
             <img src="https://github.com/omnixmain/OMNIX-EMPIRE/blob/main/omnix-ott-logo.jpg?raw=true" alt="OMNIX OTT"
                 class="app-icon">
             <div class="app-title-area">
-                <h1 class="app-title">OMNIX OTT</span></h1>
+                <h1 class="app-title">OMNIX OTT</h1>
                 <div class="app-subtitle-row">
                     <span class="developer-name">OMNIX EMPIRE</span>
                     <span class="contains-ads">Contains ads</span>
