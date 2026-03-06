@@ -77,7 +77,7 @@ async function loadProvider(p, push = true) {
         return;
     }
     if (p.id === 'sonypro') {
-        window.location.href = 'SonyLiv Live Events.html';
+        window.location.href = encodeURI('SonyLiv Live Events.html');
         return;
     }
 

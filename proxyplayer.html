@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>(function (s) { s.dataset.zone = '10408286', s.src = 'https://al5sm.com/tag.min.js' })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Premium Player</title>
+
+  <!-- Plyr CSS -->
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+
+  <!-- Hls.js -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <!-- Plyr JS -->
+  <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+
+  <!-- Shaka Player -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@4.7.11/dist/controls.css" />
+  <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.7.11/dist/shaka-player.ui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.7.11/dist/shaka-player.compiled.js"></script>
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      background: #000;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #playerWrapper {
+      height: 90vh;
+      width: 100%;
+      max-height: 90vh;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #playerContainer {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .plyr {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Custom controls styling */
+    .plyr__controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Text Below Player */
+    #infoText {
+      height: 10vh;
+      text-align: center;
+      color: #fff;
+      font-size: 20px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: glowBlink 2s infinite;
+      z-index: 1;
+    }
+
+    /* Glow Blinking */
+    @keyframes glowBlink {
+
+      0%,
+      100% {
+        text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+        opacity: 1;
+      }
+
+      50% {
+        text-shadow: none;
+        opacity: 0.6;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Video Player -->
+  <div id="playerWrapper">
+    <div id="playerContainer" class="shaka-video-container">
+      <video id="player" playsinline controls autoplay></video>
+    </div>
+  </div>
+
+  <!-- Info Text -->
+  <div id="infoText">⚡ First 10 Second May be Buffer, Please Wait⚡</div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoUrl = urlParams.get("url");
+    const videoTitle = urlParams.get("title") || "Premium Stream";
+    const video = document.getElementById("player");
+    const infoText = document.getElementById("infoText");
+
+    // Update match title if provided
+    if (urlParams.get("title")) {
+      infoText.innerText = "Watching: " + videoTitle;
+    }
+
+    /* ---------- PROXY HELPER ---------- */
+    // If the URL is already a proxy URL, we need to extract the proxy base for segment requests
+    let proxyBase = "";
+    if (videoUrl && videoUrl.includes("stream_proxy.php?url=")) {
+      proxyBase = videoUrl.split("stream_proxy.php?url=")[0] + "stream_proxy.php?url=";
+    }
+
+    /* ---------- SHAKA PLAYER (FALLBACK/ROBUST) ---------- */
+    async function initShaka() {
+      shaka.polyfill.installAll();
+      const player = new shaka.Player(video);
+      const container = document.getElementById('playerContainer');
+      const ui = new shaka.ui.Overlay(player, container, video);
+
+      player.getNetworkingEngine().registerRequestFilter((type, request) => {
+        const url = request.uris[0];
+        // If we have a proxyBase and the request isn't already proxied or a blob
+        if (proxyBase && !url.includes("stream_proxy.php") && !url.startsWith("blob:") && !url.startsWith("data:")) {
+          request.uris = [proxyBase + encodeURIComponent(url)];
+        }
+      });
+
+      player.addEventListener('error', (e) => console.error('Shaka Error:', e.detail));
+
+      try {
+        await player.load(videoUrl);
+        console.log("Shaka loaded successfully");
+      } catch (e) {
+        console.error("Shaka load failed:", e);
+        showError("Playback failed. This stream might be geo-restricted or expired.");
+      }
+    }
+
+    /* ---------- HLS.JS (PRIMARY) ---------- */
+    if (Hls.isSupported() && !videoUrl.includes(".mpd")) {
+      const hls = new Hls({
+        xhrSetup: function (xhr, url) {
+          // Proxy segments in HLS.js
+          if (proxyBase && !url.includes("stream_proxy.php") && !url.startsWith("blob:")) {
+            xhr.open('GET', proxyBase + encodeURIComponent(url), true);
+          }
+        }
+      });
+      hls.loadSource(videoUrl);
+      hls.attachMedia(video);
+
+      hls.on(Hls.Events.ERROR, function (event, data) {
+        if (data.fatal) {
+          console.warn("HLS.js fatal error, switching to Shaka...");
+          hls.destroy();
+          initShaka();
+        }
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = videoUrl;
+    } else {
+      initShaka();
+    }
+
+    function showError(msg) {
+      infoText.innerText = msg;
+      infoText.style.color = "#ff2c55";
+      infoText.style.animation = "none";
+    }
+  </script>
+  <!-- Anti-Adblock Popup -->
+  <div class="adb" id="adb" style="display: none;">
+    <div class="adbs">
+      <h3>Adblock/Brave Shields Detected</h3>
+      <p>Please disable your adblocker or Brave Shields to continue browsing this site.</p>
+    </div>
+  </div>
+
+  <style>
+    .adb {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      left: 0;
+      top: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .adbs {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 0px #ff0000;
+      }
+
+      to {
+        text-shadow: 0 0 1px #ff0000;
+      }
+    }
+
+    .adbs h3 {
+      color: #d00;
+      font-size: 24px;
+      margin-bottom: 15px;
+    }
+
+    .adbs p {
+      font-size: 16px;
+      color: #333;
+    }
+  </style>
+
+  <script>
+    // ----------------- Popup Function -----------------
+    function showPopup(reason = "Adblock Detected") {
+      document.getElementById("adb").style.display = "flex";
+      document.querySelector("#adb .adbs h3").innerText = reason;
+
+      if (reason.includes("Brave")) {
+        document.querySelector("#adb .adbs p").innerHTML = `
+    Please disable Brave Shields (click Brave logo → toggle Shields off) to continue browsing.<br>
+    <span style="
+      color: #ff0000;
+      font-weight: bold;
+      animation: glow 1s ease-in-out infinite alternate;
+    ">
+      If still showing message after disabling please reload page
+    </span>
+  `;
+      }
+      console.warn("⚠️ Popup Triggered:", reason);
+    }
+
+    // ----------------- PC Browser Adblock Detection -----------------
+    async function detectAdblock() {
+      let detected = false;
+
+      // bait div
+      const bait = document.createElement("div");
+      bait.className = "ad adsbox ad-banner adsense ad-container sponsored";
+      bait.style.cssText = "width:1px;height:1px;position:absolute;left:-9999px;top:-9999px;";
+      document.body.appendChild(bait);
+
+      // bait img
+      const img = document.createElement("img");
+      img.src = "https://pagead2.googlesyndication.com/pagead/imgad?id=CAASFeDxyz";
+      img.style.cssText = "width:1px;height:1px;position:absolute;left:-9999px;top:-9999px;";
+      img.onerror = () => { detected = true; };
+      document.body.appendChild(img);
+
+      // bait iframe
+      const iframe = document.createElement("iframe");
+      iframe.src = "https://googleads.g.doubleclick.net/pagead/html/r2023/sample-ad.html";
+      iframe.style.cssText = "width:1px;height:1px;position:absolute;left:-9999px;top:-9999px;";
+      iframe.onerror = () => { detected = true; };
+      document.body.appendChild(iframe);
+
+      // bait script
+      const script = document.createElement("script");
+      script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js";
+      script.async = true;
+      script.onerror = () => { detected = true; };
+      document.head.appendChild(script);
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      if (
+        window.getComputedStyle(bait).display === "none" ||
+        bait.offsetHeight === 0 ||
+        bait.offsetParent === null
+      ) {
+        detected = true;
+      }
+
+      bait.remove();
+      img.remove();
+      iframe.remove();
+      script.remove();
+
+      return detected;
+    }
+
+    // ----------------- Brave Shields Detection -----------------
+    async function detectBraveShields() {
+      try {
+        let res = await fetch("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js", {
+          method: "GET",
+          cache: "no-store",
+          mode: "no-cors"
+        });
+
+        if (res.type === "opaque") {
+          try {
+            const buf = await res.clone().arrayBuffer();
+            console.log("🟡 Brave Response Size:", buf.byteLength);
+
+            // Corrected Logic:
+            // Size < 100 = Shields OFF
+            // Size >= 100 = Shields ON
+            if (buf.byteLength < 100) {
+              return false; // Shields OFF
+            } else {
+              return true;  // Shields ON
+            }
+          } catch (e) {
+            console.warn("🟡 Brave fetch blocked", e);
+            return true; // Shields ON
+          }
+        }
+        return true; // default treat as ON
+      } catch (e) {
+        console.error("🛑 Brave Shields hard blocked", e);
+        return true; // Shields ON
+      }
+    }
+
+    // ----------------- Main -----------------
+    window.addEventListener("load", async () => {
+      const shieldsOn = await detectBraveShields();
+      if (shieldsOn) {
+        showPopup("Brave Shields Detected");
+        return;
+      }
+
+      const adblocker = await detectAdblock();
+      if (adblocker) {
+        showPopup("Adblock Detected");
+      }
+    });
+  </script>
+</body>
+
+</html>
