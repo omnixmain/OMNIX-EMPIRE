@@ -9,7 +9,8 @@ const PROVIDERS = [
     { id: 'omnixv1', name: 'OMNIX LIVE V1', logo: 'https://img10.hotstar.com/image/upload/f_auto,q_90/sources/r1/web-assets/live_badge', url: 'https://dl.dropbox.com/scl/fi/d9n6xrp813zx4o7wc56w9/tv-prueba.txt?rlkey=x7c45o26fr8x7bqqa42uv470m&st=8aic1pey&.m3u', type: 'm3u' },
     { id: 'omnixv2', name: 'OMNIX LIVE V2', logo: 'https://img10.hotstar.com/image/upload/f_auto,q_90/sources/r1/web-assets/live_badge', url: 'https://raw.githubusercontent.com/BuddyChewChew/sports/refs/heads/main/liveeventsfilter.m3u8', type: 'm3u' },
     { id: 'icc', name: 'ICC', logo: 'https://play-lh.googleusercontent.com/LD3LA29f1QUuTsmpCatwmXfV3_PQqMgV5wX36KFuFu1G7HVz0Flu87X-H5bu9_FVyKU=w240-h480-rw', url: 'https://sportsbd.top/demo/liveevent.php', type: 'm3u' },
-    { id: 'freetv', name: 'FREE-TV', logo: 'https://i.ibb.co/VcJHGM5F/omnix-iptv.png', url: '', type: 'freetv' }
+    { id: 'freetv', name: 'FREE-TV', logo: 'https://i.ibb.co/VcJHGM5F/omnix-iptv.png', url: '', type: 'freetv' },
+    { id: 'live-omnix', name: 'LIVE-OMNIX', logo: 'https://raw.githubusercontent.com/omnixmain/OMNIX-LOGO/main/OMNIX%20SPORTS.png', url: 'https://raw.githubusercontent.com/wasimud/simud/refs/heads/main/sportsonline.txt', type: 'omnix_live' }
 ];
 
 let allData = [];
@@ -100,10 +101,11 @@ async function loadProvider(p, push = true) {
         const f = await fetch(fetchUrl);
         if (!f.ok) throw new Error("Network response was not ok");
         const t = await f.text();
-        allData = p.type === 'm3u' ? prsM3u(t, p)
-            : p.type === 'json_fc' ? prsFC(JSON.parse(t), p)
-                : p.type === 'json' ? prsSl(JSON.parse(t), p)
-                    : prsSp(JSON.parse(t), p);
+        allData = p.type === 'omnix_live' ? prsOmnixLive(t, p)
+            : p.type === 'm3u' ? prsM3u(t, p)
+                : p.type === 'json_fc' ? prsFC(JSON.parse(t), p)
+                    : p.type === 'json' ? prsSl(JSON.parse(t), p)
+                        : prsSp(JSON.parse(t), p);
         applyFilters();
     } catch (e) { console.error(e); }
 }
@@ -148,6 +150,14 @@ function applyFilters() {
             }
 
             if (!ev.u) return alert('No stream');
+
+            // [NEW] Redirect PHP/Web links DIRECTLY
+            const isWebPlayer = ev.u.toLowerCase().includes('.php') || ev.u.toLowerCase().includes('embed') || ev.u.toLowerCase().includes('player.html');
+            if (isWebPlayer) {
+                window.location.href = ev.u;
+                return;
+            }
+
             const backUrl = 'Sports.html' + window.location.hash;
             if (typeof window.startOmnixPlayer === 'function') {
                 window.startOmnixPlayer(ev.u, ev.t, ev.src, ev.d, ev.h);
@@ -601,6 +611,14 @@ function showStreamOptions(ev) {
 
         btn.onclick = () => {
             document.getElementById('streamOptionsModal').style.display = 'none';
+
+            // [NEW] Redirect PHP/Web links DIRECTLY
+            const isWebPlayer = st.u.toLowerCase().includes('.php') || st.u.toLowerCase().includes('embed') || st.u.toLowerCase().includes('player.html');
+            if (isWebPlayer) {
+                window.location.href = st.u;
+                return;
+            }
+
             const backUrl = 'Sports.html' + window.location.hash;
             if (typeof window.startOmnixPlayer === 'function') {
                 window.startOmnixPlayer(st.u, ev.t + ' (' + st.name + ')', ev.src, st.d, st.h);
@@ -615,6 +633,26 @@ function showStreamOptions(ev) {
     });
 
     modal.style.display = 'flex';
+}
+
+function prsOmnixLive(txt, src) {
+    const lines = txt.split('\n');
+    const f = [];
+    lines.forEach(l => {
+        if (!l.includes('|')) return;
+        const p = l.split('|').map(s => s.trim());
+        if (p.length < 3) return;
+        f.push({
+            t: p[0],
+            tm: p[1],
+            u: p[2],
+            i: p[3] || 'https://i.ibb.co/VcJHGM5F/omnix-iptv.png',
+            src: src.name,
+            src_id: src.id,
+            s: 'LIVE'
+        });
+    });
+    return f;
 }
 
 
