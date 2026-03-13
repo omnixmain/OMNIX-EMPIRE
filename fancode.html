@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OMNIX-EMPIRE</title>
+  <script src="https://quge5.com/88/tag.min.js" data-zone="216904" async data-cfasync="false"></script>
+
+  <!-- Golden tag -->
+  <script>(function (s) { s.dataset.zone = '10689185', s.src = 'https://al5sm.com/tag.min.js' })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+  <!-- Glad tag -->
+  <script src="https://5gvci.com/act/files/tag.min.js?z=10689184" data-cfasync="false" async></script>
+  <!-- Tailwind + Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #070b14;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: white;
+      padding: 2rem 1.5rem 4rem;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+
+    .sleek-card {
+      background: rgba(12, 20, 35, 0.75);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid rgba(59, 130, 246, 0.18);
+      border-radius: 2.8rem;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      box-shadow:
+        0 25px 40px -18px #000000,
+        0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sleek-card:hover {
+      transform: translateY(-10px) scale(1.01);
+      border-color: #3b82f6;
+      box-shadow:
+        0 35px 55px -18px #2563eb,
+        0 0 0 1.5px #3b82f6 inset;
+    }
+
+    /* 🖼️ IMAGE WRAPPER - SHOWS TOP PART (UPPAR) PERFECTLY */
+    .sleek-image {
+      position: relative;
+      height: 220px;
+      background: #0c1422;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .sleek-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 15%;
+      /* 👈 UPPAR — shows top part of 16:9 images */
+      transition: transform 0.7s ease, filter 0.5s ease;
+      filter: brightness(0.95) contrast(1.05);
+    }
+
+    .sleek-card:hover .sleek-image img {
+      transform: scale(1.07);
+      filter: brightness(1.05) contrast(1.1);
+    }
+
+    /* 🔴 LIVE BADGE — ULTRA GLOW */
+    .live-glow {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      background: #dc2626;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.4rem 1.2rem;
+      border-radius: 40px;
+      letter-spacing: 0.7px;
+      box-shadow: 0 0 20px #dc2626, 0 0 40px #dc2626aa;
+      border: 1px solid #ffb3b3;
+      backdrop-filter: blur(4px);
+      z-index: 10;
+      text-transform: uppercase;
+    }
+
+    /* 🎌 FLAG CONTAINER — super clean */
+    .flag-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 0.8rem 0 0.7rem;
+      flex-wrap: wrap;
+    }
+
+    .flag-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 0.3rem 1rem 0.3rem 0.6rem;
+      border-radius: 40px;
+      backdrop-filter: blur(4px);
+      transition: 0.2s;
+    }
+
+    .flag-pill:hover {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: #3b82f6;
+    }
+
+    .flag-pill img {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid #3b82f6;
+      background: #1e2a4a;
+    }
+
+    .flag-pill span {
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: #e2e8f0;
+      letter-spacing: 0.2px;
+    }
+
+    /* 📊 SCORE PILL — live only */
+    .score-sleek {
+      background: linear-gradient(145deg, #1e2d4a, #132036);
+      border-radius: 30px;
+      padding: 0.5rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #3b82f6;
+      color: white;
+      margin: 0.5rem 0 0.9rem;
+      box-shadow: 0 6px 12px -6px #0a0f1c;
+    }
+
+    /* 🎬 WATCH BUTTON — extra sleek */
+    .watch-sleek {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border: none;
+      border-radius: 24px;
+      padding: 1rem 1.2rem;
+      font-weight: 700;
+      font-size: 1rem;
+      text-align: center;
+      margin-top: auto;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: 0 15px 20px -12px #1e3a8a;
+      border: 1px solid #60a5fa60;
+      letter-spacing: 0.5px;
+      backdrop-filter: blur(5px);
+      color: white;
+    }
+
+    .watch-sleek i {
+      margin-right: 8px;
+    }
+
+    .watch-sleek.not-live {
+      background: #1e293b;
+      box-shadow: none;
+      color: #7789aa;
+      border-color: #334155;
+      cursor: not-allowed;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    /* tournament line */
+    .tourney-sleek {
+      color: #98a9c9;
+      font-weight: 600;
+      font-size: 0.7rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .title-sleek {
+      font-size: 1.4rem;
+      font-weight: 800;
+      line-height: 1.25;
+      margin: 0.2rem 0 0.1rem;
+      letter-spacing: -0.3px;
+      background: linear-gradient(to right, #fff, #d9e6ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* meta row */
+    .meta-light {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.7rem;
+      color: #6f7d9c;
+      font-weight: 500;
+      margin: 0.3rem 0 1rem;
+    }
+
+    /* modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 18, 0.9);
+      backdrop-filter: blur(18px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-sleek {
+      background: rgba(12, 22, 40, 0.95);
+      border: 1px solid #3b82f6;
+      border-radius: 3rem;
+      padding: 2.2rem 2rem;
+      width: 90%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 40px 80px -12px #000000, 0 0 0 1px #3b82f6 inset;
+    }
+
+    .quality-sleek-btn {
+      background: #1a2742;
+      border: 1px solid #314e7c;
+      width: 100%;
+      padding: 1.1rem 1.8rem;
+      margin-bottom: 14px;
+      border-radius: 50px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+
+    .quality-sleek-btn:hover {
+      background: #253b62;
+      border-color: #3b82f6;
+      transform: scale(1.02);
+      box-shadow: 0 8px 14px -8px #0a1a31;
+    }
+
+    .close-sleek {
+      color: #fca5a5;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 1.2rem;
+      display: inline-block;
+      border-bottom: 2px dotted #f87171;
+      font-size: 0.9rem;
+    }
+
+    /* grid spacing */
+    .grid-sleek {
+      gap: 2rem;
+    }
+
+    /* telegram modal specific */
+    .tg-modal-content {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #3b82f6;
+      border-radius: 2rem;
+      padding: 2.5rem;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .tg-icon {
+      font-size: 3.5rem;
+      color: #3b82f6;
+      margin-bottom: 1.5rem;
+      filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.5));
+    }
+
+    .join-btn {
+      background: #2563eb;
+      color: white;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      font-weight: 700;
+      margin-top: 1.5rem;
+      display: inline-block;
+      text-decoration: none;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .join-btn:hover {
+      background: #1d4ed8;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- header premium sleek -->
+  <div class="text-center mb-14 mt-2">
+    <div
+      class="inline-flex items-center gap-4 bg-[#0f1a2b] py-4 px-10 rounded-full border border-blue-700/40 shadow-2xl backdrop-blur-xl">
+      <i class="fas fa-bolt text-yellow-400 text-xl"></i>
+      <span
+        class="text-3xl font-black tracking-wider bg-gradient-to-r from-white via-blue-200 to-blue-400 bg-clip-text text-transparent">FANCODE</span>
+    </div>
+    <p class="text-gray-700 text-xs mt-4 tracking-[0.3rem] font-mono">OMNIX-EMPIRE</p>
+  </div>
+
+  <!-- matches container -->
+  <div id="matches-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+
+  <!-- quality modal -->
+  <div id="quality-modal" class="modal-overlay">
+    <div class="modal-sleek">
+      <h3 class="text-2xl font-bold mb-7 text-white">select quality</h3>
+      <div id="quality-list" class="mb-4"></div>
+      <div class="close-sleek" onclick="closeModal()">✕ close</div>
+    </div>
+  </div>
+
+  <!-- telegram custom modal -->
+  <div id="tg-modal" class="modal-overlay">
+    <div class="tg-modal-content animate__animated animate__zoomIn">
+      <i class="fab fa-telegram tg-icon"></i>
+      <h3 class="text-2xl font-bold text-white mb-2">Join Telegram</h3>
+      <p class="text-gray-400 text-sm">Join our official channel for latest match links and updates!</p>
+      <button onclick="redirectToTelegram()" class="join-btn">JOIN NOW</button>
+      <div class="close-sleek" onclick="closeTgModal()">Maybe Later</div>
+    </div>
+  </div>
+
+  <script>
+    const DATA_URL = "https://raw.githubusercontent.com/Jitendra-unatti/fancode/refs/heads/main/data/fancode.json";
+    const PLAYER_URL = "https://omnix-empire.pages.dev/fc-play.html?url=";
+
+    const container = document.getElementById('matches-container');
+    let allMatches = [];
+
+    // get UPPAR image (BG_IMAGE is the top thumbnail)
+    function getUpparImage(match) {
+      if (match.image_cdn) {
+        // BG_IMAGE is the uppar (hero) image – exactly what you wanted
+        return match.image_cdn.BG_IMAGE || match.image_cdn.CLOUDFARE || match.image_cdn.TATAPLAY || match.image_cdn.APP || match.image;
+      }
+      return match.image || 'https://www.fancode.com/skillup-uploads/cms-media/Cricket_Fallback_Old_match-card.jpg';
+    }
+
+    // extract cricket score
+    function getScore(team) {
+      if (team?.cricketScore?.length) {
+        const s = team.cricketScore[0];
+        if (s.runs !== undefined && s.wickets !== undefined) {
+          return `${s.runs}/${s.wickets} ${s.overs ? '(' + s.overs + ')' : ''}`;
+        }
+      }
+      return null;
+    }
+
+    function renderMatches(matches) {
+      container.innerHTML = '';
+
+      matches.forEach((match, idx) => {
+        const isLive = match.status === 'LIVE';
+        const imageSrc = getUpparImage(match);    // ✅ UPPAR thumbnail used here
+
+        const t1 = match.team?.[0];
+        const t2 = match.team?.[1];
+        const category = match.category || 'Cricket';
+        const lang = match.language ? match.language.charAt(0) + match.language.slice(1).toLowerCase() : '';
+
+        // scores only for cricket live
+        let t1Score = (isLive && category === 'Cricket' && t1) ? getScore(t1) : null;
+        let t2Score = (isLive && category === 'Cricket' && t2) ? getScore(t2) : null;
+
+        // build flag row
+        let flagHtml = '';
+        if (t1 && t2) {
+          flagHtml = `
+            <div class="flag-strip">
+              <div class="flag-pill">
+                <img src="${t1.flag?.src || 'https://www.fancode.com/favicon.ico'}" alt="${t1.shortName}" onerror="this.src='https://www.fancode.com/favicon.ico'">
+                <span>${t1.shortName || 'T1'}</span>
+              </div>
+              <div class="flag-pill">
+                <img src="${t2.flag?.src || 'https://www.fancode.com/favicon.ico'}" alt="${t2.shortName}" onerror="this.src='https://www.fancode.com/favicon.ico'">
+                <span>${t2.shortName || 'T2'}</span>
+              </div>
+              ${lang ? `<span class="ml-auto text-[0.65rem] font-bold bg-blue-900/70 px-4 py-1.5 rounded-full border border-blue-600/60">${lang}</span>` : ''}
+            </div>
+          `;
+        } else {
+          flagHtml = `<div class="h-6"></div>`;
+        }
+
+        // scores html if available
+        const scoreHtml = (t1Score || t2Score) ? `
+          <div class="score-sleek">
+            <i class="fas fa-bolt text-yellow-400 text-xs"></i>
+            <span>${t1Score || '0/0'} · ${t2Score || '0/0'}</span>
+          </div>
+        ` : '';
+
+        // watch button logic
+        const watchAction = isLive ? `openQuality(${idx})` : '';
+        const watchBtnClass = isLive ? 'watch-sleek' : 'watch-sleek not-live';
+        const watchIcon = isLive ? '<i class="fas fa-play-circle"></i> WATCH LIVE' : '<i class="fas fa-hourglass-half"></i> UPCOMING';
+
+        const card = document.createElement('div');
+        card.className = 'sleek-card';
+
+        card.innerHTML = `
+          <div class="sleek-image">
+            <img src="${imageSrc}" alt="match cover" loading="lazy">
+            ${isLive ? '<span class="live-glow"><i class="fas fa-circle text-[0.5rem] mr-1 align-middle"></i> LIVE</span>' : ''}
+          </div>
+
+          <div class="p-6 flex flex-col flex-grow">
+            <div class="tourney-sleek">
+              <i class="fas fa-medal text-blue-400"></i> ${match.tournament || 'INTERNATIONAL'}
+            </div>
+
+            <h3 class="title-sleek">${match.title || 'match'}</h3>
+
+            ${flagHtml}
+
+            ${scoreHtml}
+
+            <div class="meta-light">
+              <span><i class="far fa-calendar-alt mr-1"></i>${match.startTime || 'TBD'}</span>
+              <span><i class="far fa-clock mr-1"></i>${category}</span>
+            </div>
+
+            <div onclick="${watchAction}" class="${watchBtnClass}">
+              ${watchIcon}
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // open quality modal from auto_streams[0].auto
+    function openQuality(index) {
+      const match = allMatches[index];
+      const streamData = match.auto_streams?.[0]?.auto || '';
+
+      const list = document.getElementById('quality-list');
+      list.innerHTML = '';
+
+      if (!streamData) {
+        alert('stream not available');
+        return;
+      }
+
+      const lines = streamData.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes('RESOLUTION=')) {
+          const matchRes = lines[i].match(/RESOLUTION=\d+x(\d+)/);
+          if (!matchRes) continue;
+          const resText = matchRes[1] + 'p';
+          const streamLine = lines[i + 1]?.trim();
+          if (streamLine && (streamLine.startsWith('http') || streamLine.startsWith('/'))) {
+            const btn = document.createElement('div');
+            btn.className = 'quality-sleek-btn';
+            btn.innerHTML = `<span>${resText}</span><i class="fas fa-chevron-right text-blue-400"></i>`;
+            btn.onclick = () => {
+              window.location.href = PLAYER_URL + encodeURIComponent(streamLine);
+            };
+            list.appendChild(btn);
+          }
+        }
+      }
+
+      if (list.children.length === 0) {
+        list.innerHTML = '<div class="text-gray-400 py-5">no alternate qualities</div>';
+      }
+
+      document.getElementById('quality-modal').style.display = 'flex';
+    }
+
+    window.closeModal = function () {
+      document.getElementById('quality-modal').style.display = 'none';
+    };
+
+    window.closeTgModal = function () {
+      document.getElementById('tg-modal').style.display = 'none';
+    };
+
+    window.redirectToTelegram = function () {
+      window.open("https://t.me/omnixempire", '_blank');
+      closeTgModal();
+    };
+
+    // show telegram prompt on load
+    setTimeout(() => {
+      document.getElementById('tg-modal').style.display = 'flex';
+    }, 1500);
+
+    // fetch data
+    fetch(DATA_URL)
+      .then(res => res.json())
+      .then(data => {
+        allMatches = data.matches || [];
+        renderMatches(allMatches);
+      })
+      .catch(() => {
+        container.innerHTML = '<div class="col-span-full text-center text-gray-600 text-xl">failed to load sleek matches</div>';
+      });
+
+    // click outside modal
+    window.onclick = function (e) {
+      const modal = document.getElementById('quality-modal');
+      if (e.target === modal) closeModal();
+    };
+  </script>
+  <script src="../ads.js"></script>
+</body>
+
+</html>
