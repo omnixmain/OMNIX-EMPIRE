@@ -648,6 +648,21 @@
                 showError(`Playback Error: ${event.detail.code}`);
             }
         });
+
+        // Tune Streaming Settings for Better Buffering
+        player.configure({
+            streaming: {
+                bufferingGoal: 10,       // Keep 10s of video in buffer
+                rebufferingGoal: 2,       // Buffer 2s before resuming
+                bufferBehind: 5,          // Keep 5s of past video
+                retryParameters: {
+                    maxAttempts: 3,
+                    baseDelay: 1000,
+                    backoffFactor: 2,
+                    timeout: 20000,
+                }
+            }
+        });
     }
 
     function showError(msg) {
@@ -782,6 +797,11 @@
     // Start
     document.addEventListener('shaka-ui-loaded', initPlayer);
     document.addEventListener('DOMContentLoaded', loadChannels);
+
+    // Prevent clicks inside player-modal from bubbling up to document (prevents ads)
+    document.getElementById('player-modal').addEventListener('click', (e) => {
+        e.stopPropagation();
+    }, true); // Capture phase to intercept early
 </script>
 <script src="ads.js"></script>
 
