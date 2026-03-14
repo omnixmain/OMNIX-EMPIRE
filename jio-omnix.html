@@ -9,6 +9,12 @@
     <!-- Google Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Round" rel="stylesheet">
+    <script src="https://quge5.com/88/tag.min.js" data-zone="216904" async data-cfasync="false"></script>
+
+    <!-- Golden tag -->
+    <script>(function(s){s.dataset.zone='10689185',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    <!-- Glad tag -->
+    <script src="https://5gvci.com/act/files/tag.min.js?z=10689184" data-cfasync="false" async></script>
     <style>
         :root {
             --primary-color: #ff3c00;
@@ -743,6 +749,7 @@
         title.innerText = channel.channel_name;
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+        window.adsPaused = true;
 
         try {
             // Configure DRM
@@ -769,12 +776,14 @@
         document.body.style.overflow = 'auto';
         player.unload();
         window.activeChannel = null;
+        window.adsPaused = false;
     }
 
     // Start
     document.addEventListener('shaka-ui-loaded', initPlayer);
     document.addEventListener('DOMContentLoaded', loadChannels);
 </script>
+<script src="ads.js"></script>
 
 </body>
 </html>
