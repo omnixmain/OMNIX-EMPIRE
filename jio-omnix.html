@@ -6,8 +6,9 @@
     <title>OMNIX EMPIRE - Live TV</title>
     <!-- Shaka Player UI Styles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css">
-    <!-- Google Fonts -->
+    <!-- Google Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
             --primary-color: #ff3c00;
@@ -251,15 +252,38 @@
         }
 
         #player-header {
-            padding: 1rem 2rem;
+            padding: 1.5rem 2rem;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end; /* Align everything to the right */
             align-items: center;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            gap: 1.5rem;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
             position: absolute;
             top: 0;
             width: 100%;
-            z-index: 201;
+            z-index: 202;
+        }
+
+        #current-channel-info {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            order: 1; /* Name on the left of the button */
+        }
+
+        .close-btn {
+            order: 2; /* Button on the far right */
+            background: rgba(255, 60, 0, 0.2);
+            border: 1px solid var(--primary-color);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
         }
 
         .close-btn {
@@ -283,6 +307,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative; /* Required for Shaka UI */
+            background: #000;
         }
 
         video {
@@ -331,9 +357,9 @@
 
 <div id="player-modal">
     <div id="player-header">
-        <div id="current-channel-info" style="display: flex; align-items: center; gap: 1rem;">
-            <img src="" id="player-logo" style="height: 30px;">
-            <span id="player-title" style="font-weight: 600;"></span>
+        <div id="current-channel-info">
+            <img src="" id="player-logo" style="height: 24px; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));">
+            <span id="player-title" style="font-size: 1.1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);"></span>
         </div>
         <button class="close-btn" onclick="closePlayer()">CLOSE</button>
     </div>
