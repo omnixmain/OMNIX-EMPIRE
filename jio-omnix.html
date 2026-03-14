@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIX EMPIRE - Live TV</title>
+    <!-- Shaka Player UI Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff3c00;
+            --bg-dark: #0a0a0c;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-main: #ffffff;
+            --text-dim: #b0b0b0;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Ambient Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% -20%, #ff3c0022 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 12, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #fff, var(--primary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        #search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            color: white;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        #search-input:focus {
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(255, 60, 0, 0.2);
+        }
+
+        .category-wrapper {
+            background: rgba(10, 10, 12, 0.5);
+            backdrop-filter: blur(10px);
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 73px; /* Height of header */
+            z-index: 99;
+            overflow: hidden;
+        }
+
+        .category-list {
+            display: flex;
+            gap: 0.8rem;
+            overflow-x: auto;
+            padding: 0 2rem;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .category-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-item {
+            padding: 0.5rem 1.2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: var(--transition);
+            color: var(--text-dim);
+        }
+
+        .category-item:hover {
+            border-color: var(--primary-color);
+            color: var(--text-main);
+        }
+
+        .category-item.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 60, 0, 0.4);
+        }
+
+        .container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .channel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .channel-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1/1.1;
+        }
+
+        .channel-card:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .channel-card img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            margin-bottom: 0.8rem;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            transition: var(--transition);
+        }
+
+        .channel-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .channel-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.2rem;
+            display: block;
+        }
+
+        .channel-lang {
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .channel-card:hover .channel-lang {
+            color: var(--primary-color);
+        }
+
+        /* Loading Spinner */
+        #loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--glass-border);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Player Overlay */
+        #player-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+        }
+
+        #player-header {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            position: absolute;
+            top: 0;
+            width: 100%;
+            z-index: 201;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .close-btn:hover {
+            background: var(--primary-color);
+        }
+
+        .video-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .search-container {
+                max-width: 100%;
+            }
+            .channel-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">OMNIX EMPIRE</div>
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search channels...">
+    </div>
+</header>
+
+<div class="category-wrapper">
+    <div class="category-list" id="category-list">
+        <div class="category-item active" onclick="filterByCategory('All')">All</div>
+    </div>
+</div>
+
+<main class="container">
+    <div id="loader">
+        <div class="spinner"></div>
+        <p>Fetching Channels...</p>
+    </div>
+    <div class="channel-grid" id="channel-grid"></div>
+</main>
+
+<div id="player-modal">
+    <div id="player-header">
+        <div id="current-channel-info" style="display: flex; align-items: center; gap: 1rem;">
+            <img src="" id="player-logo" style="height: 30px;">
+            <span id="player-title" style="font-weight: 600;"></span>
+        </div>
+        <button class="close-btn" onclick="closePlayer()">CLOSE</button>
+    </div>
+    <div class="video-container" data-shaka-player-container>
+        <video id="video" data-shaka-player autoplay></video>
+    </div>
+</div>
+
+<!-- Shaka Player Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js"></script>
+
+<script>
+    const API_URL = 'https://pkll.xojiv79335.workers.dev/';
+    let channelsData = [];
+    let currentCategory = 'All';
+    let player;
+    let ui;
+
+    // Initialize Shaka Player
+    async function initPlayer() {
+        const video = document.getElementById('video');
+        const container = document.querySelector('[data-shaka-player-container]');
+        player = new shaka.Player(video);
+        ui = new shaka.ui.Overlay(player, container, video);
+
+        window.player = player;
+        window.ui = ui;
+
+        // Register Request Filter for Tokens
+        player.getNetworkingEngine().registerRequestFilter((type, request) => {
+            // Note: Referer and User-Agent are forbidden headers in browsers 
+            // and will be ignored/overridden if set here. 
+            // The CDNs usually allow the Netlify origin or valid tokens.
+
+            const activeChannel = window.activeChannel;
+            if (activeChannel && activeChannel.cookie) {
+                const token = activeChannel.cookie;
+                // Only inject if it's a manifest or segment and token isn't already there
+                if (type === shaka.net.NetworkingEngine.RequestType.MANIFEST || type === shaka.net.NetworkingEngine.RequestType.SEGMENT) {
+                    if (!request.uris[0].includes('__hdnea__')) {
+                        const separator = request.uris[0].includes('?') ? '&' : '?';
+                        request.uris[0] += separator + token;
+                    }
+                }
+            }
+        });
+
+        // Error Listener
+        player.addEventListener('error', (event) => {
+            console.error('Shaka Player Error:', event.detail);
+            if (event.detail.code === 6002 || event.detail.code === 6003) {
+                showError("DRM Error: Playback requires a Secure Context (HTTPS or Localhost). Static 'file://' origins are blocked.");
+            } else {
+                showError(`Playback Error: ${event.detail.code}`);
+            }
+        });
+    }
+
+    function showError(msg) {
+        const loader = document.getElementById('loader');
+        loader.style.display = 'flex';
+        loader.innerHTML = `<div style="text-align:center; color:#ff3c00; background:rgba(255,60,0,0.1); padding:1.5rem; border-radius:12px; border:1px solid #ff3c00">
+            <h3 style="margin-bottom:0.5rem">⚠️ Issue Detected</h3>
+            <p style="font-size:0.9rem">${msg}</p>
+            <p style="font-size:0.8rem; margin-top:1rem; color:var(--text-dim)">Please run this file via a local server (e.g. VS Code Live Server).</p>
+        </div>`;
+        if (document.getElementById('player-modal').style.display === 'flex') {
+            closePlayer();
+        }
+    }
+
+    // Load Channels
+    async function loadChannels() {
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            channelsData = data;
+            
+            extractCategories(data);
+            renderChannels(data);
+            
+            if (window.location.protocol !== 'file:') {
+                document.getElementById('loader').style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Data Load Error:', error);
+            const errorMsg = error.name === 'TypeError' ? 'Failed to fetch channel data. Check your connection or CORS settings.' : `System Error: ${error.message}`;
+            showError(errorMsg);
+        }
+    }
+
+    function extractCategories(data) {
+        const categories = ['All', ...new Set(data.map(item => item.channel_genre).filter(Boolean))];
+        const list = document.getElementById('category-list');
+        list.innerHTML = '';
+        categories.forEach(cat => {
+            const item = document.createElement('div');
+            item.className = `category-item ${cat === currentCategory ? 'active' : ''}`;
+            item.innerText = cat;
+            item.onclick = () => filterByCategory(cat);
+            list.appendChild(item);
+        });
+    }
+
+    function filterByCategory(cat) {
+        currentCategory = cat;
+        // Update UI
+        document.querySelectorAll('.category-item').forEach(item => {
+            item.classList.toggle('active', item.innerText === cat);
+        });
+        
+        const filtered = cat === 'All' 
+            ? channelsData 
+            : channelsData.filter(c => c.channel_genre === cat);
+        
+        renderChannels(filtered);
+    }
+
+    // Render Grid
+    function renderChannels(channels) {
+        const grid = document.getElementById('channel-grid');
+        grid.innerHTML = '';
+        channels.forEach(channel => {
+            const card = document.createElement('div');
+            card.className = 'channel-card';
+            card.onclick = () => playChannel(channel);
+            card.innerHTML = `
+                <img src="${channel.channel_logo}" alt="${channel.channel_name}" onerror="this.src='https://via.placeholder.com/80?text=TV'">
+                <span class="channel-name">${channel.channel_name}</span>
+                <span class="channel-lang">${channel.language || 'Hindi'}</span>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // Search Filtering
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = channelsData.filter(c => {
+            const matchesSearch = c.channel_name.toLowerCase().includes(term);
+            const matchesCategory = currentCategory === 'All' || c.channel_genre === currentCategory;
+            return matchesSearch && matchesCategory;
+        });
+        renderChannels(filtered);
+    });
+
+    // Play Channel
+    async function playChannel(channel) {
+        if (window.location.protocol === 'file:') {
+            alert('Security Restriction: DRM playback is blocked on local file origins. Please run this via a web server (http://localhost).');
+            return;
+        }
+
+        window.activeChannel = channel;
+        const modal = document.getElementById('player-modal');
+        const logo = document.getElementById('player-logo');
+        const title = document.getElementById('player-title');
+        
+        logo.src = channel.channel_logo;
+        title.innerText = channel.channel_name;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        try {
+            // Configure DRM
+            const drmConfig = {};
+            if (channel.keyId && channel.key) {
+                drmConfig.clearKeys = {
+                    [channel.keyId]: channel.key
+                };
+            }
+            player.configure({ drm: drmConfig });
+
+            // Load Content
+            await player.load(channel.channel_url);
+            console.log('Video loaded successfully');
+        } catch (e) {
+            console.error('Load failed', e);
+            // Error listener will handle specific messages
+        }
+    }
+
+    function closePlayer() {
+        const modal = document.getElementById('player-modal');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        player.unload();
+        window.activeChannel = null;
+    }
+
+    // Start
+    document.addEventListener('shaka-ui-loaded', initPlayer);
+    document.addEventListener('DOMContentLoaded', loadChannels);
+</script>
+
+</body>
+</html>
