@@ -254,36 +254,107 @@
         #player-header {
             padding: 1.5rem 2rem;
             display: flex;
-            justify-content: flex-end; /* Align everything to the right */
+            justify-content: space-between; /* Back on left, Info on right */
             align-items: center;
-            gap: 1.5rem;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%);
             position: absolute;
             top: 0;
             width: 100%;
             z-index: 202;
+            transition: opacity 0.3s;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateX(-5px);
+        }
+
+        .player-info-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
         }
 
         #current-channel-info {
             display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            order: 1; /* Name on the left of the button */
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.2rem;
         }
 
-        .close-btn {
-            order: 2; /* Button on the far right */
-            background: rgba(255, 60, 0, 0.2);
-            border: 1px solid var(--primary-color);
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 10px;
-            cursor: pointer;
+        #player-title {
+            font-size: 1.1rem;
             font-weight: 700;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-            transition: var(--transition);
-            backdrop-filter: blur(5px);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        #player-logo {
+            height: 24px;
+            filter: drop-shadow(0 0 8px rgba(0,0,0,0.5));
+        }
+
+        /* Shaka UI Customizations */
+        .shaka-video-container .material-icons-round {
+            font-family: 'Material Icons' !important;
+        }
+
+        .shaka-controls-container {
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%) !important;
+        }
+
+        .shaka-bottom-controls {
+            padding: 0 2rem 1.5rem 2rem !important;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .shaka-range-container {
+            margin: 0 !important;
+        }
+
+        .shaka-seek-bar-container {
+            height: 4px !important;
+            border-radius: 2px !important;
+        }
+
+        .shaka-seek-bar {
+            background: rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .shaka-seek-bar::-webkit-slider-thumb {
+            background: var(--primary-color) !important;
+            box-shadow: 0 0 15px var(--primary-color) !important;
+        }
+
+        .shaka-control-panel {
+            background: transparent !important;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .shaka-overflow-menu, .shaka-settings-menu {
+            background: rgba(20, 20, 25, 0.95) !important;
+            backdrop-filter: blur(15px) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 15px !important;
         }
 
         .close-btn {
@@ -357,11 +428,16 @@
 
 <div id="player-modal">
     <div id="player-header">
-        <div id="current-channel-info">
-            <img src="" id="player-logo" style="height: 24px; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));">
-            <span id="player-title" style="font-size: 1.1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);"></span>
+        <button class="back-btn" onclick="closePlayer()">
+            <span class="material-icons">arrow_back</span>
+            BACK
+        </button>
+        <div class="player-info-right">
+            <div id="current-channel-info">
+                <span id="player-title"></span>
+                <img src="" id="player-logo">
+            </div>
         </div>
-        <button class="close-btn" onclick="closePlayer()">CLOSE</button>
     </div>
     <div class="video-container" data-shaka-player-container>
         <video id="video" data-shaka-player autoplay></video>
@@ -383,7 +459,30 @@
         const video = document.getElementById('video');
         const container = document.querySelector('[data-shaka-player-container]');
         player = new shaka.Player(video);
+
+        // Configure Shaka UI
+        const uiConfig = {
+            'controlPanelElements': [
+                'play_pause',
+                'time_and_duration',
+                'spacer',
+                'mute',
+                'volume',
+                'quality',
+                'fullscreen',
+                'overflow_menu'
+            ],
+            'addLanguageView': true,
+            'addQualityView': true,
+            'seekBarColors': {
+                'base': 'rgba(255, 255, 255, 0.3)',
+                'buffered': 'rgba(255, 255, 255, 0.5)',
+                'played': '#ff3c00'
+            }
+        };
+        
         ui = new shaka.ui.Overlay(player, container, video);
+        ui.configure(uiConfig);
 
         window.player = player;
         window.ui = ui;
@@ -508,11 +607,6 @@
 
     // Play Channel
     async function playChannel(channel) {
-        if (window.location.protocol === 'file:') {
-            alert('Security Restriction: DRM playback is blocked on local file origins. Please run this via a web server (http://localhost).');
-            return;
-        }
-
         window.activeChannel = channel;
         const modal = document.getElementById('player-modal');
         const logo = document.getElementById('player-logo');
