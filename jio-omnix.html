@@ -319,6 +319,30 @@
             border-radius: 4px;
         }
 
+        /* Fixing Icon Rendering - Prevent text ligatures from showing if font is slow */
+        .material-icons, .material-icons-round,
+        .shaka-video-container .material-icons-round,
+        .shaka-video-container .material-icons {
+            font-family: 'Material Icons Round', 'Material Icons' !important;
+            font-feature-settings: 'liga';
+            font-style: normal;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+
+        /* Prevent naked text labels before font loads */
+        .shaka-video-container .material-icons-round,
+        .shaka-video-container .material-icons {
+            overflow: hidden !important;
+        }
+
         /* Custom Shaka Controls Branding */
         .shaka-video-container {
             background-color: #000 !important;
@@ -481,8 +505,8 @@
             </div>
         </div>
     </div>
-    <div class="video-container" data-shaka-player-container>
-        <video id="video" data-shaka-player autoplay></video>
+    <div class="video-container">
+        <video id="video" autoplay></video>
     </div>
 </div>
 
@@ -499,7 +523,7 @@
     // Initialize Shaka Player
     async function initPlayer() {
         const video = document.getElementById('video');
-        const container = document.querySelector('[data-shaka-player-container]');
+        const container = document.querySelector('.video-container');
         player = new shaka.Player(video);
 
         // Configure Shaka UI
