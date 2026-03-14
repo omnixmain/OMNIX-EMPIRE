@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMNIX EMPIRE - Live TV</title>
+    <title>Omnix JioTV</title>
     <!-- Shaka Player UI Styles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css">
     <!-- Google Fonts & Icons -->
@@ -61,13 +61,53 @@
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(45deg, #fff, var(--primary-color));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
+            font-size: 1.6rem;
+            font-weight: 800;
+            display: flex;
+            gap: 0.2rem;
+            letter-spacing: -1px;
+            cursor: pointer;
+        }
+
+        .logo-omnix {
+            color: #2196F3; /* Blue */
+            text-shadow: 0 0 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .logo-jiotv {
+            color: #ff3c00; /* Red */
+            text-shadow: 0 0 15px rgba(255, 60, 0, 0.4);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .telegram-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #24A1DE;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(36, 161, 222, 0.3);
+        }
+
+        .telegram-btn:hover {
+            transform: translateY(-2px);
+            background: #1e88ba;
+            box-shadow: 0 6px 20px rgba(36, 161, 222, 0.5);
+        }
+
+        .telegram-btn i {
+            font-size: 1.1rem;
         }
 
         .search-container {
@@ -456,11 +496,23 @@
         @media (max-width: 768px) {
             header {
                 flex-direction: column;
+                gap: 1.2rem;
+                padding: 1.5rem 1rem;
+            }
+            .header-actions {
+                width: 100%;
+                flex-direction: column;
                 gap: 1rem;
-                padding: 1rem;
             }
             .search-container {
                 max-width: 100%;
+            }
+            .telegram-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .category-wrapper {
+                top: 145px; /* Adjust for taller mobile header */
             }
             .channel-grid {
                 grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -472,9 +524,18 @@
 <body>
 
 <header>
-    <div class="logo">OMNIX EMPIRE</div>
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search channels...">
+    <div class="logo">
+        <span class="logo-omnix">Omnix</span>
+        <span class="logo-jiotv">JioTV</span>
+    </div>
+    <div class="header-actions">
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search channels...">
+        </div>
+        <a href="https://t.me/omnix_Empire" target="_blank" class="telegram-btn">
+            <span class="material-icons" style="font-size: 1.2rem;">send</span>
+            Join Telegram
+        </a>
     </div>
 </header>
 
