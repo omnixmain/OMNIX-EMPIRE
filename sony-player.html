@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(s){s.dataset.zone='10408286',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<title>Live Player</title>
+
+<script src="https://cdn.jwplayer.com/libraries/SAHhwvZq.js"></script>
+
+<style>
+
+html,body{
+margin:0;
+padding:0;
+background:#000;
+width:100vw;
+height:100dvh;
+overflow:hidden;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+/* PLAYER FIT SCREEN WITHOUT SCROLL */
+#player{
+width:100vw;
+height:100dvh;
+max-width:100%;
+max-height:100%;
+position:relative;
+}
+
+/* remove quality menu */
+.jw-settings-menu .jw-settings-submenu-quality{
+display:none !important;
+}
+
+.jw-settings-content-item[data-type="quality"]{
+display:none !important;
+}
+
+/* custom button */
+.jw-icon-aspect{
+background-size:contain;
+}
+
+/* ===== LOGO CONTROL ===== */
+:root{
+
+--logo-top:20px;
+--logo-left:20px;
+--logo-size:90px;
+
+}
+
+/* LOGO STYLE */
+
+.player-logo{
+
+position:absolute;
+top:var(--logo-top);
+left:var(--logo-left);
+
+width:var(--logo-size);
+height:auto;
+
+z-index:999999;
+
+pointer-events:none;
+
+}
+
+/* mobile auto adjust */
+
+@media (max-width:768px){
+
+:root{
+--logo-size:60px;
+}
+
+}
+
+</style>
+</head>
+<script src="https://troopinvariably.com/37/d7/1a/37d71a290dde379f3d1016fe3009fb4b.js"></script>
+<body>
+
+<div id="player"></div>
+
+<script>
+  // Parse URL parameters
+  const params = new URLSearchParams(window.location.search);
+  const videoUrl = params.get('url');
+  const videoTitle = params.get('title') || 'Live Stream';
+  const videoPoster = params.get('poster');
+
+  if (videoUrl) {
+    const playerInstance = jwplayer("player").setup({
+      file: videoUrl,
+      title: videoTitle,
+      image: videoPoster,
+      autostart: true,
+      mute: true, // Auto-start with mute to bypass browser policies
+      stretching: "uniform",
+      width: "100%",
+      height: "100%",
+      controls: true,
+      primary: "html5",
+      hlsjsConfig: {
+        enableWorker: true,
+        debug: false
+      }
+    });
+
+    // Optional: Add a "Unmute" button or handle initial user interaction
+    playerInstance.on('play', function() {
+      console.log('Video started playing');
+    });
+
+    playerInstance.on('error', function(e) {
+      console.error('JW Player Error:', e.message);
+      document.getElementById('player').innerHTML = `<div style="color:white;text-align:center;padding:20px;">
+        <p>Error loading video. Please try again later.</p>
+        <p style="font-size:12px;color:gray;">${e.message}</p>
+      </div>`;
+    });
+  } else {
+    document.getElementById('player').innerHTML = '<div style="color:white;">No video URL provided.</div>';
+  }
+</script>
+
+</body>
+</html>

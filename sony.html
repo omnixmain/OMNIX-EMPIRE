@@ -206,15 +206,16 @@ function render(arr){
 
   arr.forEach((m,i)=>{
     const live=m.isLive===true;
-    const url=live && m.video_url
-      ? "player.html?url="+encodeURIComponent(
-          STREAM_PROXY+m.video_url)
+    const url = live && m.video_url
+      ? "sony-player.html?url=" + encodeURIComponent(STREAM_PROXY + m.video_url) +
+        "&title=" + encodeURIComponent(m.match_name || m.event_name || 'Live Event') +
+        "&poster=" + encodeURIComponent(m.src || '')
       : "";
 
-    box.innerHTML+=`
-      <div class="card ${live?'':'upcoming'}"
-           style="animation-delay:${i*0.08}s"
-           ${live?`onclick="window.open('${url}','_blank')"`:""}>
+    box.innerHTML += `
+      <div class="card ${live ? '' : 'upcoming'}"
+           style="animation-delay:${i * 0.08}s"
+           ${live ? `onclick="window.location.href='${url}'"` : ""}>
         <img src="${m.src||''}">
         <div class="card-body">
           <span class="badge ${live?'':'up'}">
