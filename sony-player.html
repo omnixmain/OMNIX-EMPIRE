@@ -107,45 +107,43 @@ height:100% !important;
     });
 
     // Add request filters for Sony headers
+    const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    
     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
       if (type == shaka.net.NetworkingEngine.RequestType.MANIFEST || 
           type == shaka.net.NetworkingEngine.RequestType.SEGMENT) {
         request.headers['Origin'] = 'https://www.sonyliv.com';
         request.headers['Referer'] = 'https://www.sonyliv.com/';
+        request.headers['User-Agent'] = USER_AGENT;
       }
     });
 
     // Handle errors
     player.addEventListener('error', (event) => {
       console.error('Shaka Player Error:', event.detail);
-      if (event.detail.code === 1001 || event.detail.code === 1002) {
-        // Simple retry logic for loading errors
-        console.log('Retrying load...');
-      }
     });
 
-    async function loadWithFallback(url) {
-      try {
-        console.log('Attempting to load:', url);
-        await player.load(url);
-        console.log('Stream loaded successfully!');
-        return true;
-      } catch (e) {
-        console.warn('Load failed, trying fallback...', e);
-        if (!url.includes('corsproxy.io')) {
-          const fallbackUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
-          console.log('Attempting fallback:', fallbackUrl);
-          try {
-            await player.load(fallbackUrl);
-            console.log('Fallback loaded successfully!');
-            return true;
-          } catch (fallbackError) {
-            console.error('Fallback also failed:', fallbackError);
-            throw fallbackError;
-          }
+    async function loadWithFallback(rawUrl) {
+      const proxies = [
+        "", // Direct
+        "https://worker-crimson-dawn-0220.wasimud.workers.dev/?url=",
+        "https://corsproxy.io/?",
+        "https://mini.allinonereborn.fun/events/stream_proxy.php?url="
+      ];
+
+      for (const proxy of proxies) {
+        try {
+          const tryUrl = proxy ? (proxy.includes('?') ? proxy + encodeURIComponent(rawUrl) : proxy + rawUrl) : rawUrl;
+          console.log(`Attempting load with proxy [${proxy || 'DIRECT'}]:`, tryUrl);
+          await player.load(tryUrl);
+          console.log('Stream loaded successfully with:', proxy || 'DIRECT');
+          return true;
+        } catch (e) {
+          console.warn(`Load failed with proxy [${proxy || 'DIRECT'}]:`, e.code || e.message);
+          // Continue to next proxy
         }
-        throw e;
       }
+      throw new Error("All proxy attempts failed (403/Forbidden or CORS). The stream might be expired or geo-blocked.");
     }
 
     try {

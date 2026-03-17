@@ -34,6 +34,7 @@ body{
   margin:0;
   background:linear-gradient(90deg,#ff416c,#ff4b2b);
   -webkit-background-clip:text;
+  background-clip:text;
   color:transparent;
 }
 .header p{
@@ -176,7 +177,7 @@ body{
 
 <script>
 const JSON_URL =
-"https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json";
+"https://raw.githubusercontent.com/doctor-8trange/zyphora/refs/heads/main/data/sony.json";
 
 const STREAM_PROXY = ""; // Let player handle proxy
 
@@ -188,9 +189,9 @@ xhr.open("GET",JSON_URL,true);
 xhr.onload=()=>{
   try{
     const j=JSON.parse(xhr.responseText);
-    DATA=j.matches||[];
+    DATA=j.data||[];
     document.getElementById("updated").innerText =
-      "Last updated: "+(j["last update time"]||"Live");
+      "Last updated: "+(j["last_updated"]||"Live");
     render(DATA);
   }catch{showEmpty();}
 };
@@ -204,33 +205,65 @@ function render(arr){
   if(!arr.length){showEmpty();return;}
 
   arr.forEach((m,i)=>{
-    const live=m.isLive===true;
-    const url = live && (m.video_url || m.dai_url)
-      ? "sony-player.html?url=" + encodeURIComponent(m.video_url || m.dai_url) +
-        "&title=" + encodeURIComponent(m.match_name || m.event_name || 'Live Event') +
-        "&poster=" + encodeURIComponent(m.src || '')
+    // Determine if live based on air_dates or existence of stream
+    const now = new Date();
+    let live = false;
+    if (m.air_dates) {
+      const start = new Date(m.air_dates.contractStartDate || m.air_dates.originalAirDate);
+      const end = new Date(m.air_dates.contractEndDate);
+      live = now >= start && now <= end;
+    } else {
+      live = true; // Fallback
+    }
+
+    // Extraction logic for new JSON structure
+    const title = m.video_info?.episodeTitle || m.video_info?.title || 'Live Event';
+    const poster = m.image_cdn?.landscape_thumb || m.image_cdn?.thumbnail || '';
+    const category = m.video_info?.genres?.[0] || '';
+    const channel = m.stream_info?.broadcast_channel || '';
+    
+    // Find best stream URL
+    let streamUrl = '';
+    if (m.stream_info?.dai_asset_key && m.stream_info.dai_asset_key !== 'NA') {
+      streamUrl = m.stream_info.dai_asset_key;
+    } else if (m.MULTIPLE_AUDIO_LINKS && m.MULTIPLE_AUDIO_LINKS.length > 0) {
+      const audioData = m.MULTIPLE_AUDIO_LINKS[0].DATA;
+      if (audioData) {
+        for (const key in audioData) {
+          if (audioData[key].Playback_videoURL && audioData[key].Playback_videoURL !== 'NA') {
+            streamUrl = audioData[key].Playback_videoURL;
+            break;
+          }
+        }
+      }
+    }
+
+    const url = live && streamUrl
+      ? "sony-player.html?url=" + encodeURIComponent(streamUrl) +
+        "&title=" + encodeURIComponent(title) +
+        "&poster=" + encodeURIComponent(poster)
       : "";
 
     box.innerHTML += `
       <div class="card ${live ? '' : 'upcoming'}"
            style="animation-delay:${i * 0.08}s"
            ${live ? `onclick="window.location.href='${url}'"` : ""}>
-        <img src="${m.src||''}">
+        <img src="${poster}">
         <div class="card-body">
           <span class="badge ${live?'':'up'}">
             ${live?'LIVE NOW':'UPCOMING'}
           </span>
 
           <div class="title">
-            ${m.match_name||m.event_name||'Live Event'}
+            ${title}
           </div>
 
           <div class="meta">
-            ${m.broadcast_channel||''} • ${m.audioLanguageName||''}
+            ${channel}
           </div>
 
           <div class="footer">
-            <div class="meta">${m.event_category||''}</div>
+            <div class="meta">${category}</div>
             ${live?`<div class="watch">Watch</div>`:""}
           </div>
         </div>
@@ -244,8 +277,17 @@ function filter(type){
     .forEach(b=>b.classList.remove("active"));
   event.target.classList.add("active");
 
-  if(type==="live") render(DATA.filter(x=>x.isLive));
-  else if(type==="upcoming") render(DATA.filter(x=>!x.isLive));
+  if(type==="live") render(DATA.filter(m => {
+    const now = new Date();
+    const start = new Date(m.air_dates?.contractStartDate || m.air_dates?.originalAirDate);
+    const end = new Date(m.air_dates?.contractEndDate);
+    return now >= start && now <= end;
+  }));
+  else if(type==="upcoming") render(DATA.filter(m => {
+    const now = new Date();
+    const start = new Date(m.air_dates?.contractStartDate || m.air_dates?.originalAirDate);
+    return now < start;
+  }));
   else render(DATA);
 }
 
