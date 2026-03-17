@@ -9845,6 +9845,7 @@
 
         // Logic to play the selected channel
         function playChannel(ch) {
+            window.adsPaused = true;
             // Update Overlay UI
             document.getElementById('npTitle').textContent = ch.name;
             document.getElementById('npCategory').innerHTML = `<i class="fa-solid fa-layer-group"></i> ${ch.category}`;
@@ -9913,6 +9914,7 @@
 
         // Close Player Logic
         function closePlayer() {
+            window.adsPaused = false;
             const overlay = document.getElementById('playerOverlay');
             const video = document.getElementById('tvPlayer');
             

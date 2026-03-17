@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script>(function(s){s.dataset.zone='10408286',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    <script src="https://quge5.com/88/tag.min.js" data-zone="216904" async data-cfasync="false"></script>
+    <script>(function (s) { s.dataset.zone = '10689185', s.src = 'https://al5sm.com/tag.min.js' })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    <script src="https://5gvci.com/act/files/tag.min.js?z=10689184" data-cfasync="false" async></script>
 <meta charset="UTF-8">
 <title>SonyLiv Live Events</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -204,17 +206,33 @@ function render(arr){
   box.innerHTML="";
   if(!arr.length){showEmpty();return;}
 
-  arr.forEach((m,i)=>{
-    // Determine if live based on air_dates or existence of stream
+  // helper to get status
+  const getStatus = (m) => {
     const now = new Date();
-    let live = false;
-    if (m.air_dates) {
-      const start = new Date(m.air_dates.contractStartDate || m.air_dates.originalAirDate);
-      const end = new Date(m.air_dates.contractEndDate);
-      live = now >= start && now <= end;
-    } else {
-      live = true; // Fallback
-    }
+    if (!m.air_dates) return 'live'; 
+    const start = new Date(m.air_dates.contractStartDate || m.air_dates.originalAirDate);
+    const end = new Date(m.air_dates.contractEndDate);
+    if (now >= start && now <= end) return 'live';
+    if (now < start) return 'upcoming';
+    return 'ended';
+  };
+
+  // Sort: live first, then upcoming by start date, then ended by end date descending
+  const sorted = [...arr].sort((a,b) => {
+    const sA = getStatus(a), sB = getStatus(b);
+    const order = {live: 0, upcoming: 1, ended: 2};
+    if (order[sA] !== order[sB]) return order[sA] - order[sB];
+    
+    const dateA = new Date(a.air_dates?.contractStartDate || a.air_dates?.originalAirDate);
+    const dateB = new Date(b.air_dates?.contractStartDate || b.air_dates?.originalAirDate);
+    return sA === 'upcoming' ? dateA - dateB : dateB - dateA;
+  });
+
+  sorted.forEach((m,i)=>{
+    const status = getStatus(m);
+    const live = status === 'live';
+    const ended = status === 'ended';
+    const upcoming = status === 'upcoming';
 
     // Extraction logic for new JSON structure
     const title = m.video_info?.episodeTitle || m.video_info?.title || 'Live Event';
@@ -238,20 +256,25 @@ function render(arr){
       }
     }
 
-    const url = live && streamUrl
+    const playUrl = (live || ended) && streamUrl
       ? "sony-player.html?url=" + encodeURIComponent(streamUrl) +
         "&title=" + encodeURIComponent(title) +
         "&poster=" + encodeURIComponent(poster)
       : "";
 
+    let badgeText = 'LIVE NOW';
+    let badgeClass = '';
+    if (upcoming) { badgeText = 'UPCOMING'; badgeClass = 'up'; }
+    if (ended) { badgeText = 'ENDED'; badgeClass = 'up'; }
+
     box.innerHTML += `
-      <div class="card ${live ? '' : 'upcoming'}"
-           style="animation-delay:${i * 0.08}s"
-           ${live ? `onclick="window.location.href='${url}'"` : ""}>
+      <div class="card ${upcoming ? 'upcoming' : ''}"
+           style="animation-delay:${i * 0.05}s"
+           ${playUrl ? `onclick="window.location.href='${playUrl}'"` : ""}>
         <img src="${poster}">
         <div class="card-body">
-          <span class="badge ${live?'':'up'}">
-            ${live?'LIVE NOW':'UPCOMING'}
+          <span class="badge ${badgeClass}">
+            ${badgeText}
           </span>
 
           <div class="title">
@@ -264,7 +287,7 @@ function render(arr){
 
           <div class="footer">
             <div class="meta">${category}</div>
-            ${live?`<div class="watch">Watch</div>`:""}
+            ${(live || ended) ? `<div class="watch">${live ? 'Watch' : 'Replay'}</div>` : ""}
           </div>
         </div>
       </div>`;
@@ -277,17 +300,18 @@ function filter(type){
     .forEach(b=>b.classList.remove("active"));
   event.target.classList.add("active");
 
-  if(type==="live") render(DATA.filter(m => {
-    const now = new Date();
-    const start = new Date(m.air_dates?.contractStartDate || m.air_dates?.originalAirDate);
-    const end = new Date(m.air_dates?.contractEndDate);
-    return now >= start && now <= end;
-  }));
-  else if(type==="upcoming") render(DATA.filter(m => {
-    const now = new Date();
-    const start = new Date(m.air_dates?.contractStartDate || m.air_dates?.originalAirDate);
-    return now < start;
-  }));
+  const now = new Date();
+  const getStatus = (m) => {
+    if (!m.air_dates) return 'live';
+    const start = new Date(m.air_dates.contractStartDate || m.air_dates.originalAirDate);
+    const end = new Date(m.air_dates.contractEndDate);
+    if (now >= start && now <= end) return 'live';
+    if (now < start) return 'upcoming';
+    return 'ended';
+  };
+
+  if(type==="live") render(DATA.filter(m => getStatus(m) === 'live'));
+  else if(type==="upcoming") render(DATA.filter(m => getStatus(m) === 'upcoming'));
   else render(DATA);
 }
 
@@ -302,5 +326,6 @@ function showEmpty(){
 </script>
 
 
+<script src="ads.js"></script>
 </body>
 </html>
