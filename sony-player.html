@@ -5,9 +5,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
+<meta name="referrer" content="no-referrer">
 <title>Live Player</title>
 
-<script src="https://cdn.jwplayer.com/libraries/SAHhwvZq.js"></script>
+<!-- Using Shaka Player for better HLS and DRM support -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.min.css">
 
 <style>
 
@@ -24,110 +27,169 @@ align-items:center;
 }
 
 /* PLAYER FIT SCREEN WITHOUT SCROLL */
-#player{
+.video-container {
 width:100vw;
 height:100dvh;
-max-width:100%;
-max-height:100%;
 position:relative;
+background:#000;
 }
 
-/* remove quality menu */
-.jw-settings-menu .jw-settings-submenu-quality{
-display:none !important;
+video {
+width:100% !important;
+height:100% !important;
 }
 
-.jw-settings-content-item[data-type="quality"]{
-display:none !important;
+/* Customize Shaka UI colors to match SonyLiv theme */
+.shaka-played-range {
+  background: #ff2c55 !important;
 }
 
-/* custom button */
-.jw-icon-aspect{
-background-size:contain;
+.shaka-range-container input[type=range]::-webkit-slider-thumb {
+  background: #ff2c55 !important;
 }
 
 /* ===== LOGO CONTROL ===== */
 :root{
-
 --logo-top:20px;
 --logo-left:20px;
 --logo-size:90px;
-
-}
-
-/* LOGO STYLE */
-
-.player-logo{
-
-position:absolute;
-top:var(--logo-top);
-left:var(--logo-left);
-
-width:var(--logo-size);
-height:auto;
-
-z-index:999999;
-
-pointer-events:none;
-
 }
 
 /* mobile auto adjust */
-
 @media (max-width:768px){
-
 :root{
 --logo-size:60px;
 }
-
 }
 
 </style>
 </head>
-<script src="https://troopinvariably.com/37/d7/1a/37d71a290dde379f3d1016fe3009fb4b.js"></script>
 <body>
 
-<div id="player"></div>
+<div class="video-container" data-shaka-player-container>
+  <video id="video" data-shaka-player autoplay muted playsinline style="width:100%;height:100%;"></video>
+</div>
 
 <script>
   // Parse URL parameters
   const params = new URLSearchParams(window.location.search);
   const videoUrl = params.get('url');
   const videoTitle = params.get('title') || 'Live Stream';
-  const videoPoster = params.get('poster');
 
-  if (videoUrl) {
-    const playerInstance = jwplayer("player").setup({
-      file: videoUrl,
-      title: videoTitle,
-      image: videoPoster,
-      autostart: true,
-      mute: true, // Auto-start with mute to bypass browser policies
-      stretching: "uniform",
-      width: "100%",
-      height: "100%",
-      controls: true,
-      primary: "html5",
-      hlsjsConfig: {
-        enableWorker: true,
-        debug: false
+  async function initPlayer() {
+    const video = document.getElementById('video');
+    const container = document.querySelector('.video-container');
+    
+    // Initialize Shaka Player
+    const player = new shaka.Player(video);
+    const ui = new shaka.ui.Overlay(player, container, video);
+
+    // Configure UI
+    ui.configure({
+      'controlPanelElements': [
+        'play_pause',
+        'mute',
+        'volume',
+        'time_and_duration',
+        'spacer',
+        'quality',
+        'fullscreen',
+        'overflow_menu'
+      ]
+    });
+
+    // Configure player
+    player.configure({
+      streaming: {
+        bufferingGoal: 10,
+        rebufferingGoal: 2
       }
     });
 
-    // Optional: Add a "Unmute" button or handle initial user interaction
-    playerInstance.on('play', function() {
-      console.log('Video started playing');
+    // Add request filters for Sony headers
+    player.getNetworkingEngine().registerRequestFilter(function(type, request) {
+      if (type == shaka.net.NetworkingEngine.RequestType.MANIFEST || 
+          type == shaka.net.NetworkingEngine.RequestType.SEGMENT) {
+        request.headers['Origin'] = 'https://www.sonyliv.com';
+        request.headers['Referer'] = 'https://www.sonyliv.com/';
+      }
     });
 
-    playerInstance.on('error', function(e) {
-      console.error('JW Player Error:', e.message);
-      document.getElementById('player').innerHTML = `<div style="color:white;text-align:center;padding:20px;">
-        <p>Error loading video. Please try again later.</p>
-        <p style="font-size:12px;color:gray;">${e.message}</p>
-      </div>`;
+    // Handle errors
+    player.addEventListener('error', (event) => {
+      console.error('Shaka Player Error:', event.detail);
+      if (event.detail.code === 1001 || event.detail.code === 1002) {
+        // Simple retry logic for loading errors
+        console.log('Retrying load...');
+      }
     });
+
+    async function loadWithFallback(url) {
+      try {
+        console.log('Attempting to load:', url);
+        await player.load(url);
+        console.log('Stream loaded successfully!');
+        return true;
+      } catch (e) {
+        console.warn('Load failed, trying fallback...', e);
+        if (!url.includes('corsproxy.io')) {
+          const fallbackUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+          console.log('Attempting fallback:', fallbackUrl);
+          try {
+            await player.load(fallbackUrl);
+            console.log('Fallback loaded successfully!');
+            return true;
+          } catch (fallbackError) {
+            console.error('Fallback also failed:', fallbackError);
+            throw fallbackError;
+          }
+        }
+        throw e;
+      }
+    }
+
+    try {
+      if (videoUrl) {
+        await loadWithFallback(videoUrl);
+        
+        // Autoplay logic
+        try {
+          video.muted = true; // Start muted for better autoplay success
+          await video.play();
+          console.log('Autoplay started (muted)');
+          
+          // Try to unmute after a short delay
+          setTimeout(async () => {
+            try {
+              video.muted = false;
+              await video.play();
+              console.log('Unmuted successfully');
+            } catch (unmuteError) {
+              console.log('Unmute failed, keeping muted.');
+              video.muted = true;
+            }
+          }, 1000);
+        } catch (playError) {
+          console.error('Autoplay failed:', playError);
+        }
+      } else {
+        container.innerHTML = '<div style="color:white;text-align:center;padding:20px;">No video URL provided.</div>';
+      }
+    } catch (e) {
+      console.error('Final Load Error:', e);
+      container.innerHTML = `<div style="color:white;text-align:center;padding:20px;">
+        <p>Error loading video: ${videoTitle}</p>
+        <p style="font-size:14px;color:#ff2c55;">${e.message || 'Check console for details'}</p>
+        <button onclick="location.reload()" style="background:#ff2c55;color:white;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;margin-top:10px;">Retry</button>
+      </div>`;
+    }
+  }
+
+  // Check if Shaka is supported
+  if (shaka.Player.isBrowserSupported()) {
+    initPlayer();
   } else {
-    document.getElementById('player').innerHTML = '<div style="color:white;">No video URL provided.</div>';
+    document.body.innerHTML = '<div style="color:white;text-align:center;padding:20px;">Browser not supported</div>';
   }
 </script>
 

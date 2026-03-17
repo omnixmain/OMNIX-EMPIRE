@@ -178,8 +178,7 @@ body{
 const JSON_URL =
 "https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json";
 
-const STREAM_PROXY =
-"https://mini.allinonereborn.fun/events/stream_proxy.php?url=";
+const STREAM_PROXY = ""; // Let player handle proxy
 
 let DATA=[];
 
@@ -206,8 +205,8 @@ function render(arr){
 
   arr.forEach((m,i)=>{
     const live=m.isLive===true;
-    const url = live && m.video_url
-      ? "sony-player.html?url=" + encodeURIComponent(STREAM_PROXY + m.video_url) +
+    const url = live && (m.video_url || m.dai_url)
+      ? "sony-player.html?url=" + encodeURIComponent(m.video_url || m.dai_url) +
         "&title=" + encodeURIComponent(m.match_name || m.event_name || 'Live Event') +
         "&poster=" + encodeURIComponent(m.src || '')
       : "";
