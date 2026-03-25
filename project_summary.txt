@@ -1,0 +1,51 @@
+🚀 OMNIX EMPIRE - Page Directory 🚀
+Main Domain: https://omnix-empire.pages.dev/
+
+----------------------------------------
+
+1️⃣ Home Page
+Title: OMNIX EMPIRE | Premium Entertainment Hub
+Features: Official Landing page, OMNIX OTT v1.5 APK download, links to all web servers.
+URL: https://omnix-empire.pages.dev/
+
+2️⃣ Omnix OTT App Info
+Title: OMNIX OTT
+Features: Detailed app features list (2000+ channels), direct download mirrors for Android.
+URL: https://omnix-empire.pages.dev/omnixott
+
+3️⃣ SonyLiv Sports
+Title: SonyLiv Live Events
+Features: Live event listings, category filters (Live/Upcoming), premium sports cards UI.
+URL: https://omnix-empire.pages.dev/sony
+
+4️⃣ Omnix JioTV
+Title: Omnix JioTV
+Features: Premium JioTV channels, category selection, Shaka Player integration.
+URL: https://omnix-empire.pages.dev/jio-omnix
+
+5️⃣ Omnix Free TV
+Title: OMNIX FREE TV
+Features: Massive directory of free channels, fast search engine, organized by category.
+URL: https://omnix-empire.pages.dev/Omnix_freetv
+
+6️⃣ FanCode All-In-One
+Title: Fancode Stream · IP locked
+Features: Dual stream options (Global & India), integrated Telegram popup updates.
+URL: https://omnix-empire.pages.dev/fancode-allinone
+
+7️⃣ Sleek FanCode
+Title: OMNIX-EMPIRE
+Features: Ultra-sleek minimalist UI, live status glow effects, match quality selector.
+URL: https://omnix-empire.pages.dev/fancode
+
+8️⃣ FanCode Premium (India)
+Title: OMNIX-FCIN
+Features: Golden-themed premium UI, automated India IP detection, match information cards.
+URL: https://omnix-empire.pages.dev/Fancode-2
+
+🛠 Dedicated Players:
+📺 FanCode Player: https://omnix-empire.pages.dev/fc-play
+📺 Sony Player: https://omnix-empire.pages.dev/sony-player
+
+----------------------------------------
+Integrated with ads.js & Playback Optimization.
