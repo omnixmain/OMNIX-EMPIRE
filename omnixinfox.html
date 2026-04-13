@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIX INFOX - Premium OSINT Lookup</title>
+    <meta name="description" content="OMNIX INFOX: Advanced Mobile Number Details Checker with premium features.">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+            --primary-gold: #C5A02B;
+            --primary-gold-hover: #e0b835;
+            --accent-cyan: #4EE2FF;
+            --card-bg: #0a0a0a;
+            --white: #ffffff;
+            --text-light: #e0e0e0;
+            --text-gold: #C5A02B;
+            --text-grey: #a0a0a0;
+            --sidebar-width: 320px;
+            --border-radius: 20px;
+            --success: #4EE2FF;
+            --shadow: 0 0 20px rgba(197, 160, 43, 0.2);
+            --cyan-glow: 0 0 15px rgba(78, 226, 255, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #000;
+            background-image: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--white);
+            overflow-x: hidden;
+        }
+
+        /* Protection: Prevent text selection */
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            gap: 25px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        /* --- Sidebar Style --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--card-bg);
+            border: 1px solid rgba(197, 160, 43, 0.3);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: var(--shadow);
+            height: fit-content;
+        }
+
+        .profile-img-container {
+            width: 140px;
+            height: 140px;
+            background: transparent;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 2px solid var(--primary-gold);
+            box-shadow: var(--cyan-glow);
+        }
+
+        .profile-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .username {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--primary-gold);
+            text-shadow: 0 0 10px rgba(197, 160, 43, 0.5);
+        }
+
+        .tagline {
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .bio {
+            font-size: 0.9rem;
+            color: var(--text-grey);
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .stats {
+            display: flex;
+            width: 100%;
+            justify-content: space-around;
+            border-top: 1px solid rgba(197, 160, 43, 0.2);
+            border-bottom: 1px solid rgba(197, 160, 43, 0.2);
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-gold);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-grey);
+            font-weight: 500;
+        }
+
+        .sidebar-links {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .link-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(197, 160, 43, 0.1);
+            color: var(--primary-gold);
+            border: 1px solid rgba(197, 160, 43, 0.3);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: 0.3s;
+        }
+
+        .link-btn:hover {
+            background: var(--primary-gold);
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        /* --- Main Content Style --- */
+        .main-content {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid rgba(78, 226, 255, 0.2);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--cyan-glow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-header {
+            background: linear-gradient(135deg, #000 0%, #0a0a0a 100%);
+            border-bottom: 2px solid var(--primary-gold);
+            padding: 40px;
+            text-align: center;
+            color: var(--white);
+        }
+
+        .main-header i {
+            font-size: 35px;
+            margin-bottom: 15px;
+            color: var(--primary-gold);
+        }
+
+        .main-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--primary-gold);
+        }
+
+        .main-header p {
+            font-size: 0.9rem;
+            color: var(--accent-cyan);
+            letter-spacing: 1px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #050505;
+            border-bottom: 1px solid rgba(197, 160, 43, 0.2);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 18px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-grey);
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab i {
+            font-size: 1.1rem;
+        }
+
+        .tab.active {
+            color: var(--primary-gold);
+            background: rgba(197, 160, 43, 0.05);
+            border-bottom-color: var(--primary-gold);
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(197, 160, 43, 0.1);
+        }
+
+        .tab-content {
+            padding: 40px;
+            flex: 1;
+        }
+
+        .input-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            color: var(--primary-gold);
+        }
+
+        .input-field-wrapper {
+            margin-bottom: 25px;
+        }
+
+        .input-field-wrapper input {
+            width: 100%;
+            padding: 18px 25px;
+            border: 2px solid rgba(197, 160, 43, 0.3);
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+            background: #000;
+            color: var(--white);
+        }
+
+        .input-field-wrapper input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: var(--cyan-glow);
+        }
+
+        .sub-hint {
+            font-size: 0.8rem;
+            color: var(--text-grey);
+            margin-top: 8px;
+        }
+
+        .check-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary-gold);
+            color: #000;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: 0.3s;
+            box-shadow: var(--shadow);
+        }
+
+        .check-btn:hover {
+            background: var(--primary-gold-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(197, 160, 43, 0.4);
+        }
+
+        .check-btn:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* --- Result Section --- */
+        .results-section {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .results-header {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary-gold);
+        }
+
+        .result-card {
+            background: #050505;
+            border: 1px solid rgba(197, 160, 43, 0.3);
+            border-left: 5px solid var(--primary-gold);
+            border-radius: 12px;
+            padding: 30px;
+            position: relative;
+            animation: slideUp 0.5s ease-out;
+            box-shadow: var(--shadow);
+        }
+
+        .result-content {
+            font-size: 1rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            color: var(--text-light);
+        }
+
+        .result-content b {
+            color: var(--primary-gold);
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(78, 226, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: var(--cyan-glow);
+        }
+
+        /* Loader */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: black;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Responsive View --- */
+        @media (max-width: 992px) {
+            .app-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .tab span {
+                display: none;
+            }
+
+            .main-header {
+                padding: 30px 20px;
+            }
+
+            .tab-content {
+                padding: 25px 20px;
+            }
+        }
+
+        /* History List */
+        .history-list {
+            list-style: none;
+        }
+
+        .history-item {
+            background: #050505;
+            padding: 15px;
+            border: 1px solid rgba(197, 160, 43, 0.2);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .history-item:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: var(--cyan-glow);
+        }
+    </style>
+</head>
+
+<body class="no-select">
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="profile-img-container">
+                <img src="https://i.ibb.co/dwKQMvzp/OMNIX-INFOX.png" alt="OMNIX INFOX">
+            </div>
+            <h2 class="username">@OMNIX_EMPIRE</h2>
+            <p class="tagline">The Tech Empire</p>
+            <p class="bio">Advanced OSINT & Number Retrieval System. Providing elite information since 2024.</p>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-val" id="totalSearches">0</div>
+                    <div class="stat-label">Total Searches</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val" id="sessionSearches">0</div>
+                    <div class="stat-label">This Session</div>
+                </div>
+            </div>
+
+            <div class="sidebar-links">
+                <a href="https://t.me/omnix_Empire" target="_blank" class="link-btn">
+                    <i class="fa-solid fa-code"></i> Developer
+                </a>
+                <a href="https://t.me/omnixempire" target="_blank" class="link-btn">
+                    <i class="fa-brands fa-telegram"></i> Telegram
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <i class="fa-solid fa-bolt"></i>
+                <h1>Number Details Checker</h1>
+                <p>Premium Access • Secure Retrieval • Accurate Info</p>
+            </header>
+
+            <nav class="tabs">
+                <div class="tab active" onclick="switchTab('single')">
+                    <i class="fa-solid fa-user"></i> <span>Single Number</span>
+                </div>
+                <div class="tab" onclick="switchTab('multi')">
+                    <i class="fa-solid fa-users"></i> <span>Multiple Numbers</span>
+                </div>
+                <div class="tab" onclick="switchTab('history')">
+                    <i class="fa-solid fa-clock-rotate-left"></i> <span>Search History</span>
+                </div>
+            </nav>
+
+            <div class="tab-content" id="singleTab">
+                <label class="input-title"><i class="fa-solid fa-phone"></i> Enter Phone Number:</label>
+                <div class="input-field-wrapper">
+                    <input type="tel" id="mobileInput" maxlength="10" placeholder="Enter Mobile Number" autocomplete="off">
+                    <p class="sub-hint">Enter 10-digit number without country code</p>
+                </div>
+
+                <button class="check-btn" id="searchBtn">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span id="btnText">Check Number</span>
+                    <div class="spinner" id="btnLoader"></div>
+                </button>
+
+                <div id="statusMsg" style="margin-top: 15px; font-weight: 500; font-size: 0.9rem; text-align: center;">
+                </div>
+
+                <div class="results-section" id="resultsSection">
+                    <div class="results-header"><i class="fa-solid fa-list-check"></i> Results:</div>
+                    <div class="result-card">
+                        <button class="copy-btn" onclick="copyResult()">
+                            <i class="fa-solid fa-copy"></i> Copy
+                        </button>
+                        <div class="result-content" id="resultBox"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="multiTab" style="display: none;">
+                <label class="input-title"><i class="fa-solid fa-users"></i> Enter Multiple Numbers:</label>
+                <div class="input-field-wrapper">
+                    <textarea
+                        style="width: 100%; height: 150px; padding: 15px; border-radius: 12px; border: 2px solid rgba(197, 160, 43, 0.3); background: #000; color: white; outline: none; resize: none;"
+                        placeholder="Enter numbers separated by newline..." disabled></textarea>
+                    <p class="sub-hint" style="color: var(--accent-cyan);">Special feature coming soon for verified members.</p>
+                </div>
+            </div>
+
+            <div class="tab-content" id="historyTab" style="display: none;">
+                <label class="input-title"><i class="fa-solid fa-history"></i> Your Search History:</label>
+                <div id="historyList" class="history-list">
+                    <p style="color: var(--text-grey); text-align: center; margin-top: 20px;">No recent searches found.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Security & Integration ---
+        const _0x1a2b = ["aHR0cHM6Ly95YXNoLWNvZGUtd2l0aC1haS5hbHBoYW1vdmllcy53b3JrZXJzLmRldi8=", "NzE4OTgxNDAyMQ=="];
+        const _root = atob(_0x1a2b[0]);
+        const _val = atob(_0x1a2b[1]);
+
+        // Protection
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.onkeydown = function (e) {
+            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 67 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
+        };
+
+        // UI State
+        let sessionCount = 0;
+        const totalSearchEl = document.getElementById('totalSearches');
+        const sessionSearchEl = document.getElementById('sessionSearches');
+
+        // Initialize Stats
+        let globalTotal = localStorage.getItem('omnix_total_lookup') || 0;
+        totalSearchEl.textContent = globalTotal;
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+
+            if (tab === 'single') {
+                document.getElementById('singleTab').style.display = 'block';
+                document.querySelectorAll('.tab')[0].classList.add('active');
+            } else if (tab === 'multi') {
+                document.getElementById('multiTab').style.display = 'block';
+                document.querySelectorAll('.tab')[1].classList.add('active');
+            } else {
+                document.getElementById('historyTab').style.display = 'block';
+                document.querySelectorAll('.tab')[2].classList.add('active');
+                loadHistory();
+            }
+        }
+
+        const mobileInput = document.getElementById('mobileInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultSection = document.getElementById('resultsSection');
+        const resultBox = document.getElementById('resultBox');
+        const statusMsg = document.getElementById('statusMsg');
+
+        mobileInput.addEventListener('input', e => e.target.value = e.target.value.replace(/[^0-9]/g, ''));
+
+        searchBtn.addEventListener('click', async () => {
+            const num = mobileInput.value.trim();
+            if (num.length !== 10) {
+                statusMsg.style.color = 'var(--accent-cyan)';
+                statusMsg.textContent = "Error: Please enter a 10-digit number.";
+                return;
+            }
+
+            toggleLoading(true);
+            statusMsg.textContent = "";
+
+            try {
+                const response = await fetch(`${_root}?num=${num}&key=${_val}`);
+                const data = await response.json();
+
+                if (data && data.status) {
+                    displayData(data["0"]);
+                    updateStats(num);
+                } else {
+                    statusMsg.style.color = 'var(--accent-cyan)';
+                    statusMsg.textContent = data.message || "No data found for this number.";
+                }
+            } catch (error) {
+                statusMsg.style.color = 'var(--accent-cyan)';
+                statusMsg.textContent = "Server connection failed.";
+            } finally {
+                toggleLoading(false);
+            }
+        });
+
+        function toggleLoading(isLoading) {
+            searchBtn.disabled = isLoading;
+            document.getElementById('btnText').style.display = isLoading ? 'none' : 'inline';
+            document.getElementById('btnLoader').style.display = isLoading ? 'inline-block' : 'none';
+        }
+
+        function displayData(info) {
+            let output = `👤 <b>Name:</b> ${info.name || 'N/A'}\n`;
+            output += `📱 <b>Mobile:</b> ${info.mobile || 'N/A'}\n`;
+            if (info.alt) output += `📞 <b>Alternate:</b> ${info.alt}\n`;
+            output += `\n👨‍👦 <b>Father Name:</b> ${info.fname || 'N/A'}\n`;
+            output += `\n📍 <b>Address:</b>\n${info.address || 'N/A'}\n`;
+            output += `\n📶 <b>Circle:</b> ${info.circle || 'N/A'}\n`;
+            output += `🆔 <b>ID:</b> ${info.id || 'N/A'}\n`;
+            output += `📧 <b>Email:</b> ${info.email || 'N/A'}\n`;
+            output += `\n⚡ <b>Powered by OMNIX EMPIRE</b>\n`;
+            output += `💳 <b>Credit: OMNIX INFOX</b>`;
+
+            resultBox.innerHTML = output.replace(/\n/g, '<br>');
+            resultBox.setAttribute('data-raw', output.replace(/<b>|<\/b>/g, ''));
+            resultSection.style.display = 'block';
+        }
+
+        function updateStats(num) {
+            sessionCount++;
+            sessionSearchEl.textContent = sessionCount;
+
+            let total = parseInt(localStorage.getItem('omnix_total_lookup') || 0) + 1;
+            localStorage.setItem('omnix_total_lookup', total);
+            totalSearchEl.textContent = total;
+
+            // Update History
+            let history = JSON.parse(localStorage.getItem('omnix_history') || '[]');
+            history = history.filter(h => h.num !== num);
+            history.unshift({ num: num, time: new Date().toLocaleString() });
+            localStorage.setItem('omnix_history', JSON.stringify(history.slice(0, 10)));
+        }
+
+        function loadHistory() {
+            const list = document.getElementById('historyList');
+            let history = JSON.parse(localStorage.getItem('omnix_history') || '[]');
+            if (history.length === 0) {
+                list.innerHTML = `<p style="color: var(--text-grey); text-align: center; margin-top: 20px;">No recent searches found.</p>`;
+                return;
+            }
+            list.innerHTML = history.map(h => `
+                <div class="history-item">
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary-gold);">${h.num}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-grey);">${h.time}</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="color: var(--accent-cyan); cursor:pointer;" onclick="setSearch('${h.num}')"></i>
+                </div>
+            `).join('');
+        }
+
+        function setSearch(num) {
+            mobileInput.value = num;
+            switchTab('single');
+        }
+
+        function copyResult() {
+            const rawText = resultBox.getAttribute('data-raw');
+            navigator.clipboard.writeText(rawText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+                btn.style.background = 'var(--accent-cyan)';
+                btn.style.color = '#000';
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    btn.style.background = 'rgba(78, 226, 255, 0.1)';
+                    btn.style.color = 'var(--accent-cyan)';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>
