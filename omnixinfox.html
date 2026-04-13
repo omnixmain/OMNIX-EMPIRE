@@ -367,9 +367,6 @@
         }
 
         .copy-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
             background: rgba(78, 226, 255, 0.1);
             border: 1px solid var(--accent-cyan);
             color: var(--accent-cyan);
@@ -388,6 +385,14 @@
             background: var(--accent-cyan);
             color: #000;
             box-shadow: var(--cyan-glow);
+        }
+
+        .result-card-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(197, 160, 43, 0.1);
+            padding-bottom: 10px;
         }
 
         /* Loader */
@@ -452,6 +457,20 @@
             .tab-content {
                 padding: 25px 20px;
             }
+
+            .result-card {
+                padding: 20px;
+            }
+
+            .result-card-header {
+                justify-content: center;
+            }
+
+            .copy-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 12px;
+            }
         }
 
         /* History List */
@@ -486,8 +505,8 @@
             <div class="profile-img-container">
                 <img src="https://i.ibb.co/dwKQMvzp/OMNIX-INFOX.png" alt="OMNIX INFOX">
             </div>
-            <h2 class="username">@OMNIX_EMPIRE</h2>
-            <p class="tagline">The Tech Empire</p>
+            <h2 class="username">𝙾𝙼𝙽𝙸𝚇-𝙸𝙽𝙵𝙾𝚇</h2>
+            <p class="tagline">𝙾𝙼𝙽𝙸𝚇-𝙴𝙼𝙿𝙸𝚁𝙴</p>
             <p class="bio">Advanced OSINT & Number Retrieval System. Providing elite information since 2024.</p>
 
             <div class="stats">
@@ -534,7 +553,8 @@
             <div class="tab-content" id="singleTab">
                 <label class="input-title"><i class="fa-solid fa-phone"></i> Enter Phone Number:</label>
                 <div class="input-field-wrapper">
-                    <input type="tel" id="mobileInput" maxlength="10" placeholder="Enter Mobile Number" autocomplete="off">
+                    <input type="tel" id="mobileInput" maxlength="10" placeholder="Enter Mobile Number"
+                        autocomplete="off">
                     <p class="sub-hint">Enter 10-digit number without country code</p>
                 </div>
 
@@ -550,9 +570,11 @@
                 <div class="results-section" id="resultsSection">
                     <div class="results-header"><i class="fa-solid fa-list-check"></i> Results:</div>
                     <div class="result-card">
-                        <button class="copy-btn" onclick="copyResult()">
-                            <i class="fa-solid fa-copy"></i> Copy
-                        </button>
+                        <div class="result-card-header">
+                            <button class="copy-btn" onclick="copyResult()">
+                                <i class="fa-solid fa-copy"></i> Copy
+                            </button>
+                        </div>
                         <div class="result-content" id="resultBox"></div>
                     </div>
                 </div>
@@ -564,14 +586,16 @@
                     <textarea
                         style="width: 100%; height: 150px; padding: 15px; border-radius: 12px; border: 2px solid rgba(197, 160, 43, 0.3); background: #000; color: white; outline: none; resize: none;"
                         placeholder="Enter numbers separated by newline..." disabled></textarea>
-                    <p class="sub-hint" style="color: var(--accent-cyan);">Special feature coming soon for verified members.</p>
+                    <p class="sub-hint" style="color: var(--accent-cyan);">Special feature coming soon for verified
+                        members.</p>
                 </div>
             </div>
 
             <div class="tab-content" id="historyTab" style="display: none;">
                 <label class="input-title"><i class="fa-solid fa-history"></i> Your Search History:</label>
                 <div id="historyList" class="history-list">
-                    <p style="color: var(--text-grey); text-align: center; margin-top: 20px;">No recent searches found.</p>
+                    <p style="color: var(--text-grey); text-align: center; margin-top: 20px;">No recent searches found.
+                    </p>
                 </div>
             </div>
         </main>
