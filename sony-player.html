@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(s){s.dataset.zone='10408286',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<meta name="referrer" content="no-referrer">
+<title>Live Player</title>
+
+<!-- Using Shaka Player for better HLS and DRM support -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.min.css">
+
+<style>
+
+html,body{
+margin:0;
+padding:0;
+background:#000;
+width:100vw;
+height:100dvh;
+overflow:hidden;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+/* PLAYER FIT SCREEN WITHOUT SCROLL */
+.video-container {
+width:100vw;
+height:100dvh;
+position:relative;
+background:#000;
+}
+
+video {
+width:100% !important;
+height:100% !important;
+}
+
+/* Customize Shaka UI colors to match SonyLiv theme */
+.shaka-played-range {
+  background: #ff2c55 !important;
+}
+
+.shaka-range-container input[type=range]::-webkit-slider-thumb {
+  background: #ff2c55 !important;
+}
+
+/* ===== LOGO CONTROL ===== */
+:root{
+--logo-top:20px;
+--logo-left:20px;
+--logo-size:90px;
+}
+
+/* mobile auto adjust */
+@media (max-width:768px){
+:root{
+--logo-size:60px;
+}
+}
+
+</style>
+</head>
+<body>
+
+<div class="video-container" data-shaka-player-container>
+  <video id="video" data-shaka-player autoplay muted playsinline style="width:100%;height:100%;"></video>
+</div>
+
+<script>
+  // Parse URL parameters
+  const params = new URLSearchParams(window.location.search);
+  const videoUrl = params.get('url');
+  const videoTitle = params.get('title') || 'Live Stream';
+
+  async function initPlayer() {
+    const video = document.getElementById('video');
+    const container = document.querySelector('.video-container');
+    
+    // Initialize Shaka Player
+    const player = new shaka.Player(video);
+    const ui = new shaka.ui.Overlay(player, container, video);
+
+    // Configure UI
+    ui.configure({
+      'controlPanelElements': [
+        'play_pause',
+        'mute',
+        'volume',
+        'time_and_duration',
+        'spacer',
+        'quality',
+        'fullscreen',
+        'overflow_menu'
+      ]
+    });
+
+    // Configure player
+    player.configure({
+      streaming: {
+        bufferingGoal: 10,
+        rebufferingGoal: 2
+      }
+    });
+
+    // Add request filters for Sony headers
+    const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    
+    player.getNetworkingEngine().registerRequestFilter(function(type, request) {
+      if (type == shaka.net.NetworkingEngine.RequestType.MANIFEST || 
+          type == shaka.net.NetworkingEngine.RequestType.SEGMENT) {
+        request.headers['Origin'] = 'https://www.sonyliv.com';
+        request.headers['Referer'] = 'https://www.sonyliv.com/';
+        request.headers['User-Agent'] = USER_AGENT;
+      }
+    });
+
+    // Handle errors
+    player.addEventListener('error', (event) => {
+      console.error('Shaka Player Error:', event.detail);
+    });
+
+    async function loadWithFallback(rawUrl) {
+      const proxies = [
+        "", // Direct
+        "https://worker-crimson-dawn-0220.wasimud.workers.dev/?url=",
+        "https://corsproxy.io/?",
+        "https://mini.allinonereborn.fun/events/stream_proxy.php?url="
+      ];
+
+      for (const proxy of proxies) {
+        try {
+          const tryUrl = proxy ? (proxy.includes('?') ? proxy + encodeURIComponent(rawUrl) : proxy + rawUrl) : rawUrl;
+          console.log(`Attempting load with proxy [${proxy || 'DIRECT'}]:`, tryUrl);
+          await player.load(tryUrl);
+          console.log('Stream loaded successfully with:', proxy || 'DIRECT');
+          return true;
+        } catch (e) {
+          console.warn(`Load failed with proxy [${proxy || 'DIRECT'}]:`, e.code || e.message);
+          // Continue to next proxy
+        }
+      }
+      throw new Error("All proxy attempts failed (403/Forbidden or CORS). The stream might be expired or geo-blocked.");
+    }
+
+    try {
+      if (videoUrl) {
+        await loadWithFallback(videoUrl);
+        
+        // Autoplay logic
+        try {
+          video.muted = true; // Start muted for better autoplay success
+          await video.play();
+          console.log('Autoplay started (muted)');
+          
+          // Try to unmute after a short delay
+          setTimeout(async () => {
+            try {
+              video.muted = false;
+              await video.play();
+              console.log('Unmuted successfully');
+            } catch (unmuteError) {
+              console.log('Unmute failed, keeping muted.');
+              video.muted = true;
+            }
+          }, 1000);
+        } catch (playError) {
+          console.error('Autoplay failed:', playError);
+        }
+      } else {
+        container.innerHTML = '<div style="color:white;text-align:center;padding:20px;">No video URL provided.</div>';
+      }
+    } catch (e) {
+      console.error('Final Load Error:', e);
+      container.innerHTML = `<div style="color:white;text-align:center;padding:20px;">
+        <p>Error loading video: ${videoTitle}</p>
+        <p style="font-size:14px;color:#ff2c55;">${e.message || 'Check console for details'}</p>
+        <button onclick="location.reload()" style="background:#ff2c55;color:white;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;margin-top:10px;">Retry</button>
+      </div>`;
+    }
+  }
+
+  // Check if Shaka is supported
+  if (shaka.Player.isBrowserSupported()) {
+    initPlayer();
+  } else {
+    document.body.innerHTML = '<div style="color:white;text-align:center;padding:20px;">Browser not supported</div>';
+  }
+</script>
+
+<script src="ads.js"></script>
+<script>window.adsPaused = true;</script>
+</body>
+</html>
