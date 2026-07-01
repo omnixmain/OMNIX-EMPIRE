@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TSN Live Stream - AdFree Clone</title>
+  
+  <!-- Shaka Player for DASH/DRM support -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" crossorigin="anonymous">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      background: #0f172a; /* Dark premium background */
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    
+    .shaka-video-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+    }
+    
+    video {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      object-fit: contain;
+    }
+
+    /* Minimalist Loading Spinner */
+    .loading-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-weight: 600;
+      z-index: 10;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      transition: opacity 0.5s ease;
+    }
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="shaka-video-container" data-shaka-player id="video-container">
+    <video id="video" autoplay playsinline preload="auto"></video>
+    <div id="loading" class="loading-overlay">Loading Stream...</div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Initialize Shaka Player polyfills
+      shaka.polyfill.installAll();
+      
+      if (!shaka.Player.isBrowserSupported()) {
+        alert('Browser not supported for DRM playback.');
+        return;
+      }
+
+      const video = document.getElementById('video');
+      const container = document.getElementById('video-container');
+      const player = new shaka.Player();
+      await player.attach(video);
+
+      // 2. Setup Premium UI Overlays
+      const ui = new shaka.ui.Overlay(player, container, video);
+      ui.configure({
+        controlPanelElements: [
+          'play_pause', 'time_and_duration', 'mute', 'volume',
+          'spacer', 'picture_in_picture', 'quality', 'fullscreen'
+        ],
+        volumeBarColors: {
+          base: 'rgba(255, 255, 255, 0.3)',
+          level: '#3b82f6' // Premium Blue
+        },
+        seekBarColors: {
+          base: 'rgba(255, 255, 255, 0.3)',
+          buffered: 'rgba(255, 255, 255, 0.6)',
+          played: '#ef4444' // Premium Red
+        }
+      });
+
+      // 3. Define Stream Config from original site
+      const streamUrl = "https://otte.cache.aiv-cdn.net/bom-nitro/live/dash/enc/w0rehjjrwe/out/v1/69a2a7041395406b970598f61680e7cf/cenc.mpd";
+      const drmConfig = {
+        clearKeys: {
+          "14eeabf30c14b7fbf3008c03099ce011": "17d2ac8dbc5429bd70af3433aa12158d"
+        }
+      };
+
+      player.configure({
+        drm: drmConfig,
+        streaming: { 
+          lowLatencyMode: true, 
+          bufferingGoal: 60, 
+          rebufferingGoal: 20 
+        }
+      });
+
+      // 4. Register Request Filters to spoof headers just like original site
+      player.getNetworkingEngine().registerRequestFilter((type, request) => {
+        request.headers['Referer'] = 'https://live-pv-ta.amazon.fastly-edge.com/';
+        // Browsers block setting User-Agent directly in fetch, but passing it for proxy/webview compatibility
+        request.headers['User-Agent'] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
+      });
+
+      // 5. Error handling
+      player.addEventListener('error', (event) => {
+        console.error('Player error:', event.detail);
+      });
+
+      // Hide loading text when playback starts
+      video.addEventListener('playing', () => {
+        document.getElementById('loading').classList.add('hidden');
+      });
+
+      // 6. Load the stream
+      try {
+        await player.load(streamUrl);
+        console.log('Stream loaded successfully');
+      } catch (error) {
+        console.error('Error loading stream:', error);
+        document.getElementById('loading').innerText = "Failed to load stream.";
+      }
+    });
+  </script>
+</body>
+</html>
