@@ -723,3 +723,90 @@ footer {
         font-size: 2.2rem;
     }
 }
+
+@media (max-width: 768px) {
+    .premium-app-card {
+        padding: 1.5rem;
+        border-radius: 24px;
+    }
+    .app-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 24px;
+    }
+    .app-title {
+        font-size: 1.8rem;
+    }
+    .app-desc {
+        font-size: 1rem;
+    }
+    .app-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .stat-box {
+        padding: 1.2rem;
+    }
+    .app-download-cta {
+        padding: 2rem 1.2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+    }
+    .cta-title {
+        font-size: 1.4rem;
+        margin-bottom: 1.5rem;
+    }
+    .download-buttons {
+        gap: 1rem;
+    }
+    .dl-btn img {
+        height: 52px;
+        border-radius: 12px;
+    }
+    .app-features-box, .app-versions-box {
+        padding: 1.5rem;
+        border-radius: 20px;
+    }
+    .box-title {
+        font-size: 1.15rem;
+        margin-bottom: 1.2rem;
+    }
+    .feature-list {
+        grid-template-columns: 1fr;
+    }
+    .version-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 1rem;
+    }
+    .version-links {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    .version-links img {
+        height: 34px;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-title {
+        font-size: 1.5rem;
+    }
+    .app-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+    }
+    .dl-btn img {
+        height: 45px;
+    }
+    .premium-app-card {
+        padding: 1.2rem;
+    }
+    .app-features-box, .app-versions-box {
+        padding: 1.2rem;
+    }
+}
