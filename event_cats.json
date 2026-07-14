@@ -5,7 +5,7 @@
   "Tennis": "https://sportzfy.io/wp-content/uploads/2025/09/tennis-1.png",
   "Basketball": "https://sportzfy.io/wp-content/uploads/2025/09/net.png",
   "Baseball": "https://sportzfy.io/wp-content/uploads/2025/09/baseball.png",
-  "WNBA": "https://i.ibb.co/KpnwqJhD/wnba.png"
+  "WNBA": "https://i.ibb.co/KpnwqJhD/wnba.png",
   "Rugby": "https://sportzfy.io/wp-content/uploads/2025/09/rugby-1.png",
   "Boxing": "https://sportzfy.io/wp-content/uploads/2025/09/boxing-gloves-1-1.png",
   "UFC": "https://access-control-center-prod.freevision.live/ss/tournament/19906.png",
@@ -39,7 +39,7 @@
   "Volleyball": "https://img.icons8.com/color/100/volleyball.png",
   "Snooker": "https://img.icons8.com/color/100/billiards.png",
   "Chess": "https://img.icons8.com/color/100/chess.png",
-  "F1": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Formula_One_logo.svg/330px-Formula_One_logo.svg.png"
+  "F1": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Formula_One_logo.svg/330px-Formula_One_logo.svg.png",
   "Athletics": "https://img.icons8.com/color/100/athletics.png",
   "Esports": "https://i.ibb.co/21kYn78y/Esports.png",
   "Formula 1": "https://img.icons8.com/color/100/formula-one.png",
@@ -72,6 +72,6 @@
   "FanCode": "https://images.fancode.com/skillup-uploads/fc-web-logo/fc_logo_white_bg.svg",
   "Sony LIV": "https://images.slivcdn.com/UI_icons/sonyliv_new_revised_header_logo.png",
   "Sports News": "https://img.icons8.com/color/100/news.png",
-  "Live TV": "https://img.icons8.com/color/100/tv-show.png"
-  "FIFA World Cup" : "https://stcf-prod.zee5.com/prod/pwa/images/fifa/fifa_animation.gif?ver=6.4.1"
+  "Live TV": "https://img.icons8.com/color/100/tv-show.png",
+  "FIFA World Cup": "https://stcf-prod.zee5.com/prod/pwa/images/fifa/fifa_animation.gif?ver=6.4.1"
 }
