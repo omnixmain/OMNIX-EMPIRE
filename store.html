@@ -386,8 +386,39 @@
         <!-- Home View -->
         <div id="home-view" class="view active">
             <h2 class="section-title">Exclusive Apps</h2>
-            <div class="app-grid" id="home-apps-container">
+            <div class="app-grid" id="home-apps-container" style="margin-bottom: 3rem;">
                 <!-- Apps injected by JS -->
+            </div>
+
+            <h2 class="section-title">Upcoming Apps</h2>
+            <div class="app-grid">
+                <!-- OMNIX MUSIC -->
+                <div class="app-card" style="cursor: default;">
+                    <div class="app-icon"><img src="https://i.pinimg.com/1200x/08/33/2d/08332dbbb52c82084c4fbaaae306945e.jpg" alt="Omnix Music"></div>
+                    <div class="app-info-sm">
+                        <span style="font-size: 0.65rem; display: inline-block; margin-bottom: 4px; padding: 2px 8px; border-radius: 6px; background: var(--accent); color: #000; font-weight: 800; letter-spacing: 0.5px;">COMING 28 JULY 2026</span>
+                        <h3>OMNIX MUSIC</h3>
+                        <p style="font-size: 0.85rem; line-height: 1.3;">Ad-free, high-quality music streaming platform.</p>
+                    </div>
+                </div>
+                <!-- OMNIX VPN -->
+                <div class="app-card" style="cursor: default;">
+                    <div class="app-icon"><img src="https://i.pinimg.com/1200x/88/9c/88/889c88c08e61316d608d4ba8da869d38.jpg" alt="Omnix VPN"></div>
+                    <div class="app-info-sm">
+                        <span style="font-size: 0.65rem; display: inline-block; margin-bottom: 4px; padding: 2px 8px; border-radius: 6px; background: var(--accent); color: #000; font-weight: 800; letter-spacing: 0.5px;">COMING 28 SEPT 2026</span>
+                        <h3>OMNIX VPN</h3>
+                        <p style="font-size: 0.85rem; line-height: 1.3;">Secure, fast, and reliable virtual private network.</p>
+                    </div>
+                </div>
+                <!-- OMNIX GAME -->
+                <div class="app-card" style="cursor: default;">
+                    <div class="app-icon"><img src="https://i.pinimg.com/736x/68/0e/d9/680ed9ad3e25665eb9f5d9f598a119b7.jpg" alt="Omnix Game"></div>
+                    <div class="app-info-sm">
+                        <span style="font-size: 0.65rem; display: inline-block; margin-bottom: 4px; padding: 2px 8px; border-radius: 6px; background: var(--accent); color: #000; font-weight: 800; letter-spacing: 0.5px;">COMING 28 MAY 2027</span>
+                        <h3>OMNIX GAME</h3>
+                        <p style="font-size: 0.85rem; line-height: 1.3;">Dive into a new world of gaming entertainment.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -419,13 +450,13 @@
         const apps = [
             {
                 id: 1,
-                name: "OMNIX-OTT+",
+                name: "OMNIX OTT",
                 dev: "Omnix Empire",
-                desc: "The ultimate all-in-one entertainment app for Mobile, Tablet, Firestick, and Android TV.",
+                desc: "The Ultimate All-in-One Entertainment Hub for Movies, TV Shows, Live TV, Sports, Anime, and More — Available on Mobile, Tablet, Firestick, and Android TV.",
                 icon: "https://raw.githubusercontent.com/omnixmain/OMNIX-EMPIRE/refs/heads/main/omnix-ott-logo.jpg",
-                version: "V1.9 (10-06-2026)",
+                version: "V2.1 (10-07-2026)",
                 rating: 4.8,
-                size: "45 MB",
+                size: "36.38 MB",
                 downloads: "5M+",
                 features: [
                     "40+ Indian & International OTT Platforms",
@@ -434,36 +465,57 @@
                     "1780+ Free Live TV Channels",
                     "5 Multi-Source Live Event Apps",
                     "10,000+ Indian Movies, Web Series, Live TV & Anime",
-                    "Live Cricket, Football, Tennis, Boxing, MMA & More",
-                    "Movies, Web Series, TV Shows & Kids Content",
-                    "OMNIX IPTV Login Support (Server URL, Username & Password)",
+                    "OMNIX IPTV Login Support",
                     "Instant QR Code Login Setup",
                     "Google Sign-In & Easy Account Recovery",
-                    "Ad-Free Streaming Experience",
-                    "Multi-Device Access (Up to 10 Devices)",
-                    "HD & FHD Streaming Quality",
-                    "International Sports & Entertainment Channels",
-                    "Regular Content & Channel Updates",
-                    "All-in-One Entertainment Platform"
+                    "Ad-Free Streaming Experience"
                 ],
                 latestLinks: [
-                    { name: "Official Cloud", url: "https://omnix-database.onrender.com/stream/2668?hash=69ea6a&d=true", iconImg: "omnixcloud.png" },
-                    { name: "PixelDrain", url: "https://pixeldrain.dev/api/file/cpxk3p3e?download", iconImg: "pixeldrain.png" },
-                    { name: "Mega Drive", url: "https://mega.nz/file/G85lWQyY#9_f5UP8l6J62thPZ1KRKzEXgQsSazxQP5ItxEDWSWKQ", iconImg: "mega.png" }
+                    { name: "Official Cloud", url: "https://omnix-database.onrender.com/stream/3127?hash=cee3b0&d=true", iconImg: "omnixcloud.png" },
+                    { name: "PixelDrain", url: "https://pixeldrain.dev/api/file/t58y4dUG?download", iconImg: "pixeldrain.png" }
                 ],
                 previousVersions: [
                     {
-                        version: "V1.8 (20-05-2026)",
+                        version: "V2.0 – Stable Fix Update (10-07-2026)",
+                        links: [
+                            { name: "Cloud", url: "https://omnix-database.onrender.com/stream/3123?hash=089b22&d=true", iconImg: "omnixcloud.png" },
+                            { name: "PixelDrain", url: "https://pixeldrain.dev/api/file/LnwgyRxo?download", iconImg: "pixeldrain.png" }
+                        ]
+                    },
+                    {
+                        version: "V2.0(22) (10-07-2026)",
+                        links: [
+                            { name: "Cloud", url: "https://omnix-database.onrender.com/stream/3122?hash=5e4d99&d=true", iconImg: "omnixcloud.png" },
+                            { name: "PixelDrain", url: "https://pixeldrain.dev/api/file/eovHxKjq?download", iconImg: "pixeldrain.png" }
+                        ]
+                    },
+                    {
+                        version: "V2.0 (10-06-2026)",
+                        links: [
+                            { name: "Cloud", url: "https://omnix-database.onrender.com/stream/2668?hash=69ea6a&d=true", iconImg: "omnixcloud.png" },
+                            { name: "PixelDrain", url: "https://pixeldrain.dev/api/file/cpxk3p3e?download", iconImg: "pixeldrain.png" },
+                            { name: "Mega", url: "https://mega.nz/file/G85lWQyY#9_f5UP8l6J62thPZ1KRKzEXgQsSazxQP5ItxEDWSWKQ", iconImg: "mega.png" }
+                        ]
+                    },
+                    {
+                        version: "V1.9 (20-05-2026)",
                         links: [
                             { name: "Cloud", url: "https://omnix-database.onrender.com/stream/2470?hash=d42863&d=true", iconImg: "omnixcloud.png" },
                             { name: "PixelDrain", url: "https://pixeldrain.dev/api/file/bee4KME3?download", iconImg: "pixeldrain.png" }
                         ]
                     },
                     {
-                        version: "V1.7 (25-04-2026)",
+                        version: "V1.8 (25-04-2026)",
                         links: [
                             { name: "Cloud", url: "https://omnix-database.onrender.com/stream/2356?hash=55eb9b&d=true", iconImg: "omnixcloud.png" },
                             { name: "PixelDrain", url: "https://pixeldrain.dev/api/file/1T5Ppqef?download", iconImg: "pixeldrain.png" }
+                        ]
+                    },
+                    {
+                        version: "V1.7 (31-03-2026)",
+                        links: [
+                            { name: "Cloud", url: "https://omnix-database.onrender.com/stream/910?hash=8c6336&d=true", iconImg: "omnixcloud.png" },
+                            { name: "PixelDrain", url: "https://pixeldrain.dev/api/file/P2rrnPUv?download", iconImg: "pixeldrain.png" }
                         ]
                     },
                     {
@@ -491,7 +543,7 @@
                 icon: "https://i.ibb.co/dwKQMvzp/OMNIX-INFOX.png",
                 version: "V1.1",
                 rating: 4.5,
-                size: "15 MB",
+                size: "8.5 MB",
                 downloads: "2M+",
                 features: [
                     "Num to Info (realname, uidno, altno, email, address, etc.)",
@@ -544,7 +596,7 @@
                 dev: "Third-Party Mods",
                 desc: "A versatile and customizable alternative to the standard Instagram app, enhancing user experience with added functionalities and privacy controls.",
                 icon: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjE4dzmHPOOrm-QwX-81kmVf9DFFrSiQctKoOAzDSatOsw-ODz8lRBEUQEAF8W3nZidnMelzteTG2VdmAw2eyr2KHp3iqezQBFOEsSqL97KLNqWO4RiKlTmSE_53owigs7uvy9VLQxDHdvb8JR8DNJulqg8TWHjHSJDzgGKIjqEtyIO_QAf0YV8C5Yir-g/s1600/instapro%20%283%29.webp",
-                version: "397.0.0.46.81",
+                version: "v15.25 / v40",
                 rating: 4.7,
                 size: "Varies",
                 downloads: "15M+",
@@ -559,10 +611,50 @@
                     "Direct Share URLs: Share photos and videos using direct URLs."
                 ],
                 latestLinks: [
-                    { name: "Download Insta", url: "https://www.mediafire.com/file/hw6040yhz6836g9/Insta+v15.15F-SamMods.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" },
-                    { name: "Download InstaPro", url: "https://www.mediafire.com/file/3xddba6irfohofp/InstaPro+v15.15F-SamMods.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" },
-                    { name: "Download InstaPro2", url: "https://www.mediafire.com/file/wqmbyx1j6pm8jys/InstaPro2+v15.15F.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" },
-                    { name: "Download InstaPro3", url: "https://www.mediafire.com/file/1ngtdel29sq58m6/InstaPro3+v15.15F-SamModa.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" }
+                    { name: "Insta v15.25", url: "https://www.mediafire.com/file/lm5eu38d4kgnyu7/Insta+v15.25-SamMods.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" },
+                    { name: "InstaPro v15.25", url: "https://www.mediafire.com/file/w542j7g2fphe49f/InstaPro+v15.25-SamMods.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" },
+                    { name: "InstaPro 2 v15.25", url: "https://www.mediafire.com/file/ldga5urr00ynp0q/InstaPro2+v15.25-SamMods.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" },
+                    { name: "InstaPro 3 v15.25", url: "https://www.mediafire.com/file/u65kzpvj9f0bxgt/InstaPro3+v15.25-SamModa.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" },
+                    { name: "Thunder v40 (64-bit)", url: "https://www.mediafire.com/file/maibzggg7bf5qgi/Insta_%25E2%259A%25A1v40_64bit.apk/file", isTextBtn: true, iconClass: "fas fa-bolt" },
+                    { name: "Insta v40 (64-bit)", url: "https://www.mediafire.com/file/2ghbqc84nfjzwko/Insta_v40_64_bit.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" },
+                    { name: "Thunder v40 (32-bit)", url: "https://www.mediafire.com/file/9s43oxxq61z5d8x/Insta_%25E2%259A%25A1_v40_32_bit.apk/file", isTextBtn: true, iconClass: "fas fa-bolt" },
+                    { name: "Insta v40 (32-bit)", url: "https://www.mediafire.com/file/n4934wxujuoos24/Insta_v40_32_bit.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" }
+                ],
+                previousVersions: [
+                    {
+                        version: "v15.15F (Previous)",
+                        links: [
+                            { name: "Download Insta", url: "https://www.mediafire.com/file/hw6040yhz6836g9/Insta+v15.15F-SamMods.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" },
+                            { name: "Download InstaPro", url: "https://www.mediafire.com/file/3xddba6irfohofp/InstaPro+v15.15F-SamMods.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" },
+                            { name: "Download InstaPro2", url: "https://www.mediafire.com/file/wqmbyx1j6pm8jys/InstaPro2+v15.15F.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" },
+                            { name: "Download InstaPro3", url: "https://www.mediafire.com/file/1ngtdel29sq58m6/InstaPro3+v15.15F-SamModa.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 5,
+                name: "InXta",
+                dev: "Third-Party Mods",
+                desc: "InXta is a powerful modified version of Instagram focused on maximum privacy, ad-blocking, and media downloading features.",
+                icon: "https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg",
+                version: "430.0.0.7.80",
+                rating: 4.6,
+                size: "Varies",
+                downloads: "2M+",
+                features: [
+                    "Download Stories, Images, and IGTV Videos directly",
+                    "Complete Ad-Free experience without sponsored posts",
+                    "Ghost Mode (Do not mark messages as read, hide view stories)",
+                    "Photos in max quality sharing and downloading",
+                    "In-app translation engine support (Google/Yandex)",
+                    "Disable Shopping items in search",
+                    "Check if the user follows you by going to their profile",
+                    "App lock with pin code for security"
+                ],
+                latestLinks: [
+                    { name: "InXta (com.insta)", url: "https://www.mediafire.com/file/wxkmfhnzo20ahja/InXta+com.insta+430.0.0.7.80+.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" },
+                    { name: "InXta (com.InXta)", url: "https://www.mediafire.com/file/1ec91zorgd82hu0/InXta+com.InXta+430.0.0.7.80.apk/file", isTextBtn: true, iconClass: "fab fa-instagram" }
                 ],
                 previousVersions: []
             }
