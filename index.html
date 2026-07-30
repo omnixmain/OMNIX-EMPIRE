@@ -73,9 +73,13 @@
                     </div>
                     <div class="app-title-section">
                         <span class="badge badge-accent">LIVE NOW</span>
-                        <h3 class="app-title">OMNIX OTT V2.4 (25) Stable with OTT platform</h3>
+                        <h3 class="app-title">OMNIX OTT v2.4 (25) Stable</h3>
                         <p class="app-desc">The Ultimate All-in-One Entertainment Hub for Movies, TV Shows, Live TV,
                             Sports, Anime, and More — Available on Mobile, Tablet, Firestick, and Android TV.</p>
+                        <div style="margin-top: 5px; font-size: 0.85em; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+                            <span>* Terms and condition apply</span>
+                            <button onclick="openDmcaModal()" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75em; cursor: pointer; border-radius: 4px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);">Click to view</button>
+                        </div>
                     </div>
                 </div>
 
@@ -294,6 +298,10 @@
                         <h3 class="app-title">OMNIX INFOX V1.1</h3>
                         <p class="app-desc">A powerful utility application providing detailed number information and
                             upcoming tools.</p>
+                        <div style="margin-top: 5px; font-size: 0.85em; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+                            <span>* Terms and condition apply</span>
+                            <button onclick="openDmcaModal()" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75em; cursor: pointer; border-radius: 4px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);">Click to view</button>
+                        </div>
                     </div>
                 </div>
 
@@ -558,6 +566,84 @@
                     }
                 })
                 .catch(error => console.error('Error tracking download:', error));
+        }
+    </script>
+
+    <!-- DMCA & Fair Use Modal -->
+    <style>
+        .dmca-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+        .dmca-modal-content {
+            background-color: #1a1a2e; /* Dark theme matching */
+            margin: 10% auto;
+            padding: 30px;
+            border: 1px solid #ff4757;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+            color: #f1f2f6;
+            font-family: Arial, sans-serif;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+        }
+        .dmca-modal-content h3 {
+            color: #ff4757;
+            margin-top: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+        .dmca-modal-content p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+        .dmca-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .dmca-close-btn:hover {
+            color: white;
+        }
+    </style>
+
+    <div id="dmcaModal" class="dmca-modal">
+        <div class="dmca-modal-content">
+            <span class="dmca-close-btn" onclick="closeDmcaModal()">&times;</span>
+            <h3>DMCA & Fair Use Disclaimer</h3>
+            <p><strong>Omnix OTT</strong> is an independent aggregation platform. We only index, share, and organize content, links, and data that are already freely and publicly available on the internet. We do not host any copyrighted media on our own servers. Under the guidelines of fair use and public domain, accessing and sharing publicly available information is not unlawful.</p>
+            <p><strong>Notice and Takedown Policy:</strong> If you are a copyright owner, a company representative, or a government authority, and you have objections to any specific content listed on our platform, you <strong>must contact the Omnix Empire administration directly first</strong>. Upon receiving a valid removal request, we will promptly take down the disputed data. Taking direct legal action, attempting to track the application, or initiating takedowns without prior communication is unwarranted and ineffective, as we are fully cooperative and merely indexing content that is already public on the web.</p>
+        </div>
+    </div>
+
+    <script>
+        function openDmcaModal() {
+            document.getElementById('dmcaModal').style.display = 'block';
+        }
+        function closeDmcaModal() {
+            document.getElementById('dmcaModal').style.display = 'none';
+        }
+        // Close modal if user clicks outside of it
+        window.onclick = function(event) {
+            var modal = document.getElementById('dmcaModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
         }
     </script>
 </body>
